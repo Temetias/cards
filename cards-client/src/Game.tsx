@@ -289,35 +289,33 @@ export function Game() {
       <div className="Game-area">
         {gameState && player && opponent && ws ? (
           <>
-            <div className="Upper">
-              <div className="Hand Opponent">
-                {opponent.hand.map((card: GameCard, i: number) => (
-                  <HandCardBack
-                    index={opponent.hand.length / 2 - (i + 0.5)}
-                    key={card.id}
-                    card={card}
-                    selected={isSelected(card, opponent.userSelection)}
-                  />
-                ))}
-              </div>
-              <div className="Resource">
-                {opponent.resource.map((card: GameCard) => (
-                  <Card key={card.id} card={card} />
-                ))}
-              </div>
+            <div className="Upper-resource">
+              {opponent.resource.map((card: GameCard) => (
+                <Card key={card.id} card={card} />
+              ))}
             </div>
-            <div className="Upper">
-              <div className="Protection">
-                {opponent.protection.map((card: GameCard) => (
-                  <CardBack
-                    key={card.id}
-                    card={card}
-                    onClick={() => {
-                      send({ action: "attackProtection", target: card.id });
-                    }}
-                  />
-                ))}
-              </div>
+            <div className="Upper-hand Hand Opponent">
+              {opponent.hand.map((card: GameCard, i: number) => (
+                <HandCardBack
+                  index={opponent.hand.length / 2 - (i + 0.5)}
+                  key={card.id}
+                  card={card}
+                  selected={isSelected(card, opponent.userSelection)}
+                />
+              ))}
+            </div>
+            <div className="Upper-protection">
+              {opponent.protection.map((card: GameCard) => (
+                <CardBack
+                  key={card.id}
+                  card={card}
+                  onClick={() => {
+                    send({ action: "attackProtection", target: card.id });
+                  }}
+                />
+              ))}
+            </div>
+            <div className="Upper-stacks">
               <div className="Stack">
                 {opponent.deck.map((card: GameCard) => (
                   <CardBack key={card.id} card={card} />
@@ -329,74 +327,68 @@ export function Game() {
                 ))}
               </div>
             </div>
-            <div className="Field">
-              <div className="Field-side">
-                {opponent.field.map((card: GameCard) => (
-                  <FieldCard
-                    key={card.id}
-                    card={card}
-                    onMouseEnter={() => setHoveredCard(card)}
-                    onMouseLeave={() => {
-                      setHoveredCard(null);
-                      setInspectedCard(null);
-                    }}
-                    onClick={() => {
-                      send({ action: "attack", target: card.id });
-                    }}
-                  />
-                ))}
-              </div>
-              <div className="Control">
-                <div>{gameState.turnTimer}</div>
-                <button
-                  disabled={!isMyTurn}
-                  onClick={() => {
-                    send({ action: "endTurn" });
-                  }}
-                >
-                  {isMyTurn ? "End turn" : "Opponent's turn"}
-                </button>
-              </div>
-              <div
-                className="Field-side"
+            <div className="Control">
+              <div>{gameState.turnTimer}</div>
+              <button
+                disabled={!isMyTurn}
                 onClick={() => {
-                  const card = selectedCard(player.userSelection);
-                  if (!card) return;
-                  send({ action: "playCard" });
+                  send({ action: "endTurn" });
                 }}
               >
-                {player.field.map((card: GameCard) => (
-                  <FieldCard
-                    key={card.id}
-                    card={card}
-                    selected={isSelected(card, player.userSelection)}
-                    onMouseEnter={() => setHoveredCard(card)}
-                    onMouseLeave={() => {
-                      setInspectedCard(null);
-                      setHoveredCard(null);
-                    }}
-                    onClick={() => {
-                      send({ action: "userSelect", target: card.id });
-                    }}
-                    selectable={
-                      isMyTurn &&
-                      (player.userSelection === null ||
-                        Array.isArray(player.userSelection)) &&
-                      !isSelected(card, player.userSelection) &&
-                      !gameState.player1.attackedThisTurn.find(
-                        (c: GameCard) => c.id === card.id
-                      )
-                    }
-                  />
-                ))}
-              </div>
+                {isMyTurn ? "End turn" : "Opponent's turn"}
+              </button>
             </div>
-            <div className="Lower">
-              <div className="Protection">
-                {player.protection.map((card: GameCard) => (
-                  <CardBack key={card.id} card={card} />
-                ))}
-              </div>
+            <div className="Upper-field">
+              {opponent.field.map((card: GameCard) => (
+                <FieldCard
+                  key={card.id}
+                  card={card}
+                  onMouseEnter={() => setHoveredCard(card)}
+                  onMouseLeave={() => {
+                    setHoveredCard(null);
+                    setInspectedCard(null);
+                  }}
+                  onClick={() => {
+                    send({ action: "attack", target: card.id });
+                  }}
+                />
+              ))}
+            </div>
+
+            <div
+              className="Lower-field"
+              onClick={() => {
+                const card = selectedCard(player.userSelection);
+                if (!card) return;
+                send({ action: "playCard" });
+              }}
+            >
+              {player.field.map((card: GameCard) => (
+                <FieldCard
+                  key={card.id}
+                  card={card}
+                  selected={isSelected(card, player.userSelection)}
+                  onMouseEnter={() => setHoveredCard(card)}
+                  onMouseLeave={() => {
+                    setInspectedCard(null);
+                    setHoveredCard(null);
+                  }}
+                  onClick={() => {
+                    send({ action: "userSelect", target: card.id });
+                  }}
+                  selectable={
+                    isMyTurn &&
+                    (player.userSelection === null ||
+                      Array.isArray(player.userSelection)) &&
+                    !isSelected(card, player.userSelection) &&
+                    !player.attackedThisTurn.find(
+                      (c: GameCard) => c.id === card.id
+                    )
+                  }
+                />
+              ))}
+            </div>
+            <div className="Lower-stacks">
               <div className="Stack">
                 {player.deck.map((card: GameCard) => (
                   <CardBack key={card.id} card={card} />
@@ -408,39 +400,41 @@ export function Game() {
                 ))}
               </div>
             </div>
-            <div className="Lower">
-              <div className="Hand">
-                {player.hand.map((card: GameCard, i: number) => (
-                  <HandCard
-                    key={card.id}
-                    index={player.hand.length / 2 - (i + 0.5)}
-                    card={card}
-                    selected={isSelected(card, player.userSelection)}
-                    selectable={
-                      isMyTurn &&
-                      player.resource.length - player.resourceSpent >=
-                        card.cost &&
-                      player.userSelection === null
-                    }
-                    onClick={() => {
-                      send({ action: "userSelect", target: card.id });
-                    }}
-                  />
-                ))}
-              </div>
-              <div
-                className="Resource"
-                onClick={() => {
-                  const card = selectedCard(player.userSelection);
-                  if (!card) return;
-                  send({ action: "playResource", target: card.id });
-                }}
-              >
-                resource
-                {player.resource.map((card: GameCard) => (
-                  <Card key={card.id} card={card} />
-                ))}
-              </div>
+            <div className="Lower-protection">
+              {player.protection.map((card: GameCard) => (
+                <CardBack key={card.id} card={card} />
+              ))}
+            </div>
+            <div className="Lower-hand Hand">
+              {player.hand.map((card: GameCard, i: number) => (
+                <HandCard
+                  key={card.id}
+                  index={player.hand.length / 2 - (i + 0.5)}
+                  card={card}
+                  selected={isSelected(card, player.userSelection)}
+                  selectable={
+                    isMyTurn &&
+                    player.resource.length - player.resourceSpent >=
+                      card.cost &&
+                    player.userSelection === null
+                  }
+                  onClick={() => {
+                    send({ action: "userSelect", target: card.id });
+                  }}
+                />
+              ))}
+            </div>
+            <div
+              className="Lower-resource"
+              onClick={() => {
+                const card = selectedCard(player.userSelection);
+                if (!card) return;
+                send({ action: "playResource", target: card.id });
+              }}
+            >
+              {player.resource.map((card: GameCard) => (
+                <Card key={card.id} card={card} />
+              ))}
             </div>
             <div className="Inspect">
               {inspectedCard && <Card card={inspectedCard} />}

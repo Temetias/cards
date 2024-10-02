@@ -5,16 +5,26 @@
 }
 
 .Game-area {
+  --gap: 1%;
   aspect-ratio: 16 / 9;
   width: 100%;
   max-width: 100vw;
   max-height: 100vh;
   background-color: lightgray;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding-left: 10%;
+  display: grid;
+  grid-template-columns:
+    calc(10% - var(--gap))
+    calc(70% - var(--gap))
+    calc(20% - var(--gap));
+  grid-template-rows:
+    calc(14% - var(--gap))
+    calc(15% - var(--gap))
+    calc(18% - var(--gap))
+    calc(18% - var(--gap))
+    calc(15% - var(--gap))
+    calc(20% - var(--gap));
+  gap: 1%;
   overflow: hidden;
   position: relative;
 }
@@ -133,7 +143,7 @@
   transition: transform 0.3s;
   transform: translateX(calc(var(--index) * 50%))
     translateY(calc(var(--abs-index) * var(--abs-index) * 2%))
-    rotate(calc(var(--index) * -5deg)) scale(1.4);
+    rotate(calc(var(--index) * -5deg)) scale(1.3);
 }
 
 .Hand .Card:hover {
@@ -150,40 +160,75 @@
 
 .Hand {
   display: flex;
-  gap: 1%;
-  flex: 1;
-}
-
-.Protection {
-  display: flex;
-  flex: 1;
+  justify-content: center;
   gap: 1%;
 }
 
-.Upper,
-.Lower {
-  height: 16%;
+.Upper-hand {
+  grid-row: 1 / 2;
+  grid-column: 2 / 3;
+}
+
+.Upper-resource {
+  grid-row: 1 / 2;
+  grid-column: 3 / 4;
+}
+
+.Upper-stacks {
+  grid-row: 2 / 3;
+  grid-column: 3 / 4;
   display: flex;
-  justify-content: space-between;
 }
 
-.Field {
-  position: relative;
-  height: 36%;
-}
-
-.Field-side {
-  height: 50%;
-  width: 100%;
+.Upper-protection {
+  grid-row: 2 / 3;
+  grid-column: 2 / 3;
   display: flex;
   justify-content: center;
+  gap: 1%;
+}
+
+.Upper-field {
+  display: flex;
+  justify-content: center;
+  grid-row: 3 / 4;
+  grid-column: 2 / 3;
+}
+
+.Lower-field {
+  display: flex;
+  justify-content: center;
+  grid-row: 4 / 5;
+  grid-column: 2 / 3;
+}
+
+.Lower-protection {
+  grid-row: 5 / 6;
+  grid-column: 2 / 3;
+  display: flex;
+  justify-content: center;
+  gap: 1%;
+}
+
+.Lower-hand {
+  grid-row: 6 / 7;
+  grid-column: 2 / 3;
+}
+
+.Lower-resource {
+  grid-row: 6 / 7;
+  grid-column: 3 / 4;
+}
+
+.Lower-stacks {
+  grid-row: 5 / 6;
+  grid-column: 3 / 4;
+  display: flex;
 }
 
 .Control {
-  position: absolute;
-  top: 50%;
-  left: -10%;
-  transform: translateY(-50%);
+  grid-row: 3 / 5;
+  grid-column: 1 / 2;
 }
 
 .Resource {
@@ -192,7 +237,7 @@
 
 .Stack {
   position: relative;
-  width: 8%;
+  flex: 1;
 }
 
 .Stack > * {
