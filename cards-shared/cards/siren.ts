@@ -1,4 +1,4 @@
-import { draw, TriggerResult } from "../match.ts";
+import { draw, GAME_TRIGGER, TriggerResult } from "../match.ts";
 import { Card } from "./types.ts";
 
 export const siren: Card = {
@@ -20,7 +20,9 @@ export const siren: Card = {
       };
       return {
         state: newState,
-        triggers: [{ origin: self, self, trigger: "cardDrawn", player }],
+        triggers: [
+          { origin: self, self, trigger: GAME_TRIGGER.CARD_DRAWN, player },
+        ],
       };
     },
   },

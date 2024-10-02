@@ -20,6 +20,7 @@ import { zombie } from "./cards/zombie.ts";
 import { pawn } from "./cards/pawn.ts";
 import { siren } from "./cards/siren.ts";
 import { necromancer } from "./cards/necromancer.ts";
+import { chort } from "./cards/chort.ts";
 export {
   type User,
   type Entity,
@@ -44,4 +45,5 @@ export {
   pawn,
   necromancer,
   siren,
+  chort,
 };

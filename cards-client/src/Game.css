@@ -2,6 +2,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh;
+  background-color: rgb(0, 0, 0);
 }
 
 .Game-area {
@@ -41,6 +43,7 @@
 :root {
   --selected-color: lightblue;
   --selectable-color: lightgreen;
+  --opponent-selected-color: tomato;
 }
 
 .Card.Selectable {
@@ -72,6 +75,10 @@
   font-size: x-large;
   border: 2px solid white;
   border-radius: 10%;
+}
+
+.FieldCard.Opponent.Selected {
+  box-shadow: 0 0 10px 5px var(--opponent-selected-color);
 }
 
 .Cost {
@@ -158,6 +165,13 @@
   z-index: 10;
 }
 
+.Hand.Opponent .Card.Selected {
+  transform: translateX(calc(var(--index) * 50%))
+    translateY(calc(var(--abs-index) * calc(-1 * var(--abs-index) * 2%) - 20%))
+    rotate(calc(var(--index) * 5deg)) scale(1.1);
+  box-shadow: 0 0 10px 5px var(--opponent-selected-color);
+}
+
 .Hand {
   display: flex;
   justify-content: center;
@@ -172,6 +186,12 @@
 .Upper-resource {
   grid-row: 1 / 2;
   grid-column: 3 / 4;
+}
+
+.Upper-resource .Stack > * {
+  left: 6%;
+  top: 0;
+  transform: translateX(calc(10% * var(--index))) rotate(90deg);
 }
 
 .Upper-stacks {
@@ -220,6 +240,12 @@
   grid-column: 3 / 4;
 }
 
+.Lower-resource .Stack > * {
+  left: 8%;
+  top: 0;
+  transform: translateX(calc(10% * var(--index))) rotate(90deg);
+}
+
 .Lower-stacks {
   grid-row: 5 / 6;
   grid-column: 3 / 4;
@@ -229,6 +255,9 @@
 .Control {
   grid-row: 3 / 5;
   grid-column: 1 / 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .Resource {
@@ -236,6 +265,7 @@
 }
 
 .Stack {
+  height: 100%;
   position: relative;
   flex: 1;
 }

@@ -76,13 +76,23 @@ function Cost({ children }: { children: number }) {
   return <div className="Cost">{children}</div>;
 }
 
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function Subtitles({ card }: { card: GameCard }) {
+  const renderableKeywords = card.keywords?.map((kw: string, i: number) =>
+    i === (card.keywords?.length || 0) - 1
+      ? `${capitalize(kw)} `
+      : `${capitalize(kw)}, `
+  );
   return (
     <div className="Subtitles">
       <div>{card.name}</div>
       <div>
-        {card.keywords?.map((kw: string) => <b>{kw}</b>).join(", ")}
-        {card.keywords?.length ? " " : ""}
+        {renderableKeywords?.map((kw: string) => (
+          <b>{kw}</b>
+        ))}
         {card.description}
       </div>
     </div>
@@ -130,10 +140,9 @@ function CardBack({
   return (
     <div
       {...native}
-      className="Card"
+      className={"Card" + (selected ? " Selected" : "")}
       style={{
         ...native.style,
-        boxShadow: selected ? "0 0 10px red" : "none",
         backgroundImage: "url(cardback.png)",
       }}
     ></div>
@@ -182,7 +191,9 @@ function FieldCard({
       className={
         "Card FieldCard" +
         (selectable ? " Selectable" : "") +
-        (selected ? " Selected" : "")
+        (selected ? " Selected" : "") +
+        " " +
+        native.className
       }
       style={{
         ...native.style,
@@ -232,6 +243,7 @@ export function Game() {
   );
 
   useEffect(() => {
+    if (player?.userSelection !== null) return () => {};
     const ti = setTimeout(() => {
       setInspectedCard(hoveredCard);
     }, 1000);
@@ -290,9 +302,20 @@ export function Game() {
         {gameState && player && opponent && ws ? (
           <>
             <div className="Upper-resource">
-              {opponent.resource.map((card: GameCard) => (
-                <Card key={card.id} card={card} />
-              ))}
+              <div className="Stack">
+                {opponent.resource.map((card: GameCard, i: number) => (
+                  <Card
+                    key={card.id}
+                    card={card}
+                    style={{ "--index": i } as React.CSSProperties}
+                    onMouseEnter={() => setHoveredCard(card)}
+                    onMouseLeave={() => {
+                      setHoveredCard(null);
+                      setInspectedCard(null);
+                    }}
+                  />
+                ))}
+              </div>
             </div>
             <div className="Upper-hand Hand Opponent">
               {opponent.hand.map((card: GameCard, i: number) => (
@@ -317,13 +340,13 @@ export function Game() {
             </div>
             <div className="Upper-stacks">
               <div className="Stack">
-                {opponent.deck.map((card: GameCard) => (
-                  <CardBack key={card.id} card={card} />
+                {opponent.graveyard.map((card: GameCard) => (
+                  <Card key={card.id} card={card} />
                 ))}
               </div>
               <div className="Stack">
-                {opponent.graveyard.map((card: GameCard) => (
-                  <Card key={card.id} card={card} />
+                {opponent.deck.map((card: GameCard) => (
+                  <CardBack key={card.id} card={card} />
                 ))}
               </div>
             </div>
@@ -341,15 +364,22 @@ export function Game() {
             <div className="Upper-field">
               {opponent.field.map((card: GameCard) => (
                 <FieldCard
+                  className="Opponent"
                   key={card.id}
                   card={card}
+                  selected={isSelected(card, opponent.userSelection)}
                   onMouseEnter={() => setHoveredCard(card)}
                   onMouseLeave={() => {
                     setHoveredCard(null);
                     setInspectedCard(null);
                   }}
                   onClick={() => {
-                    send({ action: "attack", target: card.id });
+                    if (Array.isArray(player.userSelection)) {
+                      return send({ action: "attack", target: card.id });
+                    }
+                    if (player.userSelection) {
+                      return send({ action: "playCard", target: card.id });
+                    }
                   }}
                 />
               ))}
@@ -374,6 +404,12 @@ export function Game() {
                     setHoveredCard(null);
                   }}
                   onClick={() => {
+                    if (
+                      !Array.isArray(player.userSelection) &&
+                      player.userSelection
+                    ) {
+                      return send({ action: "playCard", target: card.id });
+                    }
                     send({ action: "userSelect", target: card.id });
                   }}
                   selectable={
@@ -390,13 +426,13 @@ export function Game() {
             </div>
             <div className="Lower-stacks">
               <div className="Stack">
-                {player.deck.map((card: GameCard) => (
-                  <CardBack key={card.id} card={card} />
+                {player.graveyard.map((card: GameCard) => (
+                  <Card key={card.id} card={card} />
                 ))}
               </div>
               <div className="Stack">
-                {player.graveyard.map((card: GameCard) => (
-                  <Card key={card.id} card={card} />
+                {player.deck.map((card: GameCard) => (
+                  <CardBack key={card.id} card={card} />
                 ))}
               </div>
             </div>
@@ -432,9 +468,15 @@ export function Game() {
                 send({ action: "playResource", target: card.id });
               }}
             >
-              {player.resource.map((card: GameCard) => (
-                <Card key={card.id} card={card} />
-              ))}
+              <div className="Stack">
+                {player.resource.map((card: GameCard, i: number) => (
+                  <Card
+                    key={card.id}
+                    card={card}
+                    style={{ "--index": i } as React.CSSProperties}
+                  />
+                ))}
+              </div>
             </div>
             <div className="Inspect">
               {inspectedCard && <Card card={inspectedCard} />}

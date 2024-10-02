@@ -3,7 +3,7 @@ import type { Handler, Route } from "@std/http/unstable-route";
 import { V4 } from "https://deno.land/x/uuid@v0.1.2/mod.ts";
 import { CrudResponse } from "./crud.ts";
 import { startMatch } from "./match.ts";
-import { necromancer, zombie, siren } from "@cards/shared";
+import { necromancer, zombie, siren, chort } from "@cards/shared";
 
 type PendingMatch = {
   id: string;
@@ -44,7 +44,8 @@ function matchMake(db: DB, socket: WebSocket, playerId: string) {
           // todo: get actual deck
           startingDeck: [
             ...Array.from({ length: 10 }, () => zombie),
-            ...Array.from({ length: 20 }, () => necromancer),
+            ...Array.from({ length: 10 }, () => necromancer),
+            ...Array.from({ length: 10 }, () => chort),
             ...Array.from({ length: 10 }, () => siren),
           ],
         },
@@ -54,7 +55,8 @@ function matchMake(db: DB, socket: WebSocket, playerId: string) {
           // todo: get actual deck
           startingDeck: [
             ...Array.from({ length: 10 }, () => zombie),
-            ...Array.from({ length: 20 }, () => necromancer),
+            ...Array.from({ length: 10 }, () => chort),
+            ...Array.from({ length: 10 }, () => necromancer),
             ...Array.from({ length: 10 }, () => siren),
           ],
         }

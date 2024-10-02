@@ -17,7 +17,7 @@ import {
 } from "@cards/shared";
 import { V4 } from "https://deno.land/x/uuid@v0.1.2/mod.ts";
 
-const GAME_TURN_TIME = 60;
+const GAME_TURN_TIME = 90;
 const GAME_PROTECTION_POWER = 30;
 
 function send(payload: ServerMessage, socket: PlayerInfo["socket"]) {
