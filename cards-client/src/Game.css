@@ -1,0 +1,211 @@
+.Game {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Game-area {
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
+  background-color: lightgray;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-left: 10%;
+  overflow: hidden;
+  position: relative;
+}
+
+.Card {
+  aspect-ratio: 8 / 11;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+:root {
+  --selected-color: lightblue;
+  --selectable-color: lightgreen;
+}
+
+.Card.Selectable {
+  box-shadow: 0 0 10px 5px var(--selectable-color);
+}
+
+.Card.Selected {
+  box-shadow: 0 0 10px 5px var(--selected-color);
+}
+
+@keyframes arrive-on-field {
+  0% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.FieldCard {
+  border-radius: 2000%;
+  animation: arrive-on-field linear 0.5s;
+}
+
+.FieldCard .Power {
+  font-weight: bold;
+  font-size: x-large;
+  border: 2px solid white;
+  border-radius: 10%;
+}
+
+.Cost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: white;
+  color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1% 7%;
+  font-weight: bold;
+}
+
+.Power {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: black;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1% 7%;
+  font-weight: bold;
+}
+
+.Subtitles {
+  position: absolute;
+  bottom: 20%;
+  left: 0;
+  right: 0;
+  background-color: gray;
+  font-size: x-small;
+  text-align: center;
+  padding-bottom: 2%;
+}
+
+.Subtitles > :last-child {
+  font-size: xx-small;
+}
+
+@keyframes arrive-to-hand {
+  0% {
+    opacity: 0;
+    transform: translate(400%, -100%) rotate(180deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+@keyframes arrive-to-opponent-hand {
+  0% {
+    opacity: 0;
+    transform: translate(400%, 100%) rotate(-180deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.Hand .Card {
+  animation: arrive-to-hand linear 0.5s;
+  z-index: 10;
+  transition: transform 0.3s;
+  transform: translateX(calc(var(--index) * 50%))
+    translateY(calc(var(--abs-index) * var(--abs-index) * 2%))
+    rotate(calc(var(--index) * -5deg)) scale(1.4);
+}
+
+.Hand .Card:hover {
+  transform: translateX(calc(var(--index) * 50%)) translateY(-120%) scale(2.2);
+}
+
+.Hand.Opponent .Card {
+  animation: arrive-to-opponent-hand linear 0.5s;
+  transform: translateX(calc(var(--index) * 50%))
+    translateY(calc(var(--abs-index) * calc(-1 * var(--abs-index) * 2%) - 20%))
+    rotate(calc(var(--index) * 5deg)) scale(1);
+  z-index: 10;
+}
+
+.Hand {
+  display: flex;
+  gap: 1%;
+  flex: 1;
+}
+
+.Protection {
+  display: flex;
+  flex: 1;
+  gap: 1%;
+}
+
+.Upper,
+.Lower {
+  height: 16%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.Field {
+  position: relative;
+  height: 36%;
+}
+
+.Field-side {
+  height: 50%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.Control {
+  position: absolute;
+  top: 50%;
+  left: -10%;
+  transform: translateY(-50%);
+}
+
+.Resource {
+  display: flex;
+}
+
+.Stack {
+  position: relative;
+  width: 8%;
+}
+
+.Stack > * {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.Inspect {
+  position: absolute;
+  top: 50%;
+  right: 10%;
+  height: 40%;
+  transform: translateY(-50%);
+}
