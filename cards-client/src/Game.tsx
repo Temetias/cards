@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import logo from "./logo.svg";
 import { useUser } from "./Login";
 import { useNavigate } from "react-router-dom";
@@ -283,6 +289,26 @@ export function Game() {
     return gameState.turn === player.id;
   }, [gameState, player]);
 
+  const isHandCardSelected = useMemo(() => {
+    return (
+      player?.userSelection !== null && !Array.isArray(player?.userSelection)
+    );
+  }, [player]);
+
+  const isFieldCardSelected = useMemo(() => {
+    return (
+      player?.userSelection !== null && Array.isArray(player?.userSelection)
+    );
+  }, [player]);
+
+  const hasEnoughResourceFor = useCallback(
+    (card: GameCard) => {
+      if (!player) return false;
+      return player?.resource.length - player?.resourceSpent >= card.cost;
+    },
+    [player]
+  );
+
   // listen escape key
   useEffect(() => {
     const listener = (event: KeyboardEvent) => {
@@ -414,8 +440,7 @@ export function Game() {
                   }}
                   selectable={
                     isMyTurn &&
-                    (player.userSelection === null ||
-                      Array.isArray(player.userSelection)) &&
+                    !isFieldCardSelected &&
                     !isSelected(card, player.userSelection) &&
                     !player.attackedThisTurn.find(
                       (c: GameCard) => c.id === card.id
@@ -450,8 +475,7 @@ export function Game() {
                   selected={isSelected(card, player.userSelection)}
                   selectable={
                     isMyTurn &&
-                    player.resource.length - player.resourceSpent >=
-                      card.cost &&
+                    hasEnoughResourceFor(card) &&
                     player.userSelection === null
                   }
                   onClick={() => {

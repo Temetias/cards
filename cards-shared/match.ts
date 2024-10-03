@@ -7,14 +7,12 @@ export type PlayerInfo = {
 };
 
 export type Player = PlayerInfo & {
-  // cards
   deck: GameCard[];
   hand: GameCard[];
   protection: GameCard[];
   resource: GameCard[];
   field: GameCard[];
   graveyard: GameCard[];
-  // state
   hasPlayedResource: boolean;
   resourceSpent: number;
   userSelection: GameCard | GameCard[] | null;
@@ -29,6 +27,9 @@ export type GameState = {
   turnTimer: number;
   winner: Player["id"] | null;
 };
+
+export const GAME_TURN_TIME = 90;
+export const GAME_PROTECTION_POWER = 30;
 
 export const GAME_MECHANIC = "gameMechanic";
 

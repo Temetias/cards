@@ -9,6 +9,8 @@ import {
   GAME_CONDITION_FAIL,
   GAME_LOGIC_FAIL,
   GAME_MECHANIC,
+  GAME_PROTECTION_POWER,
+  GAME_TURN_TIME,
   pawn,
   draw,
   type ServerMessage,
@@ -16,9 +18,6 @@ import {
   type TriggerResult,
 } from "@cards/shared";
 import { V4 } from "https://deno.land/x/uuid@v0.1.2/mod.ts";
-
-const GAME_TURN_TIME = 90;
-const GAME_PROTECTION_POWER = 30;
 
 function send(payload: ServerMessage, socket: PlayerInfo["socket"]) {
   socket.send(JSON.stringify(payload));
@@ -288,7 +287,7 @@ function actionPlayCard(
   const { state: newState, triggers } = selectedCard.playEffect
     ? selectedCard.playEffect(state, playerGameId, selectedCard.id, rng, target)
     : { state };
-  // Cascading triggers from effects
+  // Cascading triggers from effects.
   const newState2 =
     triggers?.reduce(
       (acc, cur) =>

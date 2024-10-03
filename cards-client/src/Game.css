@@ -8,10 +8,10 @@
 
 .Game-area {
   --gap: 1%;
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  max-width: 100vw;
+  width: 100vw;
+  height: calc(100vw / (16 / 9));
   max-height: 100vh;
+  max-width: calc(100vh * (16 / 9));
   background-color: lightgray;
   box-sizing: border-box;
   display: grid;
@@ -26,7 +26,7 @@
     calc(18% - var(--gap))
     calc(15% - var(--gap))
     calc(20% - var(--gap));
-  gap: 1%;
+  gap: var(--gap);
   overflow: hidden;
   position: relative;
 }
@@ -125,18 +125,26 @@
 @keyframes arrive-to-hand {
   0% {
     opacity: 0;
-    transform: translate(400%, -100%) rotate(180deg);
+    transform: translate(600%, -200%) rotate(180deg) scale(1);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(200%, -200%) rotate(0deg) scale(2);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(200%, -200%) rotate(0deg) scale(2);
   }
   100% {
     opacity: 1;
-    transform: translate(0, 0) rotate(0deg);
+    transform: translate(0, 0) rotate(0deg) scale(1);
   }
 }
 
 @keyframes arrive-to-opponent-hand {
   0% {
     opacity: 0;
-    transform: translate(400%, 100%) rotate(-180deg);
+    transform: translate(600%, 0) rotate(-180deg);
   }
   100% {
     opacity: 1;
@@ -145,37 +153,41 @@
 }
 
 .Hand .Card {
-  animation: arrive-to-hand linear 0.5s;
+  animation: arrive-to-hand linear 2s;
   z-index: 10;
   transition: transform 0.3s;
-  transform: translateX(calc(var(--index) * 50%))
-    translateY(calc(var(--abs-index) * var(--abs-index) * 2%))
+  transform: translateX(calc(var(--index) * -50% - 50%))
+    translateY(calc(var(--abs-index) * var(--abs-index) * 2% - 50%))
     rotate(calc(var(--index) * -5deg)) scale(1.3);
 }
 
 .Hand .Card:hover {
-  transform: translateX(calc(var(--index) * 50%)) translateY(-120%) scale(2.2);
+  transform: translateX(calc(var(--index) * -50%)) translateY(-120%) scale(2.2);
 }
 
 .Hand.Opponent .Card {
   animation: arrive-to-opponent-hand linear 0.5s;
-  transform: translateX(calc(var(--index) * 50%))
-    translateY(calc(var(--abs-index) * calc(-1 * var(--abs-index) * 2%) - 20%))
-    rotate(calc(var(--index) * 5deg)) scale(1);
+  transform: translateX(calc(var(--index) * 50% - 50%))
+    translateY(calc(var(--abs-index) * calc(-1 * var(--abs-index) * 2%) - 50%))
+    rotate(calc(var(--index) * -5deg)) scale(1);
   z-index: 10;
 }
 
 .Hand.Opponent .Card.Selected {
-  transform: translateX(calc(var(--index) * 50%))
-    translateY(calc(var(--abs-index) * calc(-1 * var(--abs-index) * 2%) - 20%))
-    rotate(calc(var(--index) * 5deg)) scale(1.1);
+  transform: translateX(calc(var(--index) * 50% - 50%))
+    translateY(calc(var(--abs-index) * calc(-1 * var(--abs-index) * 2%) - 40%))
+    rotate(calc(var(--index) * -5deg)) scale(1.1);
   box-shadow: 0 0 10px 5px var(--opponent-selected-color);
 }
 
 .Hand {
-  display: flex;
-  justify-content: center;
-  gap: 1%;
+  position: relative;
+}
+
+.Hand > * {
+  position: absolute;
+  top: 50%;
+  left: 50%;
 }
 
 .Upper-hand {
