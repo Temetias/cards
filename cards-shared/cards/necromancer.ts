@@ -1,7 +1,8 @@
 import { revive } from "./keywords.ts";
-import { Card } from "./types.ts";
+import { CreatureCard } from "./types.ts";
 
-export const necromancer: Card = {
+export const necromancer: CreatureCard = {
+  type: "creature",
   name: "Necromancer",
   cost: 4,
   power: 20,

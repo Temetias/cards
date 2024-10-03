@@ -1,7 +1,8 @@
 import { GAME_TRIGGER } from "../match.ts";
-import { Card } from "./types.ts";
+import { CreatureCard } from "./types.ts";
 
-export const chort: Card = {
+export const chort: CreatureCard = {
+  type: "creature",
   name: "Chort",
   cost: 5,
   power: 20,

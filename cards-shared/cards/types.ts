@@ -1,12 +1,6 @@
 import { GAME_TRIGGER, GameState, TriggerParams } from "../match.ts";
 
-export type Keyword = "revived";
-
-export type GameCard = Card & {
-  id: string;
-};
-
-export type Card = {
+type CardBase = {
   name: string;
   description?: string;
   playEffect?: (
@@ -32,3 +26,38 @@ export type Card = {
   power: number;
   keywords?: Keyword[];
 };
+
+export type Keyword = "revived";
+
+export type CreatureCard = CardBase & {
+  type: "creature";
+};
+
+export type CreatureGameCard = CreatureCard & {
+  id: string;
+};
+
+export type SpellCard = Omit<CardBase, "power" | "triggers"> & {
+  type: "spell";
+  playEffect: CardBase["playEffect"];
+};
+
+export type SpellGameCard = SpellCard & {
+  id: string;
+};
+
+export type GameCard = CreatureGameCard | SpellGameCard;
+
+// Auracard could be a spell with triggers...
+
+export type Card = CreatureCard | SpellCard;
+
+export function isCreatureCard(card: Card): card is CreatureCard;
+export function isCreatureCard(card: GameCard): card is CreatureGameCard {
+  return card.type === "creature";
+}
+
+export function isSpellCard(card: Card): card is SpellCard;
+export function isSpellCard(card: GameCard): card is SpellGameCard {
+  return card.type === "spell";
+}

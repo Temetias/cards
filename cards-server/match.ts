@@ -16,8 +16,10 @@ import {
   type ServerMessage,
   GAME_TRIGGER,
   type TriggerResult,
+  type CreatureGameCard,
 } from "@cards/shared";
 import { V4 } from "https://deno.land/x/uuid@v0.1.2/mod.ts";
+import { isSpellCard } from "../cards-shared/cards/types.ts";
 
 function send(payload: ServerMessage, socket: PlayerInfo["socket"]) {
   socket.send(JSON.stringify(payload));
@@ -273,7 +275,7 @@ function actionUserSelect(
   };
 }
 
-function actionPlayCard(
+function actionPlayCardToField(
   state: GameState,
   rng: RNG,
   playerId: Player["id"],
@@ -284,6 +286,9 @@ function actionPlayCard(
   conditionCanPlayHandSelectedCard(state, playerId);
   const [player, playerGameId] = getPlayer(state, playerId);
   const selectedCard = player.userSelection as GameCard;
+  if (isSpellCard(selectedCard)) {
+    throw new Error(GAME_LOGIC_FAIL.SPELL_TO_FIELD);
+  }
   const { state: newState, triggers } = selectedCard.playEffect
     ? selectedCard.playEffect(state, playerGameId, selectedCard.id, rng, target)
     : { state };
@@ -326,7 +331,12 @@ function actionAttack(
   const [opponent, opponentGameId] = getOpponent(state, playerId);
   const targetCard = opponent.field.find((card) => card.id === target);
   if (!targetCard) throw new Error(GAME_LOGIC_FAIL.TARGET_NOT_FOUND);
-  const selectedCards = player.userSelection as GameCard[];
+
+  const selectedCards = player.userSelection as CreatureGameCard[];
+  if (selectedCards.some(isSpellCard)) {
+    throw new Error(GAME_LOGIC_FAIL.ATTACK_WITH_SPELL);
+  }
+
   const selectedCardsPower = selectedCards.reduce(
     (acc, card) => acc + card.power,
     0
@@ -391,7 +401,12 @@ function actionAttackProtection(
   const [opponent, opponentGameId] = getOpponent(state, playerId);
   const targetCard = opponent.protection.find((card) => card.id === target);
   if (!targetCard) throw new Error(GAME_LOGIC_FAIL.TARGET_NOT_FOUND);
-  const selectedCards = player.userSelection as GameCard[];
+
+  const selectedCards = player.userSelection as CreatureGameCard[];
+  if (selectedCards.some(isSpellCard)) {
+    throw new Error(GAME_LOGIC_FAIL.ATTACK_WITH_SPELL);
+  }
+
   const selectedCardsPower = selectedCards.reduce(
     (acc, card) => acc + card.power,
     0
@@ -449,8 +464,8 @@ function handlePlayerAction(
   switch (action) {
     case GAME_ACTION.PLAY_RESOURCE:
       return actionPlayResource(state, rng, playerId);
-    case GAME_ACTION.PLAY_CARD:
-      return actionPlayCard(state, rng, playerId, target);
+    case GAME_ACTION.PLAY_CARD_TO_FIELD:
+      return actionPlayCardToField(state, rng, playerId, target);
     case GAME_ACTION.ATTACK:
       if (!target) throw new Error(GAME_LOGIC_FAIL.TARGET_NOT_FOUND);
       return actionAttack(state, rng, playerId, target);
@@ -494,7 +509,7 @@ function init(player1: PlayerInfo, player2: PlayerInfo) {
     rng
   );
   const startingPlayer = rng() > 0.5 ? player1 : player2;
-  const pawnCard: GameCard = { ...pawn, id: V4.uuid() };
+  const pawnCard: CreatureGameCard = { ...pawn, id: V4.uuid() };
   let state: GameState = {
     seed,
     player1: {

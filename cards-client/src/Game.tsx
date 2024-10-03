@@ -13,6 +13,7 @@ import {
   GameState,
   ServerMessage,
   ClientMessage,
+  CreatureGameCard,
 } from "@cards/shared";
 import "./Game.css";
 
@@ -130,7 +131,7 @@ function Card({
     >
       <Cost>{card.cost}</Cost>
       <Subtitles card={card} />
-      <Power>{card.power}</Power>
+      {"power" in card && <Power>{card.power}</Power>}
     </div>
   );
 }
@@ -187,7 +188,7 @@ function FieldCard({
   selectable,
   ...native
 }: {
-  card: GameCard;
+  card: CreatureGameCard;
   selected?: boolean;
   selectable?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
@@ -359,7 +360,10 @@ export function Game() {
                   key={card.id}
                   card={card}
                   onClick={() => {
-                    send({ action: "attackProtection", target: card.id });
+                    send({
+                      action: "attackProtection",
+                      target: card.id,
+                    });
                   }}
                 />
               ))}
@@ -388,7 +392,7 @@ export function Game() {
               </button>
             </div>
             <div className="Upper-field">
-              {opponent.field.map((card: GameCard) => (
+              {opponent.field.map((card: CreatureGameCard) => (
                 <FieldCard
                   className="Opponent"
                   key={card.id}
@@ -401,10 +405,16 @@ export function Game() {
                   }}
                   onClick={() => {
                     if (Array.isArray(player.userSelection)) {
-                      return send({ action: "attack", target: card.id });
+                      return send({
+                        action: "attack",
+                        target: card.id,
+                      });
                     }
                     if (player.userSelection) {
-                      return send({ action: "playCard", target: card.id });
+                      return send({
+                        action: "playCardToField",
+                        target: card.id,
+                      });
                     }
                   }}
                 />
@@ -416,10 +426,10 @@ export function Game() {
               onClick={() => {
                 const card = selectedCard(player.userSelection);
                 if (!card) return;
-                send({ action: "playCard" });
+                send({ action: "playCardToField" });
               }}
             >
-              {player.field.map((card: GameCard) => (
+              {player.field.map((card: CreatureGameCard) => (
                 <FieldCard
                   key={card.id}
                   card={card}
@@ -434,7 +444,10 @@ export function Game() {
                       !Array.isArray(player.userSelection) &&
                       player.userSelection
                     ) {
-                      return send({ action: "playCard", target: card.id });
+                      return send({
+                        action: "playCardToField",
+                        target: card.id,
+                      });
                     }
                     send({ action: "userSelect", target: card.id });
                   }}

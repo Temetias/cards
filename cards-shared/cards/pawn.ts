@@ -1,6 +1,7 @@
-import { Card } from "./types.ts";
+import { CreatureCard } from "./types.ts";
 
-export const pawn: Card = {
+export const pawn: CreatureCard = {
+  type: "creature",
   name: "Pawn",
   cost: 1,
   power: 10,

@@ -1,4 +1,4 @@
-import { Card, GameCard } from "./cards/types.ts";
+import { Card, CreatureGameCard, GameCard } from "./cards/types.ts";
 
 export type PlayerInfo = {
   id: string;
@@ -11,12 +11,12 @@ export type Player = PlayerInfo & {
   hand: GameCard[];
   protection: GameCard[];
   resource: GameCard[];
-  field: GameCard[];
-  graveyard: GameCard[];
+  field: CreatureGameCard[];
+  graveyard: CreatureGameCard[];
   hasPlayedResource: boolean;
   resourceSpent: number;
   userSelection: GameCard | GameCard[] | null;
-  attackedThisTurn: GameCard[];
+  attackedThisTurn: CreatureGameCard[];
 };
 
 export type GameState = {
@@ -35,7 +35,7 @@ export const GAME_MECHANIC = "gameMechanic";
 
 export const GAME_ACTION = {
   PLAY_RESOURCE: "playResource",
-  PLAY_CARD: "playCard",
+  PLAY_CARD_TO_FIELD: "playCardToField",
   ATTACK: "attack",
   ATTACK_PROTECTION: "attackProtection",
   END_TURN: "endTurn",
@@ -82,6 +82,8 @@ export const GAME_LOGIC_FAIL = {
   PLAYER_NOT_FOUND: "playerNotFound",
   CARD_NOT_FOUND: "cardNotFound",
   TARGET_NOT_FOUND: "targetNotFound",
+  ATTACK_WITH_SPELL: "attackWithSpell",
+  SPELL_TO_FIELD: "spellToField",
 } as const;
 
 export type ServerMessage =

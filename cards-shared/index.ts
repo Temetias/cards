@@ -17,12 +17,23 @@ import {
   TriggerResult,
   draw,
 } from "./match.ts";
-import { Card, GameCard, Keyword } from "./cards/types.ts";
+import {
+  Card,
+  GameCard,
+  Keyword,
+  CreatureCard,
+  CreatureGameCard,
+  SpellCard,
+  SpellGameCard,
+  isCreatureCard,
+  isSpellCard,
+} from "./cards/types.ts";
 import { zombie } from "./cards/zombie.ts";
 import { pawn } from "./cards/pawn.ts";
 import { siren } from "./cards/siren.ts";
 import { necromancer } from "./cards/necromancer.ts";
 import { chort } from "./cards/chort.ts";
+import { fireLash } from "./cards/fireLash.ts";
 export {
   type User,
   type Entity,
@@ -35,6 +46,12 @@ export {
   type ServerMessage,
   type ClientMessage,
   type Keyword,
+  type CreatureCard,
+  type CreatureGameCard,
+  type SpellCard,
+  type SpellGameCard,
+  isCreatureCard,
+  isSpellCard,
   GAME_ACTION,
   GAME_CONDITION_FAIL,
   GAME_LOGIC_FAIL,
@@ -50,4 +67,5 @@ export {
   necromancer,
   siren,
   chort,
+  fireLash,
 };
