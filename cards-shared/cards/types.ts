@@ -27,7 +27,7 @@ type CardBase = {
   keywords?: Keyword[];
 };
 
-export type Keyword = "revived";
+export type Keyword = "revived" | "cowardly" | "brave";
 
 export type CreatureCard = CardBase & {
   type: "creature";

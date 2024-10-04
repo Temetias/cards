@@ -35,7 +35,7 @@ export const GAME_MECHANIC = "gameMechanic";
 
 export const GAME_ACTION = {
   PLAY_RESOURCE: "playResource",
-  PLAY_CARD_TO_FIELD: "playCardToField",
+  PLAY_CARD: "playCard",
   ATTACK: "attack",
   ATTACK_PROTECTION: "attackProtection",
   END_TURN: "endTurn",
@@ -54,6 +54,8 @@ export const GAME_CONDITION_FAIL = {
   OPPONENT_HAS_PROTECTION: "opponentHasProtection",
   OPPONENT_HAS_FIELD: "opponentHasField",
   HAS_ATTACKED_ALREADY: "hasAttackedAlready",
+  BRAVE_PRIORITY: "bravePriority",
+  COWARDLY_PRIORITY: "cowardlyPriority",
 } as const;
 
 export const GAME_TRIGGER = {
@@ -83,7 +85,6 @@ export const GAME_LOGIC_FAIL = {
   CARD_NOT_FOUND: "cardNotFound",
   TARGET_NOT_FOUND: "targetNotFound",
   ATTACK_WITH_SPELL: "attackWithSpell",
-  SPELL_TO_FIELD: "spellToField",
 } as const;
 
 export type ServerMessage =

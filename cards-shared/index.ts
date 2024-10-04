@@ -34,6 +34,7 @@ import { siren } from "./cards/siren.ts";
 import { necromancer } from "./cards/necromancer.ts";
 import { chort } from "./cards/chort.ts";
 import { fireLash } from "./cards/fireLash.ts";
+import { imp } from "./cards/imp.ts";
 export {
   type User,
   type Entity,
@@ -68,4 +69,5 @@ export {
   siren,
   chort,
   fireLash,
+  imp,
 };

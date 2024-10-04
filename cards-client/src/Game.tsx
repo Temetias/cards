@@ -354,16 +354,30 @@ export function Game() {
                 />
               ))}
             </div>
-            <div className="Upper-protection">
+            <div
+              className="Upper-protection"
+              onClick={() => {
+                if (!opponent.protection.length) return;
+                if (!isFieldCardSelected) return;
+                send({ action: "win" });
+              }}
+            >
               {opponent.protection.map((card: GameCard) => (
                 <CardBack
                   key={card.id}
                   card={card}
                   onClick={() => {
-                    send({
-                      action: "attackProtection",
-                      target: card.id,
-                    });
+                    if (isHandCardSelected) {
+                      send({
+                        action: "playCard",
+                        target: card.id,
+                      });
+                    } else {
+                      send({
+                        action: "attackProtection",
+                        target: card.id,
+                      });
+                    }
                   }}
                 />
               ))}
@@ -412,7 +426,7 @@ export function Game() {
                     }
                     if (player.userSelection) {
                       return send({
-                        action: "playCardToField",
+                        action: "playCard",
                         target: card.id,
                       });
                     }
@@ -426,7 +440,7 @@ export function Game() {
               onClick={() => {
                 const card = selectedCard(player.userSelection);
                 if (!card) return;
-                send({ action: "playCardToField" });
+                send({ action: "playCard" });
               }}
             >
               {player.field.map((card: CreatureGameCard) => (
@@ -445,7 +459,7 @@ export function Game() {
                       player.userSelection
                     ) {
                       return send({
-                        action: "playCardToField",
+                        action: "playCard",
                         target: card.id,
                       });
                     }

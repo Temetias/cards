@@ -4,6 +4,7 @@ import { V4 } from "https://deno.land/x/uuid@v0.1.2/mod.ts";
 import { CrudResponse } from "./crud.ts";
 import { startMatch } from "./match.ts";
 import { necromancer, zombie, siren, chort, fireLash } from "@cards/shared";
+import { imp } from "../cards-shared/cards/imp.ts";
 
 type PendingMatch = {
   id: string;
@@ -43,7 +44,8 @@ function matchMake(db: DB, socket: WebSocket, playerId: string) {
           socket: pendingMatch.player1Socket,
           // todo: get actual deck
           startingDeck: [
-            ...Array.from({ length: 10 }, () => zombie),
+            ...Array.from({ length: 5 }, () => zombie),
+            ...Array.from({ length: 5 }, () => imp),
             ...Array.from({ length: 10 }, () => necromancer),
             ...Array.from({ length: 5 }, () => chort),
             ...Array.from({ length: 5 }, () => fireLash),
@@ -55,7 +57,8 @@ function matchMake(db: DB, socket: WebSocket, playerId: string) {
           socket,
           // todo: get actual deck
           startingDeck: [
-            ...Array.from({ length: 10 }, () => zombie),
+            ...Array.from({ length: 5 }, () => zombie),
+            ...Array.from({ length: 5 }, () => imp),
             ...Array.from({ length: 5 }, () => chort),
             ...Array.from({ length: 5 }, () => fireLash),
             ...Array.from({ length: 10 }, () => necromancer),
