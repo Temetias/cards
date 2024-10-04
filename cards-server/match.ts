@@ -19,7 +19,7 @@ import {
   type CreatureGameCard,
 } from "@cards/shared";
 import { V4 } from "https://deno.land/x/uuid@v0.1.2/mod.ts";
-import { isSpellCard } from "../cards-shared/cards/types.ts";
+import { isCreatureCard, isSpellCard } from "../cards-shared/cards/types.ts";
 
 function send(payload: ServerMessage, socket: PlayerInfo["socket"]) {
   socket.send(JSON.stringify(payload));
@@ -275,7 +275,7 @@ function actionUserSelect(
   };
 }
 
-function actionPlayCardToField(
+function actionPlayCard(
   state: GameState,
   rng: RNG,
   playerId: Player["id"],
@@ -286,9 +286,6 @@ function actionPlayCardToField(
   conditionCanPlayHandSelectedCard(state, playerId);
   const [player, playerGameId] = getPlayer(state, playerId);
   const selectedCard = player.userSelection as GameCard;
-  if (isSpellCard(selectedCard)) {
-    throw new Error(GAME_LOGIC_FAIL.SPELL_TO_FIELD);
-  }
   const { state: newState, triggers } = selectedCard.playEffect
     ? selectedCard.playEffect(state, playerGameId, selectedCard.id, rng, target)
     : { state };
@@ -306,10 +303,14 @@ function actionPlayCardToField(
       [playerGameId]: {
         ...newStatePlayer,
         hand: newStatePlayer.hand.filter((card) => card.id !== selectedCard.id),
-        field: newStatePlayer.field.concat(selectedCard),
+        field: isCreatureCard(selectedCard)
+          ? newStatePlayer.field.concat(selectedCard)
+          : newStatePlayer.field,
         resourceSpent: newStatePlayer.resourceSpent + selectedCard.cost,
         userSelection: null,
-        attackedThisTurn: newStatePlayer.attackedThisTurn.concat(selectedCard),
+        attackedThisTurn: isCreatureCard(selectedCard)
+          ? newStatePlayer.attackedThisTurn.concat(selectedCard)
+          : newStatePlayer.attackedThisTurn,
       },
     },
     rng,
@@ -335,6 +336,20 @@ function actionAttack(
   const selectedCards = player.userSelection as CreatureGameCard[];
   if (selectedCards.some(isSpellCard)) {
     throw new Error(GAME_LOGIC_FAIL.ATTACK_WITH_SPELL);
+  }
+
+  if (
+    opponent.field.find((card) => card.keywords?.includes("brave")) &&
+    !targetCard.keywords?.includes("brave")
+  ) {
+    throw new Error(GAME_CONDITION_FAIL.BRAVE_PRIORITY);
+  }
+
+  if (
+    opponent.field.find((card) => !card.keywords?.includes("cowardly")) &&
+    targetCard.keywords?.includes("cowardly")
+  ) {
+    throw new Error(GAME_CONDITION_FAIL.COWARDLY_PRIORITY);
   }
 
   const selectedCardsPower = selectedCards.reduce(
@@ -464,8 +479,8 @@ function handlePlayerAction(
   switch (action) {
     case GAME_ACTION.PLAY_RESOURCE:
       return actionPlayResource(state, rng, playerId);
-    case GAME_ACTION.PLAY_CARD_TO_FIELD:
-      return actionPlayCardToField(state, rng, playerId, target);
+    case GAME_ACTION.PLAY_CARD:
+      return actionPlayCard(state, rng, playerId, target);
     case GAME_ACTION.ATTACK:
       if (!target) throw new Error(GAME_LOGIC_FAIL.TARGET_NOT_FOUND);
       return actionAttack(state, rng, playerId, target);
