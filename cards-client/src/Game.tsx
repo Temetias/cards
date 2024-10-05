@@ -110,11 +110,13 @@ function Card({
   card,
   selected,
   selectable,
+  resourcable,
   ...native
 }: {
   card: GameCard;
   selected?: boolean;
   selectable?: boolean;
+  resourcable?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
@@ -122,7 +124,8 @@ function Card({
       className={
         "Card" +
         (selected ? " Selected" : "") +
-        (selectable ? " Selectable" : "")
+        (selectable ? " Selectable" : "") +
+        (resourcable ? " Resourcable" : "")
       }
       style={{
         ...native.style,
@@ -223,6 +226,7 @@ function HandCard({
   index: number;
   selected?: boolean;
   selectable?: boolean;
+  resourcable?: boolean;
 } & React.HTMLAttributes<HTMLDivElement>) {
   return (
     <Card
@@ -308,6 +312,15 @@ export function Game() {
       return player?.resource.length - player?.resourceSpent >= card.cost;
     },
     [player]
+  );
+
+  const handCardIsSelectable = useCallback(
+    (card: GameCard) =>
+      !!player &&
+      !!isMyTurn &&
+      hasEnoughResourceFor(card) &&
+      player.userSelection === null,
+    [player, isMyTurn, isFieldCardSelected, isSelected]
   );
 
   // listen escape key
@@ -469,6 +482,8 @@ export function Game() {
                     isMyTurn &&
                     !isFieldCardSelected &&
                     !isSelected(card, player.userSelection) &&
+                    (player.userSelection === null ||
+                      Array.isArray(player.userSelection)) &&
                     !player.attackedThisTurn.find(
                       (c: GameCard) => c.id === card.id
                     )
@@ -500,10 +515,12 @@ export function Game() {
                   index={player.hand.length / 2 - (i + 0.5)}
                   card={card}
                   selected={isSelected(card, player.userSelection)}
-                  selectable={
+                  selectable={handCardIsSelectable(card)}
+                  resourcable={
                     isMyTurn &&
-                    hasEnoughResourceFor(card) &&
-                    player.userSelection === null
+                    !player.hasPlayedResource &&
+                    !player.userSelection &&
+                    !handCardIsSelectable(card)
                   }
                   onClick={() => {
                     send({ action: "userSelect", target: card.id });
@@ -512,7 +529,12 @@ export function Game() {
               ))}
             </div>
             <div
-              className="Lower-resource"
+              className={
+                "Lower-resource " +
+                (isMyTurn && !player.hasPlayedResource && !!player.hand.length
+                  ? "Selectable"
+                  : "")
+              }
               onClick={() => {
                 const card = selectedCard(player.userSelection);
                 if (!card) return;

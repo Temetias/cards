@@ -1,3 +1,10 @@
+:root {
+  --selected-color: rgb(255, 136, 0);
+  --selectable-color: rgb(0, 255, 0);
+  --opponent-selected-color: rgb(255, 0, 0);
+  --resource-color: rgb(0, 132, 255);
+}
+
 .Game {
   display: flex;
   justify-content: center;
@@ -40,14 +47,12 @@
   position: relative;
 }
 
-:root {
-  --selected-color: lightblue;
-  --selectable-color: lightgreen;
-  --opponent-selected-color: tomato;
-}
-
 .Card.Selectable {
   box-shadow: 0 0 10px 5px var(--selectable-color);
+}
+
+.Card.Resourcable {
+  box-shadow: 0 0 10px 5px var(--resource-color);
 }
 
 .Card.Selected {
@@ -250,6 +255,10 @@
 .Lower-resource {
   grid-row: 6 / 7;
   grid-column: 3 / 4;
+}
+
+.Lower-resource.Selectable {
+  box-shadow: 0 0 10px 5px var(--resource-color);
 }
 
 .Lower-resource .Stack > * {
