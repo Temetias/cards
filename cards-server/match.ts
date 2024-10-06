@@ -30,7 +30,8 @@ function processTriggers(
   rng: RNG,
   ownerPlayerId: Player["id"],
   trigger: (typeof GAME_TRIGGER)[keyof typeof GAME_TRIGGER],
-  origin: GameCard["id"] | typeof GAME_MECHANIC
+  origin: GameCard["id"] | typeof GAME_MECHANIC,
+  id = V4.uuid()
 ): GameState {
   const [player, playerGameId] = getPlayer(originalState, ownerPlayerId);
   const [opponent, opponentGameId] = getOpponent(originalState, ownerPlayerId);
@@ -38,6 +39,16 @@ function processTriggers(
     ...player.field.map((card) => ({ card, owner: playerGameId })),
     ...opponent.field.map((card) => ({ card, owner: opponentGameId })),
   ];
+  const originalStateWithLoggedTrigger = {
+    ...originalState,
+    triggers: originalState.triggers.concat({
+      origin,
+      self: origin,
+      trigger,
+      player: playerGameId,
+      id,
+    }),
+  };
   const { state: newState, triggers: newTriggers } = field.reduce(
     (acc: TriggerResult, cur) => {
       if (!cur.card.triggers) return acc;
@@ -52,7 +63,7 @@ function processTriggers(
       );
       return { state, triggers: acc.triggers.concat(triggers) };
     },
-    { state: originalState, triggers: [] } as TriggerResult
+    { state: originalStateWithLoggedTrigger, triggers: [] } as TriggerResult
   );
   return newTriggers.reduce(
     (acc, cur) =>
@@ -359,9 +370,8 @@ function actionAttack(
   const dyingSelectedCards = selectedCards.filter(
     (card) => card.power <= targetCard.power
   );
-  const dyingOpponentCards = opponent.field.filter(
-    (card) => card.power <= selectedCardsPower
-  );
+  const dyingOpponentCards =
+    targetCard.power <= selectedCardsPower ? [targetCard] : [];
   const newState = {
     ...state,
     [playerGameId]: {
@@ -384,22 +394,35 @@ function actionAttack(
       ),
     },
   };
+  // Attack triggers.
+  const attackTriggerId = V4.uuid();
   const newState2 = selectedCards.reduce((acc, cur) => {
     return processTriggers(
       acc,
       rng,
       player.id,
       GAME_TRIGGER.CARD_ATTACKED,
-      cur.id
+      cur.id,
+      attackTriggerId
     );
   }, newState);
+  // Being attacked triggers.
+  const newState3 = processTriggers(
+    newState2,
+    rng,
+    opponent.id,
+    GAME_TRIGGER.CARD_WAS_ATTACKED,
+    targetCard.id,
+    attackTriggerId
+  );
+  // Death triggers.
   return [
     ...dyingSelectedCards.map((card) => ({ card, owner: player.id })),
     ...dyingOpponentCards.map((card) => ({ card, owner: opponent.id })),
   ].reduce(
     (acc, cur) =>
       processTriggers(acc, rng, cur.owner, GAME_TRIGGER.CARD_DIED, cur.card.id),
-    newState2
+    newState3
   );
 }
 
@@ -444,13 +467,15 @@ function actionAttackProtection(
       ),
     },
   };
+  const actionTriggerId = V4.uuid();
   const newState2 = selectedCards.reduce((acc, cur) => {
     return processTriggers(
       acc,
       rng,
       player.id,
       GAME_TRIGGER.CARD_ATTACKED,
-      cur.id
+      cur.id,
+      actionTriggerId
     );
   }, newState);
   return processTriggers(
@@ -458,7 +483,8 @@ function actionAttackProtection(
     rng,
     player.id,
     GAME_TRIGGER.PROTECTION_DESTROYED,
-    targetCard.id
+    targetCard.id,
+    actionTriggerId
   );
 }
 
@@ -556,6 +582,7 @@ function init(player1: PlayerInfo, player2: PlayerInfo) {
     turn: startingPlayer.id,
     turnTimer: GAME_TURN_TIME,
     winner: null,
+    triggers: [],
   };
   return [
     () => state,
@@ -565,6 +592,9 @@ function init(player1: PlayerInfo, player2: PlayerInfo) {
         if (player.socket.readyState !== player.socket.OPEN) return;
         send({ message: "gameState", state }, player.socket);
       });
+      // If the message size starts to become a problem, we can clear the triggers here.
+      // The client should be able to handle the triggers being cleared.
+      // state = { ...state, triggers: [] };
     },
     rng,
   ] as const;

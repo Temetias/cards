@@ -26,6 +26,12 @@ export type GameState = {
   turn: Player["id"];
   turnTimer: number;
   winner: Player["id"] | null;
+  triggers: (TriggerParams & {
+    /**
+     * Used by the client to combine multiple triggers into one animation.
+     */
+    id: string;
+  })[];
 };
 
 export const GAME_TURN_TIME = 90;
@@ -62,6 +68,7 @@ export const GAME_TRIGGER = {
   PLAYED_RESOURCE: "playedResource",
   CARD_DIED: "cardDied",
   CARD_ATTACKED: "cardAttacked",
+  CARD_WAS_ATTACKED: "cardWasAttacked",
   CARD_PLAYED: "cardPlayed",
   CARD_DRAWN: "cardDrawn",
   REVIVED_CARD: "revivedCard",

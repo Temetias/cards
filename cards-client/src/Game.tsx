@@ -16,6 +16,7 @@ import {
   CreatureGameCard,
 } from "@cards/shared";
 import "./Game.css";
+import { useAnimationEngine } from "./AnimationEngine";
 
 function useWs(userId: string, onMessage: (data: ServerMessage) => void) {
   const wsRef = useRef<WebSocket | null>(null);
@@ -31,7 +32,7 @@ function useWs(userId: string, onMessage: (data: ServerMessage) => void) {
     };
     ws.onmessage = (event) => {
       onMessage(JSON.parse(event.data));
-      console.log(JSON.parse(event.data));
+      //console.log(JSON.parse(event.data));
     };
     return () => {
       if (
@@ -97,8 +98,8 @@ function Subtitles({ card }: { card: GameCard }) {
     <div className="Subtitles">
       <div>{card.name}</div>
       <div>
-        {renderableKeywords?.map((kw: string) => (
-          <b>{kw}</b>
+        {renderableKeywords?.map((kw: string, i: number) => (
+          <b key={kw + i}>{kw}</b>
         ))}
         {card.description}
       </div>
@@ -131,6 +132,7 @@ function Card({
         ...native.style,
         backgroundImage: `url(/${urlify(card.name)}.png)`,
       }}
+      id={card.id}
     >
       <Cost>{card.cost}</Cost>
       <Subtitles card={card} />
@@ -151,6 +153,7 @@ function CardBack({
     <div
       {...native}
       className={"Card" + (selected ? " Selected" : "")}
+      id={card.id}
       style={{
         ...native.style,
         backgroundImage: "url(cardback.png)",
@@ -174,6 +177,7 @@ function HandCardBack({
       {...native}
       card={card}
       selected={selected}
+      id={card.id}
       style={
         {
           ...native.style,
@@ -209,6 +213,7 @@ function FieldCard({
         ...native.style,
         backgroundImage: `url(/${urlify(card.name)}.png)`,
       }}
+      id={card.id}
     >
       <Power>{card.power}</Power>
     </div>
@@ -234,6 +239,7 @@ function HandCard({
       card={card}
       selected={selected}
       selectable={selectable}
+      id={card.id}
       style={
         {
           ...native.style,
@@ -247,11 +253,12 @@ function HandCard({
 
 export function Game() {
   const { user } = useUser();
-  const [gameState, setGameState] = React.useState<GameState | null>(null);
+  const [trueGameState, setGameState] = React.useState<GameState | null>(null);
   const [hoveredCard, setHoveredCard] = React.useState<GameCard | null>(null);
   const [inspectedCard, setInspectedCard] = React.useState<GameCard | null>(
     null
   );
+  const { gameState, animating } = useAnimationEngine(trueGameState);
 
   useEffect(() => {
     if (player?.userSelection !== null) return () => {};
@@ -269,11 +276,12 @@ export function Game() {
 
   const send = useMemo(() => {
     return (msg: ClientMessage) => {
+      if (animating) return;
       setHoveredCard(null);
       setInspectedCard(null);
       return _send(msg);
     };
-  }, [_send, setHoveredCard, setInspectedCard]);
+  }, [_send, setHoveredCard, setInspectedCard, animating]);
 
   const player = useMemo(() => {
     if (!gameState) return null;
@@ -480,7 +488,6 @@ export function Game() {
                   }}
                   selectable={
                     isMyTurn &&
-                    !isFieldCardSelected &&
                     !isSelected(card, player.userSelection) &&
                     (player.userSelection === null ||
                       Array.isArray(player.userSelection)) &&

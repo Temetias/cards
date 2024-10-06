@@ -73,6 +73,7 @@
 .FieldCard {
   border-radius: 2000%;
   animation: arrive-on-field linear 0.5s;
+  background-blend-mode: screen;
 }
 
 .FieldCard .Power {

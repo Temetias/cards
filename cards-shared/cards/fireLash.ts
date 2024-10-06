@@ -11,7 +11,7 @@ export const fireLash: SpellCard = {
   type: "spell",
   name: "Fire Lash",
   cost: 3,
-  playEffect: (state, player, _origin, _rng, target) => {
+  playEffect: (state, _player, _origin, _rng, target) => {
     if (!target) return { state, triggers: [] };
     const targetFieldCard = [
       ...state.player1.field,
@@ -35,11 +35,11 @@ export const fireLash: SpellCard = {
         state: {
           ...state,
           [targetPlayer]: {
-            ...state[player],
-            protection: state[player].protection.filter(
+            ...state[targetPlayer],
+            protection: state[targetPlayer].protection.filter(
               (card) => card.id !== targetProtection.id
             ),
-            hand: [...state[player].graveyard, targetProtection],
+            hand: [...state[targetPlayer].hand, targetProtection],
           },
         },
         triggers: [
