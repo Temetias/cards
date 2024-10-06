@@ -23,8 +23,8 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns:
-    calc(10% - var(--gap))
-    calc(70% - var(--gap))
+    calc(20% - var(--gap))
+    calc(60% - var(--gap))
     calc(20% - var(--gap));
   grid-template-rows:
     calc(14% - var(--gap))
@@ -57,6 +57,37 @@
 
 .Card.Selected {
   box-shadow: 0 0 10px 5px var(--selected-color);
+}
+
+.Hero-Portrait {
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 1%;
+}
+
+.Hero-Portrait.Opponent {
+  align-items: flex-end;
+}
+
+.Charge {
+  height: 10%;
+  width: 10%;
+  background-color: gray;
+  border-radius: 50%;
+  transform: translateY(-50%);
+}
+
+.Hero-Portrait.Opponent .Charge {
+  transform: translateY(50%);
+}
+
+.Charge.Active {
+  background-color: var(--resource-color);
 }
 
 @keyframes arrive-on-field {
@@ -272,6 +303,18 @@
   grid-row: 5 / 6;
   grid-column: 3 / 4;
   display: flex;
+}
+
+.Upper-hero {
+  grid-row: 1 / 3;
+  grid-column: 1 / 2;
+  padding: 5%;
+}
+
+.Lower-hero {
+  padding: 5%;
+  grid-row: 5 / 7;
+  grid-column: 1 / 2;
 }
 
 .Control {

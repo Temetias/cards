@@ -14,6 +14,7 @@ import {
   ServerMessage,
   ClientMessage,
   CreatureGameCard,
+  Hero,
 } from "@cards/shared";
 import "./Game.css";
 import { useAnimationEngine } from "./AnimationEngine";
@@ -251,6 +252,32 @@ function HandCard({
   );
 }
 
+function HeroPortrait({
+  hero,
+  charges,
+  ...native
+}: {
+  hero: Hero;
+  charges: number;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div
+      {...native}
+      className={(native.className || "") + " Hero-Portrait"}
+      style={{
+        backgroundImage: `url(/${urlify(hero.name)}.png)`,
+      }}
+    >
+      {Array.from({ length: hero.requiredCharges }).map((_, i) => (
+        <div
+          key={i}
+          className={"Charge " + (i < charges ? "Active" : "")}
+        ></div>
+      ))}
+    </div>
+  );
+}
+
 export function Game() {
   const { user } = useUser();
   const [trueGameState, setGameState] = React.useState<GameState | null>(null);
@@ -349,6 +376,13 @@ export function Game() {
       <div className="Game-area">
         {gameState && player && opponent && ws ? (
           <>
+            <div className="Upper-hero">
+              <HeroPortrait
+                className="Opponent"
+                hero={opponent.hero}
+                charges={opponent.heroCharges}
+              />
+            </div>
             <div className="Upper-resource">
               <div className="Stack">
                 {opponent.resource.map((card: GameCard, i: number) => (
@@ -557,6 +591,19 @@ export function Game() {
                   />
                 ))}
               </div>
+            </div>
+            <div className="Lower-hero">
+              <HeroPortrait
+                hero={player.hero}
+                charges={player.heroCharges}
+                onClick={() => {
+                  if (player.heroCharges < player.hero.requiredCharges) {
+                    send({ action: "heroCharge" });
+                  } else {
+                    send({ action: "heroPlay" });
+                  }
+                }}
+              />
             </div>
             <div className="Inspect">
               {inspectedCard && <Card card={inspectedCard} />}

@@ -11,6 +11,7 @@ import {
   GAME_MECHANIC,
   GAME_TURN_TIME,
   GAME_PROTECTION_POWER,
+  HERO_CHARGE_COST,
   ServerMessage,
   ClientMessage,
   TriggerParams,
@@ -28,6 +29,7 @@ import {
   isCreatureCard,
   isSpellCard,
 } from "./cards/types.ts";
+import { Hero } from "./heroes/types.ts";
 import { zombie } from "./cards/zombie.ts";
 import { pawn } from "./cards/pawn.ts";
 import { siren } from "./cards/siren.ts";
@@ -35,6 +37,8 @@ import { necromancer } from "./cards/necromancer.ts";
 import { chort } from "./cards/chort.ts";
 import { fireLash } from "./cards/fireLash.ts";
 import { imp } from "./cards/imp.ts";
+import { king } from "./heroes/king.ts";
+import { warlock } from "./heroes/warlock.ts";
 export {
   type User,
   type Entity,
@@ -51,6 +55,7 @@ export {
   type CreatureGameCard,
   type SpellCard,
   type SpellGameCard,
+  type Hero,
   isCreatureCard,
   isSpellCard,
   GAME_ACTION,
@@ -60,6 +65,7 @@ export {
   GAME_MECHANIC,
   GAME_TURN_TIME,
   GAME_PROTECTION_POWER,
+  HERO_CHARGE_COST,
   type TriggerParams,
   type TriggerResult,
   draw,
@@ -70,4 +76,6 @@ export {
   chort,
   fireLash,
   imp,
+  king,
+  warlock,
 };

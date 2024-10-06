@@ -1,4 +1,5 @@
 import { Card, CreatureGameCard, GameCard } from "./cards/types.ts";
+import { Hero } from "./heroes/types.ts";
 
 export type PlayerInfo = {
   id: string;
@@ -7,13 +8,16 @@ export type PlayerInfo = {
 };
 
 export type Player = PlayerInfo & {
+  hero: Hero;
   deck: GameCard[];
   hand: GameCard[];
   protection: GameCard[];
   resource: GameCard[];
+  heroCharges: number;
   field: CreatureGameCard[];
   graveyard: CreatureGameCard[];
   hasPlayedResource: boolean;
+  hasChargedHero: boolean;
   resourceSpent: number;
   userSelection: GameCard | GameCard[] | null;
   attackedThisTurn: CreatureGameCard[];
@@ -36,6 +40,7 @@ export type GameState = {
 
 export const GAME_TURN_TIME = 90;
 export const GAME_PROTECTION_POWER = 30;
+export const HERO_CHARGE_COST = 2;
 
 export const GAME_MECHANIC = "gameMechanic";
 
@@ -48,12 +53,16 @@ export const GAME_ACTION = {
   USER_SELECT: "userSelect",
   WIN: "win",
   FORFEIT: "forfeit",
+  HERO_CHARGE: "heroCharge",
+  HERO_PLAY: "heroPlay",
 } as const;
 
 export const GAME_CONDITION_FAIL = {
   NOT_YOUR_TURN: "notYourTurn",
   NOT_ENOUGH_RESOURCE: "notEnoughResource",
   HAS_PLAYED_RESOURCE: "hasPlayedResource",
+  HAS_CHARGED_HERO: "hasChargedHero",
+  NOT_ENOUGH_CHARGES: "notEnoughCharges",
   NO_CARD_SELECTED: "noCardSelected",
   NOT_TARGETING_FIELD_CARD: "notTargetingFieldCard",
   NOT_ENOUGH_POWER: "notEnoughPower",
@@ -73,6 +82,8 @@ export const GAME_TRIGGER = {
   CARD_DRAWN: "cardDrawn",
   REVIVED_CARD: "revivedCard",
   PROTECTION_DESTROYED: "protectionDestroyed",
+  HERO_CHARGED: "heroCharged",
+  HERO_POWER_USED: "heroPowerUsed",
 } as const;
 
 export type TriggerParams = {

@@ -11,7 +11,10 @@ import {
   GAME_MECHANIC,
   GAME_PROTECTION_POWER,
   GAME_TURN_TIME,
+  HERO_CHARGE_COST,
   pawn,
+  king,
+  warlock,
   draw,
   type ServerMessage,
   GAME_TRIGGER,
@@ -102,6 +105,21 @@ function conditionCanPlayResource(state: GameState, playerId: Player["id"]) {
   if (result) throw new Error(GAME_CONDITION_FAIL.HAS_PLAYED_RESOURCE);
 }
 
+function conditionCanChargeHero(state: GameState, playerId: Player["id"]) {
+  const [player] = getPlayer(state, playerId);
+  const result =
+    !player.hasChargedHero &&
+    player.resource.length - player.resourceSpent >= HERO_CHARGE_COST &&
+    player.heroCharges < player.hero.requiredCharges;
+  if (!result) throw new Error(GAME_CONDITION_FAIL.HAS_CHARGED_HERO);
+}
+
+function conditionCanHeroPower(state: GameState, playerId: Player["id"]) {
+  const [player] = getPlayer(state, playerId);
+  const result = player.heroCharges >= player.hero.requiredCharges;
+  if (!result) throw new Error(GAME_CONDITION_FAIL.NOT_ENOUGH_CHARGES);
+}
+
 function conditionHasHandCardSelected(
   state: GameState,
   playerId: Player["id"]
@@ -179,6 +197,7 @@ function actionChangeTurn(
       [nextPlayer]: {
         ...state[nextPlayer],
         hasPlayedResource: false,
+        hasChargedHero: false,
         resourceSpent: 0,
         attackedThisTurn: [],
         hand: state[nextPlayer].hand.concat(drawn),
@@ -236,6 +255,21 @@ function actionPlayResource(
     GAME_TRIGGER.PLAYED_RESOURCE,
     selectedCard.id
   );
+}
+
+function actionHeroCharge(state: GameState, playerId: Player["id"]): GameState {
+  conditionIsPlayerTurn(state, playerId);
+  conditionCanChargeHero(state, playerId);
+  const [player, playerGameId] = getPlayer(state, playerId);
+  return {
+    ...state,
+    [playerGameId]: {
+      ...player,
+      hasChargedHero: true,
+      heroCharges: player.heroCharges + 1,
+      resourceSpent: player.resourceSpent + HERO_CHARGE_COST,
+    },
+  };
 }
 
 function actionUserSelect(
@@ -328,6 +362,45 @@ function actionPlayCard(
     playerId,
     GAME_TRIGGER.CARD_PLAYED,
     selectedCard.id
+  );
+}
+
+function actionHeroPlay(
+  state: GameState,
+  rng: RNG,
+  playerId: Player["id"],
+  target?: GameCard["id"]
+): GameState {
+  conditionIsPlayerTurn(state, playerId);
+  conditionCanHeroPower(state, playerId);
+  const [player, playerGameId] = getPlayer(state, playerId);
+  const { state: newState, triggers } = player.hero.chargeEffect(
+    state,
+    playerGameId,
+    rng,
+    target
+  );
+  // Cascading triggers from effects.
+  const newState2 =
+    triggers?.reduce(
+      (acc, cur) =>
+        processTriggers(acc, rng, acc[cur.player].id, cur.trigger, cur.origin),
+      newState
+    ) || newState;
+  const [newStatePlayer] = getPlayer(newState2, playerId);
+  return processTriggers(
+    {
+      ...newState2,
+      [playerGameId]: {
+        ...newStatePlayer,
+        heroCharges: 0,
+        hasChargedHero: true,
+      },
+    },
+    rng,
+    playerId,
+    GAME_TRIGGER.HERO_POWER_USED,
+    playerGameId === "player1" ? "player1Hero" : "player2Hero"
   );
 }
 
@@ -521,6 +594,10 @@ function handlePlayerAction(
       return actionWin(state, playerId);
     case GAME_ACTION.FORFEIT:
       return actionForfeit(state, playerId);
+    case GAME_ACTION.HERO_CHARGE:
+      return actionHeroCharge(state, playerId);
+    case GAME_ACTION.HERO_PLAY:
+      return actionHeroPlay(state, rng, playerId, target);
     default:
       return state;
   }
@@ -555,27 +632,33 @@ function init(player1: PlayerInfo, player2: PlayerInfo) {
     seed,
     player1: {
       ...player1,
+      hero: king,
       deck: remaining1,
       hand: player1Hand,
       protection: player1Protection,
       resource: [],
+      heroCharges: 0,
       field: [...(startingPlayer.id === player1.id ? [] : [pawnCard])],
       graveyard: [],
       attackedThisTurn: [],
       hasPlayedResource: false,
+      hasChargedHero: false,
       resourceSpent: 0,
       userSelection: null,
     },
     player2: {
       ...player2,
+      hero: warlock,
       deck: remaining2,
       hand: player2Hand,
       protection: player2Protection,
       resource: [],
+      heroCharges: 0,
       field: [...(startingPlayer.id === player2.id ? [] : [pawnCard])],
       graveyard: [],
       attackedThisTurn: [],
       hasPlayedResource: false,
+      hasChargedHero: false,
       resourceSpent: 0,
       userSelection: null,
     },
