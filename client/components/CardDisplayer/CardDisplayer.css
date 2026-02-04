@@ -1,0 +1,118 @@
+.CardDisplayer {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  aspect-ratio: 2 / 3;
+}
+
+.CardDisplayer-HandHover:hover .CardDisplayer-Inner {
+  transition: transform 0.25s ease-in-out;
+  transform: scale(2.65) translateY(-70%);
+}
+
+.CardDisplayer-Inner {
+  background-size: cover;
+  background-position: center;
+  pointer-events: none;
+  position: absolute;
+  border: 1px solid black;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: 4px 4px 6px 0px rgba(0, 0, 0, 0.3);
+}
+
+.CardDisplayer-Playable:not(.CardDisplayer-HandHover),
+.CardDisplayer-Playable.CardDisplayer-HandHover .CardDisplayer-Inner {
+  box-shadow: 0 0 10px 5px white;
+}
+
+.CardDisplayer-PlayerSelection:not(.CardDisplayer-HandHover),
+.CardDisplayer-PlayerSelection.CardDisplayer-HandHover .CardDisplayer-Inner {
+  box-shadow: 0 0 10px 5px green;
+}
+
+.CardDisplayer-OpponentSelection:not(.CardDisplayer-HandHover),
+.CardDisplayer-OpponentSelection.CardDisplayer-HandHover .CardDisplayer-Inner {
+  box-shadow: 0 0 10px 5px red;
+  transform: scale(1.1) translateY(10%);
+}
+
+.CardDisplayer-Description {
+  position: absolute;
+  top: 67%;
+  left: 2%;
+  right: 2%;
+  background-color: lightgray;
+  border: 2px solid black;
+}
+
+.CardDisplayer-Name {
+  position: absolute;
+  top: 55%;
+  background-color: black;
+  border: 1px solid white;
+  left: -3%;
+  right: -3%;
+}
+
+.CardDisplayer-Overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 100%;
+  width: 100%;
+  font-size: 2rem;
+  color: red;
+  stroke: black;
+  stroke-width: 15;
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.CardDisplayer-Cost,
+.CardDisplayer-Power,
+.CardDisplayer-Icon {
+  position: absolute;
+  width: 30%;
+  z-index: 10;
+}
+
+.CardDisplayer-Power {
+  top: 95%;
+  left: 8%;
+  transform: translate(-50%, -50%);
+}
+
+.CardDisplayer-Power-Decor {
+  width: 40%;
+  height: 40%;
+  transform: rotate(90deg) translate(-84%, 40%);
+  stroke: black;
+  stroke-width: 15;
+}
+
+.CardDisplayer-Cost {
+  bottom: 95%;
+  left: 8%;
+  transform: translate(-50%, 50%);
+}
+
+.CardDisplayer-Icon {
+  top: 95%;
+  height: auto;
+  left: 42%;
+  width: 28%;
+  background-color: black;
+  border-radius: 50%;
+  border: 1px solid white;
+  border-style: inset;
+  transform: translate(-50%, -50%);
+  transition: color 0.3s ease-in-out;
+}
+
+.CardDisplayer-Icon-Active {
+  color: orangered;
+}

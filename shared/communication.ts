@@ -1,5 +1,5 @@
-import type { Card } from "./cards/index.ts";
-import type { GameLog, GameState } from "./game.ts";
+import type { Card, GameEffectDispatchArguments } from "./cards/index.ts";
+import type { GameState } from "./game.ts";
 
 export const GAME_MECHANIC = "GAME_MECHANIC" as const;
 export const GAME_PLAYER = "GAME_PLAYER" as const;
@@ -65,7 +65,7 @@ export type ServerMessage =
   | {
       message: "GAME_STATE_UPDATE";
       state: GameState;
-      log: GameLog;
+      logItem?: GameEffectDispatchArguments;
     }
   | {
       message: "GAME_LOGIC_ERROR";

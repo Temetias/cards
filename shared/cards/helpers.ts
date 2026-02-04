@@ -4,13 +4,14 @@ import {
   GAME_PLAYER,
   GAME_TRIGGER,
 } from "../communication.ts";
-import { getFieldCreatures, type GameState } from "../game.ts";
+import { getFieldCreatures, getObservers, type GameState } from "../game.ts";
 import { draw } from "../rng.ts";
 import {
   type GameEffectDispatch,
   type Card,
   type GameEffectDispatchArguments,
   type GameEffectNonTargeted,
+  type GameEffectTargeted,
 } from "./index.ts";
 
 export function buildCardTrigger(
@@ -29,6 +30,44 @@ export function buildCardTrigger(
       });
       if (result === null) return null;
       const [next, triggeredEffects] = result;
+      return [next, triggeredEffects, args];
+    },
+  };
+}
+
+export function buildCardOnPlayNonTargeted(
+  fn: (
+    state: GameState,
+    args: Omit<GameEffectDispatchArguments, "effectName">,
+  ) => [next: GameState, triggeredEffects: GameEffectDispatch[]],
+): GameEffectNonTargeted {
+  return {
+    type: "NON_TARGETED",
+    getDispatch: (args) => (state) => {
+      const [next, triggeredEffects] = fn(state, {
+        initiator: args.initiator,
+        self: args.self,
+        target: args.target,
+      });
+      return [next, triggeredEffects, args];
+    },
+  };
+}
+
+export function buildCardOnPlayTargeted(
+  fn: (
+    state: GameState,
+    args: Omit<GameEffectDispatchArguments, "effectName">,
+  ) => [next: GameState, triggeredEffects: GameEffectDispatch[]],
+): GameEffectTargeted {
+  return {
+    type: "TARGETED",
+    getDispatch: (args) => (state) => {
+      const [next, triggeredEffects] = fn(state, {
+        initiator: args.initiator,
+        self: args.self,
+        target: args.target,
+      });
       return [next, triggeredEffects, args];
     },
   };
@@ -56,14 +95,15 @@ export function drawWithEffects(
   initiator: Card["id"] | typeof GAME_MECHANIC | typeof GAME_PLAYER,
 ): [drawn: Card[], remaining: Card[], effects: GameEffectDispatch[]] {
   const [drawn, remaining] = draw(deck, amount);
-  const triggeredEffects = getFieldCreatures(state)
-    .filter((fc) => fc.triggers[GAME_TRIGGER.CARD_DRAWN])
-    .map((fc) =>
-      fc.triggers[GAME_TRIGGER.CARD_DRAWN]!.getDispatch({
+  const triggeredEffects = drawn.flatMap((card) =>
+    getObservers(state, GAME_TRIGGER.CARD_DRAWN).map(({ getDispatch, self }) =>
+      getDispatch({
         initiator,
-        self: fc.id,
+        self,
         effectName: GAME_TRIGGER.CARD_DRAWN,
+        target: card.id,
       }),
-    );
+    ),
+  );
   return [drawn, remaining, triggeredEffects];
 }

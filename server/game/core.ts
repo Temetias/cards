@@ -1,5 +1,7 @@
 import {
   Card,
+  CreatureCard,
+  CreatureCardDefintion,
   GameActionDispatch,
   GameEffectDispatch,
   GameEffectDispatchArguments,
@@ -12,6 +14,7 @@ import {
 } from "../../shared/cards/index.ts";
 import {
   ClientMessage,
+  GAME_MECHANIC,
   GAME_PLAYER,
   GameTrigger,
   isGameLogicError,
@@ -50,11 +53,12 @@ import {
   getInactivePlayer,
   getActivePlayer,
   getFieldCreatures,
-  GameLog,
+  getObservers,
 } from "../../shared/game.ts";
 import { User } from "../../shared/user.ts";
-import { UUID } from "../../shared/utils.ts";
+import { brand, UUID } from "../../shared/utils.ts";
 import { draw, generateSeed, rng, shuffle } from "../../shared/rng.ts";
+import { pawn } from "../../shared/cards/pawn.ts";
 
 function withConditions<P extends unknown[], C extends unknown[]>(
   conditions: GameConditionAssert<C>[],
@@ -68,26 +72,7 @@ function withConditions<P extends unknown[], C extends unknown[]>(
     return action(state, ...actionParams);
   };
 }
-function getObservers(
-  state: GameState,
-  trigger: GameTrigger,
-): { getDispatch: GameEffectDispatchGetter; self: Card["id"] }[] {
-  const xs = getFieldCreatures(state)
-    .filter((fc) => fc.triggers[trigger])
-    .map((fc) => ({
-      getDispatch: fc.triggers[trigger]!.getDispatch,
-      self: fc.id,
-    }));
-  const loggerObserver = (
-    args: GameEffectDispatchArguments,
-  ): GameEffectDispatch => {
-    return (state) => {
-      return [state, [], args];
-    };
-  };
-  // If in future we have effects that trigger in hand or deck, we can add those here
-  return [...xs, { getDispatch: loggerObserver, self: "logger" as any }];
-}
+
 const actionPlayResource = withConditions(
   [
     conditionIsPlayerTurn,
@@ -162,20 +147,23 @@ const actionEndTurn = withConditions([conditionIsPlayerTurn], (state) => {
     GAME_TRIGGER.TURN_ENDED,
   ).map(({ getDispatch, self }) =>
     getDispatch({
-      initiator: GAME_PLAYER,
+      initiator: GAME_MECHANIC,
       self,
       effectName: GAME_TRIGGER.TURN_ENDED,
     }),
   );
 
-  const triggeredDrawEffects = getObservers(state, GAME_TRIGGER.CARD_DRAWN).map(
-    ({ getDispatch, self }) =>
-      getDispatch({
-        initiator: GAME_PLAYER,
-        self,
-        effectName: GAME_TRIGGER.CARD_DRAWN,
-      }),
-  );
+  const triggeredDrawEffects = drawn[0]
+    ? getObservers(state, GAME_TRIGGER.CARD_DRAWN).map(
+        ({ getDispatch, self }) =>
+          getDispatch({
+            initiator: GAME_MECHANIC,
+            self,
+            effectName: GAME_TRIGGER.CARD_DRAWN,
+            target: drawn[0].id,
+          }),
+      )
+    : [];
   return [
     next,
     [...triggeredTurnEndEffects, ...triggeredDrawEffects],
@@ -333,6 +321,18 @@ const actionAttackProtection = withConditions(
         },
       },
     };
+
+    const attackEffects = attackingCreatures.flatMap((ac) =>
+      getObservers(state, GAME_TRIGGER.CREATURE_ATTACKED).map(
+        ({ getDispatch, self }) =>
+          getDispatch({
+            initiator: ac.id,
+            self,
+            effectName: GAME_TRIGGER.CREATURE_ATTACKED,
+          }),
+      ),
+    );
+
     const triggeredEffectsForProtectionDestroy = getObservers(
       state,
       GAME_TRIGGER.PROTECTION_DESTROYED,
@@ -344,25 +344,9 @@ const actionAttackProtection = withConditions(
       }),
     );
 
-    // Every attacking creature triggers "creature got attacked" effects, thus flatMap
-    const triggeredEffectsForAttackingCreatures = attackingCreatures.flatMap(
-      (ac) =>
-        getObservers(state, GAME_TRIGGER.CREATURE_GOT_ATTACKED).map(
-          ({ getDispatch, self }) =>
-            getDispatch({
-              initiator: ac.id,
-              self,
-              effectName: GAME_TRIGGER.CREATURE_GOT_ATTACKED,
-            }),
-        ),
-    );
-
     return [
       next,
-      [
-        ...triggeredEffectsForProtectionDestroy,
-        ...triggeredEffectsForAttackingCreatures,
-      ],
+      [...attackEffects, ...triggeredEffectsForProtectionDestroy],
       {
         initiator: GAME_PLAYER,
         self: targetProtection.id,
@@ -590,30 +574,37 @@ const actionForfeit = withConditions([], (state, playerId) => {
   ];
 });
 
+type UpdateSender = (
+  gs: GameState,
+  logItem?: GameEffectDispatchArguments,
+) => void;
+
 function processTriggeredEffects(
+  sendUpdate: UpdateSender,
   state: GameState,
   dispatches: GameEffectDispatch[],
-  log: GameLog,
-): [GameState, GameLog] {
-  if (!dispatches.length) return [state, log];
+): GameState {
+  if (!dispatches.length) return state;
   const [dispatch, ...restDispatches] = dispatches;
   const dispatchResult = dispatch(state);
-  if (!dispatchResult)
-    return processTriggeredEffects(state, restDispatches, log);
+  if (!dispatchResult) {
+    return processTriggeredEffects(sendUpdate, state, restDispatches);
+  }
   const [nextState, nextDispatches, dispatchArgs] = dispatchResult;
-  return processTriggeredEffects(
-    nextState,
-    [...restDispatches, ...nextDispatches],
-    [...log, { ...dispatchArgs, state: nextState }],
-  );
+  sendUpdate(nextState, dispatchArgs);
+  return processTriggeredEffects(sendUpdate, nextState, [
+    ...restDispatches,
+    ...nextDispatches,
+  ]);
 }
 
 function handlePlayerAction(
+  sendUpdate: UpdateSender,
   state: GameState,
   action: GameAction,
   playerId: Player["id"],
   targetId?: Card["id"],
-): [GameState, GameLog] {
+): GameState {
   const dispatch = (() => {
     switch (action) {
       case GAME_ACTION.END_TURN:
@@ -651,7 +642,7 @@ function handlePlayerAction(
         throw new Error(GAME_LOGIC_ERROR.UNKNOWN_ACTION);
     }
   })();
-  return processTriggeredEffects(state, [dispatch], []);
+  return processTriggeredEffects(sendUpdate, state, [dispatch]);
 }
 
 function initPlayer(
@@ -689,7 +680,12 @@ function init(
   user2: User,
 ): [
   getState: () => GameState,
-  setState: (action: (s: GameState) => [GameState, GameLog]) => void,
+  applyAction: (
+    action: GameAction,
+    playerId: Player["id"],
+    targetId?: Card["id"],
+  ) => void,
+  sendUpdate: UpdateSender,
 ] {
   const initialSeed = generateSeed();
   const [player1, tempSeed1] = initPlayer(user1, initialSeed);
@@ -712,31 +708,46 @@ function init(
     turnCount: 0,
     winner: null,
   };
-  let log: GameLog = [];
+  const pawnCreature: FieldCreatureCard = {
+    ...(getCardDefinition(pawn.definitionId) as CreatureCardDefintion),
+    type: "CREATURE",
+    id: brand(crypto.randomUUID(), "UUID"),
+    attacked: true,
+  };
+  state.players[inactivePlayer].field.push(pawnCreature);
+  state.players[inactivePlayer].startingDeck.push(pawnCreature);
+  const sendUpdate: UpdateSender = (gs, logItem) => {
+    [user1, user2].forEach((user) => {
+      if (user.socket.readyState !== WebSocket.OPEN) return;
+      sendMessage(
+        {
+          message: "GAME_STATE_UPDATE",
+          state: gs,
+          ...(logItem ? { logItem } : {}),
+        },
+        user.socket,
+      );
+    });
+  };
   return [
     () => state,
-    (action) => {
-      const [nextState, nextLog] = action(state);
-      state = nextState;
-      log = nextLog; // Client can build a complete log if they need.
-      [user1, user2].forEach((user) => {
-        if (user.socket.readyState !== WebSocket.OPEN) return;
-        sendMessage({ message: "GAME_STATE_UPDATE", state, log }, user.socket);
-      });
+    (action, playerId, targetId) => {
+      state = handlePlayerAction(sendUpdate, state, action, playerId, targetId);
     },
+    sendUpdate,
   ];
 }
 
 export function startMatch(user1: User, user2: User) {
-  const [getState, setState] = init(user1, user2);
+  const [getState, applyAction, sendUpdate] = init(user1, user2);
   // Send initial game state to both players
-  setState((s) => [s, []]);
+  sendUpdate(getState());
 
   const detachers = [user1, user2].map((user) => {
     const messageHandler = (event: MessageEvent) => {
       const { action, targetId } = JSON.parse(event.data) as ClientMessage;
       try {
-        setState((s) => handlePlayerAction(s, action, user.id, targetId));
+        applyAction(action, user.id, targetId);
       } catch (e) {
         const error = (e as Error).message as
           | GameLogicError
@@ -763,7 +774,7 @@ export function startMatch(user1: User, user2: User) {
     };
     user.socket.addEventListener("message", messageHandler);
     const closeHandler = () => {
-      setState((s) => handlePlayerAction(s, GAME_ACTION.FORFEIT, user.id));
+      applyAction(GAME_ACTION.FORFEIT, user.id);
     };
     user.socket.addEventListener("close", closeHandler);
     return () => {

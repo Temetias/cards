@@ -7,7 +7,7 @@ export const ghoul: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_ghoul"),
   cost: 2,
   name: "Ghoul",
-  description: "Draw a card when another creature dies.",
+  description: ["Draw a card when another", "creature dies."],
   type: "CREATURE",
   power: 1,
   keywords: [],

@@ -3,8 +3,14 @@ import {
   isCreature,
   type Card,
   type CreatureCard,
+  type GameEffectDispatch,
+  type GameEffectDispatchGetter,
 } from "./cards/index.ts";
-import { GAME_CONDITION_FAILURE, GAME_LOGIC_ERROR } from "./communication.ts";
+import {
+  GAME_CONDITION_FAILURE,
+  GAME_LOGIC_ERROR,
+  type GameTrigger,
+} from "./communication.ts";
 import type { Brand, Identified, Named, Nullable } from "./utils.ts";
 
 export type FieldCreatureCard = CreatureCard & {
@@ -96,6 +102,31 @@ export function getFieldCreatures(state: GameState): FieldCreatureCard[] {
   const player = getActivePlayer(state);
   // This ultimately decides effect ordering. Maybe we could add field age or something later to have more deterministic ordering
   return [...opponent.field, ...player.field];
+}
+
+export function getObservers(
+  state: GameState,
+  trigger: GameTrigger,
+): { getDispatch: GameEffectDispatchGetter; self: Card["id"] }[] {
+  const fieldCreaturesWithEffects = getFieldCreatures(state)
+    .filter((fc) => fc.triggers[trigger])
+    .map((fc) => ({
+      getDispatch: fc.triggers[trigger]!.getDispatch,
+      self: fc.id,
+    }));
+  const loggerObserver = (
+    args: GameEffectDispatchArguments,
+  ): GameEffectDispatch => {
+    return (state) => {
+      return [state, [], args];
+    };
+  };
+  // If in future we have effects that trigger in hand or deck, we can add those here
+  // TODO: fix self typing
+  return [
+    ...fieldCreaturesWithEffects,
+    { getDispatch: loggerObserver, self: "logger" as any },
+  ];
 }
 
 export type GameConditionAssert<P extends unknown[]> = (

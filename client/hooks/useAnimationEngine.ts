@@ -5,8 +5,8 @@ import type {
   GameTrigger,
   ServerMessage,
 } from "../../shared/communication.ts";
-import type { GameLog, GameState } from "../../shared/game.ts";
-import type { Nullable } from "../../shared/utils.ts";
+import type { GameLog, GameState, Player } from "../../shared/game.ts";
+import type { Nullable, UUID } from "../../shared/utils.ts";
 
 function useWs(onMessage: (msg: ServerMessage) => void, userId: string) {
   const wsRef = useRef<Nullable<WebSocket>>(null);
@@ -45,46 +45,75 @@ function useWs(onMessage: (msg: ServerMessage) => void, userId: string) {
 
 const ANIMATION_LENGTHS: Record<GameTrigger | GameAction, number> = {
   CREATURE_PLAYED: 1000,
-  CREATURE_ATTACKED: 1000,
-  CREATURE_GOT_ATTACKED: 1000,
-  CREATURE_DIED: 1000,
-  CREATURE_REVIVED: 1000,
+  CREATURE_ATTACKED: 500,
+  CREATURE_GOT_ATTACKED: 500,
+  CREATURE_DIED: 500,
+  CREATURE_REVIVED: 500,
   SPELL_PLAYED: 1000,
-  RESOURCE_PLAYED: 1000,
-  CARD_DRAWN: 1000,
+  RESOURCE_PLAYED: 0,
+  CARD_DRAWN: 500,
   TURN_STARTED: 0,
   TURN_ENDED: 0,
-  PROTECTION_DESTROYED: 1000,
+  PROTECTION_DESTROYED: 500,
   USER_SELECT: 0,
   USER_UNSELECT: 0,
   USER_CLEAR_SELECTION: 0,
-  PLAY_RESOURCE: 1000,
-  PLAY_CARD: 1000,
-  ATTACK_CREATURE: 1000,
-  ATTACK_PROTECTION: 1000,
+  PLAY_RESOURCE: 0,
+  PLAY_CARD: 0,
+  ATTACK_CREATURE: 0,
+  ATTACK_PROTECTION: 0,
   END_TURN: 0,
   WIN: 0,
   FORFEIT: 0,
 };
 
-export function useAnimationEngine(userId: string) {
-  const [gameState, setGameState] = useState<Nullable<GameState>>(null);
+export type AnimatedGameState = Omit<GameState, "players"> & {
+  players: Record<Player["id"], Omit<Player, "userSelection">>;
+};
+
+export function useAnimationEngine(userId: UUID) {
+  const [providedGameState, setProvidedGameState] =
+    useState<Nullable<AnimatedGameState>>(null);
+  const [currentLogItem, setCurrentLogItem] =
+    useState<Nullable<GameLog[number]>>(null);
+
+  const [playerUserSelectionState, setPlayerUserSelectionState] =
+    useState<Player["userSelection"]>(null);
+  const [opponentUserSelectionState, setOpponentUserSelectionState] =
+    useState<Player["userSelection"]>(null);
+
+  const latestAnimatedRef = useRef<Nullable<GameState>>(null);
   const queueRef = useRef<GameLog>([]);
   const timeoutRef = useRef<number | null>(null);
 
   const processNext = () => {
     if (timeoutRef.current !== null) return;
     const next = queueRef.current.shift();
-    if (!next) return;
+    if (!next) {
+      console.log("[animation] queue empty");
+      setProvidedGameState(latestAnimatedRef.current);
+      setCurrentLogItem(null);
+      return;
+    }
 
+    setCurrentLogItem(next);
     console.log("[animation] apply", {
       effectName: next.effectName,
+      initiator: next.initiator,
+      self: next.self,
+      target: next.target,
       delayMs: ANIMATION_LENGTHS[next.effectName] ?? 0,
-      remaining: queueRef.current.length,
+      remaining: queueRef.current?.length,
     });
-    setGameState(next.state);
-    const delay = ANIMATION_LENGTHS[next.effectName] ?? 0;
+    latestAnimatedRef.current = next.state;
+    // Default to 1ms if no animation length defined
+    // This makes it so that instant animations won't apply state
+    // before the next log item is processed
+    // TODO: Test if network latency affects this
+    // if it does, we will need message bundling instead of single messages
+    const delay = ANIMATION_LENGTHS[next.effectName] || 1;
     timeoutRef.current = setTimeout(() => {
+      setCurrentLogItem(null);
       timeoutRef.current = null;
       processNext();
     }, delay);
@@ -92,25 +121,26 @@ export function useAnimationEngine(userId: string) {
 
   const sendMessage = useWs((msg: ServerMessage) => {
     if (msg.message === "GAME_STATE_UPDATE") {
-      console.log("[animation] update", {
-        log: msg.log,
-      });
-      if (msg.log.length <= 1) {
-        if (timeoutRef.current !== null) {
-          clearTimeout(timeoutRef.current);
-          timeoutRef.current = null;
-        }
-        queueRef.current = [];
-        console.log("[animation] apply instant");
-        setGameState(msg.state);
+      setPlayerUserSelectionState(msg.state.players[userId].userSelection);
+      const opponentId = Object.keys(msg.state.players).find(
+        (id) => id !== userId,
+      )!;
+      setOpponentUserSelectionState(
+        msg.state.players[opponentId as UUID].userSelection,
+      );
+      if (msg.logItem) {
+        queueRef.current.push({ ...msg.logItem, state: msg.state });
+        processNext();
         return;
       }
-
-      queueRef.current.push(...msg.log);
-      console.log("[animation] queued", {
-        queued: queueRef.current.length,
-      });
-      processNext();
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      queueRef.current = [];
+      latestAnimatedRef.current = msg.state;
+      setCurrentLogItem(null);
+      setProvidedGameState(msg.state);
     }
   }, userId);
 
@@ -122,5 +152,11 @@ export function useAnimationEngine(userId: string) {
     };
   }, []);
 
-  return [gameState, sendMessage] as const;
+  return [
+    providedGameState,
+    sendMessage,
+    currentLogItem,
+    playerUserSelectionState,
+    opponentUserSelectionState,
+  ] as const;
 }

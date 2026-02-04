@@ -15,8 +15,14 @@ import {
   type Nullable,
   type Typed,
 } from "../utils.ts";
+import { bolster } from "./bolster.ts";
+import { butcher } from "./butcher.ts";
+import { cosmosWalker } from "./cosmoswalker.ts";
+import { doom } from "./doom.ts";
+import { firelash } from "./firelash.ts";
 import { ghoul } from "./ghoul.ts";
 import { imp } from "./imp.ts";
+import { pawn } from "./pawn.ts";
 import { reaper } from "./reaper.ts";
 
 export type GameEffectDispatchArguments = {
@@ -81,7 +87,7 @@ type SpellKeyword = CommonKeyword | "";
 type CardInfo = Identified &
   Named & {
     definitionId: CardDefinitionId;
-    description: string;
+    description: string[];
     cost: number;
     onPlay: Nullable<GameEffect>;
   };
@@ -116,6 +122,12 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [imp.definitionId]: imp,
   [ghoul.definitionId]: ghoul,
   [reaper.definitionId]: reaper,
+  [firelash.definitionId]: firelash,
+  [butcher.definitionId]: butcher,
+  [pawn.definitionId]: pawn,
+  [cosmosWalker.definitionId]: cosmosWalker,
+  [doom.definitionId]: doom,
+  [bolster.definitionId]: bolster,
 } as const;
 
 export function getCardDefinition(

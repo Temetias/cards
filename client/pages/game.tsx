@@ -1,118 +1,74 @@
-import {
-  cloneElement,
-  ComponentPropsWithoutRef,
-  createContext,
-  forwardRef,
-  HTMLAttributes,
-  isValidElement,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import type { ClientMessage } from "../../shared/communication.ts";
-import type { UUID } from "../../shared/utils.ts";
-import { type GameState } from "../../shared/game.ts";
-import { isCreature } from "../../shared/cards/index.ts";
+import { cloneElement, forwardRef, isValidElement, useEffect } from "react";
 import { useUser } from "./login.tsx";
-import { type Card } from "../../shared/cards/index.ts";
 import "./game.css";
-import { Fragment } from "react/jsx-runtime";
 import { useAnimationEngine } from "../hooks/useAnimationEngine.ts";
-
-const WsContext = createContext<{ sendMessage: (msg: ClientMessage) => void }>(
-  {} as {
-    sendMessage: (msg: ClientMessage) => void;
-  },
-);
-
-const GameStateContext = createContext<{ gameState: GameState }>(
-  {} as { gameState: GameState },
-);
-
-function CCard({
-  card,
-  ...native
-}: { card: Card } & ComponentPropsWithoutRef<"div">) {
-  const gameState = useContext(GameStateContext);
-  return (
-    <div {...native} className="card">
-      <div>{card.name}</div>
-      <div>{card.id.slice(0, 4)}</div>
-      {isCreature(card) && <div>{card.power}</div>}
-    </div>
-  );
-}
-
-function getOpponent(gs: GameState, userId: UUID) {
-  const playerIds: UUID[] = Object.keys(gs.players) as UUID[];
-  const opponentId = playerIds.find((id) => id !== userId);
-  if (!opponentId) throw new Error("Opponent not found");
-  return gs.players[opponentId];
-}
-
-function getPlayer(gs: GameState, userId: UUID) {
-  const player = gs.players[userId];
-  if (!player) throw new Error("Player not found");
-  return player;
-}
-
-function getPlayerSelection(gs: GameState, userId: UUID) {
-  const player = getPlayer(gs, userId);
-  return player.userSelection;
-}
-
-function getPlayerSelectionType(gs: GameState, userId: UUID) {
-  const selection = getPlayerSelection(gs, userId);
-  if (selection === null) return null;
-  if (Array.isArray(selection)) return "FIELD_CREATURES";
-  return "HAND_CARD";
-}
-
-function isSelected(gs: GameState, userId: UUID, cardId: UUID) {
-  const selection = getPlayerSelection(gs, userId);
-  if (selection === null) return false;
-  if (Array.isArray(selection)) {
-    return selection.some((card) => card.id === cardId);
-  }
-  return selection.id === cardId;
-}
-
-function isMyTurn(gs: GameState, userId: UUID) {
-  return gs.activePlayer === userId;
-}
+import type { Card } from "../../shared/cards/index.ts";
+import {
+  GameStateContext,
+  getAvailableResource,
+  getOpponent,
+  getPlayer,
+  getUserSelectionType,
+  isMyTurn,
+  isUserSelected,
+} from "../utils/GameStateUtils.ts";
+import { PreviewDisplayer } from "../components/PreviewDisplayer/PreviewDisplayer.tsx";
+import type { Nullable } from "../../shared/utils.ts";
+import { CardDisplayer } from "../components/CardDisplayer/CardDisplayer.tsx";
 
 function GameBoard({
   children,
-  showHighlights,
+  showFieldHighlight,
+  showResourceHighlight,
   onFieldClick,
   onResourceClick,
   onEndTurnClick,
+  inspectedCard,
+  playerResource,
+  opponentResource,
 }: {
   children: React.ReactNode;
-  showHighlights: boolean;
+  showResourceHighlight: boolean;
+  showFieldHighlight: boolean;
   onFieldClick: () => void;
   onResourceClick: () => void;
   onEndTurnClick: (() => void) | null;
+  inspectedCard?: Nullable<Card>;
+  playerResource: [available: number, total: number];
+  opponentResource: [available: number, total: number];
 }) {
   return (
-    <div className="game">
-      <div className="side"></div>
-      <div className="side">
-        {children}
-        {showHighlights ? (
-          <>
-            <div className="highlight" onClick={onFieldClick}>
-              field
-            </div>
-            <div className="highlight"></div>
-            <div className="highlight" onClick={onResourceClick}>
-              resource
-            </div>
-          </>
-        ) : null}
+    <div className="GameBoard">
+      {showFieldHighlight && (
+        <div className="GameBoard-Field" onClick={onFieldClick}>
+          field
+        </div>
+      )}
+      {showResourceHighlight && (
+        <div className="GameBoard-Resource" onClick={onResourceClick}>
+          resource
+        </div>
+      )}
+      <div className="GameBoard-Resource-Indicator-Player">
+        {playerResource[0]} / {playerResource[1]}
       </div>
+      <div className="GameBoard-Resource-Indicator-Opponent">
+        {opponentResource[0]} / {opponentResource[1]}
+      </div>
+      {children}
+
+      {inspectedCard && (
+        <div className="GameBoard-Inspector">
+          <CardDisplayer
+            showCost
+            showPower
+            showDetails
+            showIcons
+            card={inspectedCard}
+          />
+        </div>
+      )}
+
       <button
         type="button"
         className="end-turn-button"
@@ -129,7 +85,13 @@ export default function Game() {
   const user = useUser();
   if (!user) return <div>Unauthorized</div>;
 
-  const [gameState, sendMessage] = useAnimationEngine(user.id);
+  const [
+    gameState,
+    sendMessage,
+    currentLogItem,
+    playerUserSelection,
+    opponentUserSelection,
+  ] = useAnimationEngine(user.id);
 
   // Listen escape key to unselect
   useEffect(() => {
@@ -145,205 +107,327 @@ export default function Game() {
   }, [sendMessage]);
 
   return gameState ? (
-    <WsContext value={{ sendMessage }}>
-      <GameStateContext value={{ gameState }}>
-        <GameBoard
-          showHighlights={
-            getPlayerSelectionType(gameState, user.id) === "HAND_CARD"
-          }
-          onFieldClick={() => sendMessage({ action: "PLAY_CARD" })}
-          onResourceClick={() => sendMessage({ action: "PLAY_RESOURCE" })}
-          onEndTurnClick={
-            isMyTurn(gameState, user.id)
-              ? () => sendMessage({ action: "END_TURN" })
-              : null
-          }
-        >
-          {getOpponent(gameState, user.id).resource.map((card, index) => (
-            <OpponentResourcePositioner
-              key={card.id}
-              index={index}
-              total={getOpponent(gameState, user.id).resource.length}
-            >
-              <CCard card={card} />
-            </OpponentResourcePositioner>
-          ))}
-          {getOpponent(gameState, user.id).hand.map((card, index) => (
-            <OpponentHandPositioner
-              key={card.id}
-              index={index}
-              total={getOpponent(gameState, user.id).hand.length}
-            >
-              <CCard card={card} />
-            </OpponentHandPositioner>
-          ))}
-          {getOpponent(gameState, user.id).protection.map((card, index) => (
-            <OpponentProtectionPositioner key={card.id} index={index}>
-              <CCard
-                key={card.id}
-                card={card}
-                onClick={() =>
-                  sendMessage({
-                    action: "ATTACK_PROTECTION",
-                    targetId: card.id,
-                  })
-                }
-              />
-            </OpponentProtectionPositioner>
-          ))}
-          {getOpponent(gameState, user.id).field.map((card, index) => (
-            <OpponentFieldPositioner
-              key={card.id}
-              index={index}
-              total={getOpponent(gameState, user.id).field.length}
-            >
-              <CCard
-                key={card.id}
-                card={card}
-                onClick={() =>
-                  getPlayerSelectionType(gameState, user.id) === "HAND_CARD"
-                    ? sendMessage({ action: "PLAY_CARD", targetId: card.id })
-                    : sendMessage({
-                        action: "ATTACK_CREATURE",
+    <GameStateContext
+      value={{ gameState, playerUserSelection, opponentUserSelection }}
+    >
+      <GameBoard
+        playerResource={[
+          getAvailableResource(gameState, user.id),
+          getPlayer(gameState, user.id).resource.length,
+        ]}
+        opponentResource={[
+          getAvailableResource(gameState, getOpponent(gameState, user.id).id),
+          getOpponent(gameState, user.id).resource.length,
+        ]}
+        showResourceHighlight={
+          currentLogItem === null &&
+          getUserSelectionType(playerUserSelection) === "HAND_CARD" &&
+          !getPlayer(gameState, user.id).hasPlayedResource
+        }
+        showFieldHighlight={
+          currentLogItem === null &&
+          getUserSelectionType(playerUserSelection) === "HAND_CARD" &&
+          getPlayer(gameState, user.id).resource.filter(
+            (res) => res.used === false,
+          ).length >= (playerUserSelection as Card).cost
+        }
+        onFieldClick={() => sendMessage({ action: "PLAY_CARD" })}
+        onResourceClick={() => sendMessage({ action: "PLAY_RESOURCE" })}
+        onEndTurnClick={
+          isMyTurn(gameState, user.id)
+            ? () => sendMessage({ action: "END_TURN" })
+            : null
+        }
+        inspectedCard={getOpponent(gameState, user.id).hand.find(
+          (card) =>
+            (currentLogItem?.effectName === "CREATURE_PLAYED" ||
+              currentLogItem?.effectName === "SPELL_PLAYED") &&
+            currentLogItem?.initiator === card.id,
+        )}
+      >
+        {[
+          ...getOpponent(gameState, user.id).startingDeck,
+          ...getPlayer(gameState, user.id).startingDeck,
+        ].map((card) => {
+          const opponent = getOpponent(gameState, user.id);
+          const player = getPlayer(gameState, user.id);
+          switch (true) {
+            case !!opponent.graveyard.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...opponentGraveyardPosition({
+                    index: opponent.graveyard.findIndex(
+                      (c) => c.id === card.id,
+                    ),
+                    total: opponent.graveyard.length,
+                  })}
+                >
+                  <CardDisplayer
+                    card={card}
+                    fieldAnimations={{ death: true }}
+                  />
+                </Positioner>
+              );
+            case !!player.graveyard.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...playerGraveyardPosition({
+                    index: player.graveyard.findIndex((c) => c.id === card.id),
+                    total: player.graveyard.length,
+                  })}
+                >
+                  <CardDisplayer
+                    card={card}
+                    fieldAnimations={{ death: true }}
+                  />
+                </Positioner>
+              );
+            case !!opponent.deck.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...opponentDeckPosition({
+                    index: opponent.deck.findIndex((c) => c.id === card.id),
+                    total: opponent.deck.length,
+                  })}
+                >
+                  <CardDisplayer card={card} flipside />
+                </Positioner>
+              );
+            case !!player.deck.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...playerDeckPosition({
+                    index: player.deck.findIndex((c) => c.id === card.id),
+                    total: player.deck.length,
+                  })}
+                >
+                  <CardDisplayer card={card} flipside />
+                </Positioner>
+              );
+            case !!opponent.protection.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...opponentProtectionPosition({
+                    index: opponent.protection.findIndex(
+                      (c) => c.id === card.id,
+                    ),
+                  })}
+                >
+                  <CardDisplayer
+                    card={card}
+                    flipside
+                    onClick={() =>
+                      sendMessage({
+                        action: "ATTACK_PROTECTION",
                         targetId: card.id,
                       })
-                }
-              />
-            </OpponentFieldPositioner>
-          ))}
-          {/* ---------------------------------------------- */}
-          {getPlayer(gameState, user.id).field.map((card, index) => (
-            <PlayerFieldPositioner
-              key={card.id}
-              index={index}
-              total={getPlayer(gameState, user.id).field.length}
-              showLineToCursor={isSelected(gameState, user.id, card.id)}
-            >
-              <CCard
-                key={card.id}
-                card={card}
-                onClick={() =>
-                  sendMessage({
-                    action: isSelected(gameState, user.id, card.id)
-                      ? "USER_UNSELECT"
-                      : "USER_SELECT",
-                    targetId: card.id,
-                  })
-                }
-              />
-            </PlayerFieldPositioner>
-          ))}
-          {getPlayer(gameState, user.id).protection.map((card, index) => (
-            <PlayerProtectionPositioner key={card.id} index={index}>
-              <CCard key={card.id} card={card} />
-            </PlayerProtectionPositioner>
-          ))}
-          {getPlayer(gameState, user.id).hand.map((card, index) => (
-            <PlayerHandPositioner
-              key={card.id}
-              total={getPlayer(gameState, user.id).hand.length}
-              index={index}
-            >
-              <CCard
-                key={card.id}
-                card={card}
-                onClick={() =>
-                  sendMessage({
-                    action: isSelected(gameState, user.id, card.id)
-                      ? "USER_UNSELECT"
-                      : "USER_SELECT",
-                    targetId: card.id,
-                  })
-                }
-              />
-            </PlayerHandPositioner>
-          ))}
-          {getPlayer(gameState, user.id).resource.map((card, index) => (
-            <PlayerResourcePositioner
-              key={card.id}
-              index={index}
-              total={getPlayer(gameState, user.id).resource.length}
-            >
-              <CCard key={card.id} card={card} />
-            </PlayerResourcePositioner>
-          ))}
-        </GameBoard>
-      </GameStateContext>
-    </WsContext>
+                    }
+                  />
+                </Positioner>
+              );
+            case !!player.protection.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...playerProtectionPosition({
+                    index: player.protection.findIndex((c) => c.id === card.id),
+                  })}
+                >
+                  <CardDisplayer card={card} flipside />
+                </Positioner>
+              );
+            case !!opponent.resource.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...opponentResourcePosition({
+                    index: opponent.resource.findIndex((c) => c.id === card.id),
+                    total: opponent.resource.length,
+                  })}
+                >
+                  <CardDisplayer card={card} />
+                </Positioner>
+              );
+            case !!player.resource.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...playerResourcePosition({
+                    index: player.resource.findIndex((c) => c.id === card.id),
+                    total: player.resource.length,
+                  })}
+                >
+                  <CardDisplayer card={card} />
+                </Positioner>
+              );
+            case !!opponent.field.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...opponentFieldPosition({
+                    index: opponent.field.findIndex((c) => c.id === card.id),
+                    total: opponent.field.length,
+                  })}
+                >
+                  <CardDisplayer
+                    card={opponent.field.find((c) => c.id === card.id)!}
+                    showIcons
+                    showPower
+                    fieldAnimations={{
+                      trigger:
+                        currentLogItem?.self === card.id &&
+                        currentLogItem?.initiator !== "GAME_PLAYER",
+                      attack:
+                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.effectName === "CREATURE_ATTACKED",
+                      defend:
+                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.effectName === "CREATURE_GOT_ATTACKED",
+                      death:
+                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.effectName === "CREATURE_DIED",
+                    }}
+                    selection={
+                      isUserSelected(opponentUserSelection, card.id)
+                        ? "OPPONENT"
+                        : null
+                    }
+                    onClick={() =>
+                      getUserSelectionType(playerUserSelection) === "HAND_CARD"
+                        ? sendMessage({
+                            action: "PLAY_CARD",
+                            targetId: card.id,
+                          })
+                        : sendMessage({
+                            action: "ATTACK_CREATURE",
+                            targetId: card.id,
+                          })
+                    }
+                  />
+                </Positioner>
+              );
+            case !!player.field.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...playerFieldPosition({
+                    index: player.field.findIndex((c) => c.id === card.id),
+                    total: player.field.length,
+                  })}
+                >
+                  <CardDisplayer
+                    card={player.field.find((c) => c.id === card.id)!}
+                    playable={
+                      isMyTurn(gameState, user.id) &&
+                      !playerUserSelection &&
+                      !player.field.find((c) => c.id === card.id)?.attacked
+                    }
+                    showPower
+                    showIcons
+                    fieldAnimations={{
+                      trigger:
+                        currentLogItem?.self === card.id &&
+                        currentLogItem?.initiator !== "GAME_PLAYER",
+                      attack:
+                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.effectName === "CREATURE_ATTACKED",
+                      defend:
+                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.effectName === "CREATURE_GOT_ATTACKED",
+                      death:
+                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.effectName === "CREATURE_DIED",
+                    }}
+                    selection={
+                      isUserSelected(playerUserSelection, card.id)
+                        ? "PLAYER"
+                        : null
+                    }
+                    onClick={() =>
+                      sendMessage({
+                        action: isUserSelected(playerUserSelection, card.id)
+                          ? "USER_UNSELECT"
+                          : "USER_SELECT",
+                        targetId: card.id,
+                      })
+                    }
+                  />
+                </Positioner>
+              );
+            case !!opponent.hand.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...opponentHandPosition({
+                    index: opponent.hand.findIndex((c) => c.id === card.id),
+                    total: opponent.hand.length,
+                  })}
+                >
+                  <CardDisplayer
+                    card={card}
+                    selection={
+                      isUserSelected(opponentUserSelection, card.id)
+                        ? "OPPONENT"
+                        : null
+                    }
+                    flipside
+                  />
+                </Positioner>
+              );
+            case !!player.hand.find((c) => c.id === card.id):
+              return (
+                <Positioner
+                  key={card.id}
+                  {...playerHandPosition({
+                    index: player.hand.findIndex((c) => c.id === card.id),
+                    total: player.hand.length,
+                  })}
+                >
+                  <CardDisplayer
+                    handHover
+                    showCost
+                    showPower
+                    showDetails
+                    card={card}
+                    playable={
+                      isMyTurn(gameState, user.id) &&
+                      !playerUserSelection &&
+                      getAvailableResource(gameState, user.id) >= card.cost
+                    }
+                    selection={
+                      isUserSelected(playerUserSelection, card.id)
+                        ? "PLAYER"
+                        : null
+                    }
+                    onClick={() =>
+                      sendMessage({
+                        action: isUserSelected(playerUserSelection, card.id)
+                          ? "USER_UNSELECT"
+                          : "USER_SELECT",
+                        targetId: card.id,
+                      })
+                    }
+                  />
+                </Positioner>
+              );
+
+            default:
+              return null;
+          }
+        })}
+      </GameBoard>
+    </GameStateContext>
   ) : (
     <div>matchmaking...</div>
   );
 }
 
-type OriginProps<T extends HTMLElement> = {
-  children: React.ReactElement<
-    React.HTMLAttributes<T> & { ref?: React.Ref<T> }
-  >;
-};
-const LineFromChildOrigin = forwardRef<HTMLElement, OriginProps<HTMLElement>>(
-  ({ children }, ref) => cloneElement(children, { ref }),
-);
-
-function LineFromChild({
-  children,
-}: {
-  children: React.ReactElement<
-    HTMLAttributes<HTMLElement> & { ref?: React.Ref<HTMLElement> }
-  >;
-}) {
-  const originRef = useRef<HTMLElement | null>(null);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
-  const [origin, setOrigin] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const updateOrigin = () => {
-      console.log(originRef.current);
-      if (!originRef.current) return;
-      const rect = originRef.current.getBoundingClientRect();
-      setOrigin({
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2,
-      });
-    };
-    updateOrigin();
-    addEventListener("resize", updateOrigin);
-    return () => removeEventListener("resize", updateOrigin);
-  }, []);
-
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => setMouse({ x: e.clientX, y: e.clientY });
-    addEventListener("mousemove", onMove);
-    return () => removeEventListener("mousemove", onMove);
-  }, []);
-
-  const { length, angle } = useMemo(() => {
-    const dx = mouse.x - origin.x;
-    const dy = mouse.y - origin.y;
-    return { length: Math.hypot(dx, dy), angle: Math.atan2(dy, dx) };
-  }, [mouse, origin]);
-
-  return (
-    <>
-      <LineFromChildOrigin ref={originRef}>{children}</LineFromChildOrigin>
-      {!mouse.x && !mouse.y ? null : (
-        <div
-          style={{
-            position: "fixed",
-            left: origin.x,
-            top: origin.y,
-            height: 2,
-            width: length,
-            transform: `rotate(${angle}rad)`,
-            transformOrigin: "0 50%",
-            background: "black",
-            pointerEvents: "none",
-          }}
-        />
-      )}
-    </>
-  );
-}
-
+// TODO: line to cursor implementation
 const Positioner = forwardRef<
   HTMLElement,
   {
@@ -354,145 +438,118 @@ const Positioner = forwardRef<
     y: number;
     scale: number;
     rotate: number;
+    zIndex?: number;
   }
 >((props, ref) => {
-  const { children, x, y, scale, rotate } = props;
+  const { children, x, y, scale, rotate, zIndex } = props;
   if (!isValidElement(children)) {
     throw new Error("Positioner expects a single React element child");
   }
   return cloneElement(children, {
     ref,
     style: {
+      position: "absolute",
       top: `${y}%`,
       left: `${x}%`,
+      width: "7%",
+      transition: "top 0.5s ease, left 0.5s ease , transform 0.5s ease",
       transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
+      zIndex: zIndex ?? children.props.style?.zIndex,
       ...children.props.style,
     },
   });
 });
 
-function OpponentResourcePositioner(props: {
-  index: number;
-  total: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-}) {
-  const { index, children } = props;
-  const spacing = 2;
-  const x = 10 + index * spacing;
+const RESOURCE_SPACING = 2;
+
+function opponentResourcePosition(props: { index: number; total: number }) {
+  const { index } = props;
+  const x = 25 - index * RESOURCE_SPACING;
   const y = 10;
-  return (
-    <Positioner x={x} y={y} scale={1} rotate={90}>
-      {children}
-    </Positioner>
-  );
+  return { x, y, scale: 1, rotate: 90, zIndex: index + 1 };
 }
-function PlayerResourcePositioner(props: {
-  index: number;
-  total: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-}) {
-  const { index, children } = props;
-  const spacing = 2;
-  const x = 10 + index * spacing;
+function playerResourcePosition(props: { index: number; total: number }) {
+  const { index } = props;
+  const x = 25 - index * RESOURCE_SPACING;
   const y = 90;
-  return (
-    <Positioner x={x} y={y} scale={1} rotate={-90}>
-      {children}
-    </Positioner>
-  );
+  return { x, y, scale: 1, rotate: 90, zIndex: index + 1 };
 }
 
-function OpponentHandPositioner(props: {
-  index: number;
-  total: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-}) {
-  const { index, children } = props;
-  const y = 0;
-  const spacing = 6;
-  const x = 40 + index * spacing;
-  return (
-    <Positioner x={x} y={y} scale={1} rotate={0}>
-      {children}
-    </Positioner>
-  );
+const HAND_SPACING = 4;
+
+function opponentHandPosition(props: { index: number; total: number }) {
+  const { index } = props;
+  // Push inner cards a bit further up
+  const y = 0 - Math.abs(index - (props.total - 1) / 2);
+  // Tigther the more cards there are
+  const x = 40 + (index * HAND_SPACING * 5) / props.total;
+  // Fan orientation
+  const rotate = (index - (props.total - 1) / 2) * -8;
+  return { x, y, scale: 1, rotate, zIndex: index * 10 };
 }
-function PlayerHandPositioner(props: {
-  index: number;
-  total: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-}) {
-  const { index, children } = props;
-  const y = 100;
-  const spacing = 6;
-  const x = 40 + index * spacing;
-  return (
-    <Positioner x={x} y={y} scale={1} rotate={0}>
-      {children}
-    </Positioner>
-  );
+function playerHandPosition(props: { index: number; total: number }) {
+  const { index } = props;
+  // Push inner cards a bit further up
+  const y = 100 + Math.abs(index - (props.total - 1) / 2);
+  const x = 40 + (index * HAND_SPACING * 5) / props.total;
+  // Fan orientation
+  const rotate = (index - (props.total - 1) / 2) * 8;
+  return { x, y, scale: 1, rotate, zIndex: (index + 1) * 10 };
 }
 
-function OpponentProtectionPositioner(props: {
-  index: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-}) {
-  const { index, children } = props;
+const PROTECTION_SPACING = 7.25;
+
+function opponentProtectionPosition(props: { index: number }) {
+  const { index } = props;
   const y = 20;
-  const spacing = 6;
-  const x = 40 + index * spacing;
-  return (
-    <Positioner x={x} y={y} scale={1} rotate={0}>
-      {children}
-    </Positioner>
-  );
+  const x = 40 + index * PROTECTION_SPACING;
+  return { x, y, scale: 1, rotate: 0 };
 }
-function PlayerProtectionPositioner(props: {
-  index: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-}) {
-  const { index, children } = props;
+function playerProtectionPosition(props: { index: number }) {
+  const { index } = props;
   const y = 80;
-  const spacing = 6;
-  const x = 40 + index * spacing;
-  return (
-    <Positioner x={x} y={y} scale={1} rotate={0}>
-      {children}
-    </Positioner>
-  );
+  const x = 40 + index * PROTECTION_SPACING;
+  return { x, y, scale: 1, rotate: 0 };
 }
 
-function OpponentFieldPositioner(props: {
-  index: number;
-  total: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-}) {
-  const { index, children } = props;
+const FIELD_SPACING = 7.25;
+
+function opponentFieldPosition(props: { index: number; total: number }) {
+  const { index } = props;
   const y = 40;
-  const spacing = 6;
-  const x = 40 + index * spacing;
-  return (
-    <Positioner x={x} y={y} scale={1} rotate={0}>
-      {children}
-    </Positioner>
-  );
+  const x = 40 + index * FIELD_SPACING;
+  return { x, y, scale: 1, rotate: 0 };
 }
-function PlayerFieldPositioner(props: {
-  index: number;
-  total: number;
-  children: React.ReactElement<React.HTMLAttributes<HTMLElement>>;
-  showLineToCursor: boolean;
-}) {
-  const { index, children } = props;
+function playerFieldPosition(props: { index: number; total: number }) {
+  const { index } = props;
   const y = 60;
-  const spacing = 6;
-  const x = 40 + index * spacing;
-  const Wrapper = props.showLineToCursor ? LineFromChild : Fragment;
-  return (
-    <Wrapper>
-      <Positioner x={x} y={y} scale={1} rotate={0}>
-        {children}
-      </Positioner>
-    </Wrapper>
-  );
+  const x = 40 + index * FIELD_SPACING;
+  {
+    return { x, y, scale: 1, rotate: 0 };
+  }
+}
+
+function opponentDeckPosition(props: { index: number; total: number }) {
+  const { index } = props;
+  const x = 90 + index * 0.025;
+  const y = 15 - index * 0.025;
+  return { x, y, scale: 1, rotate: 180, zIndex: index + 1 };
+}
+function playerDeckPosition(props: { index: number; total: number }) {
+  const { index } = props;
+  const x = 90 + index * 0.025;
+  const y = 85 + index * 0.025;
+  return { x, y, scale: 1, rotate: 180, zIndex: index + 1 };
+}
+function opponentGraveyardPosition(props: { index: number; total: number }) {
+  const { index } = props;
+  const x = 80 + index * 0.025;
+  const y = 15 - index * 0.025;
+  return { x, y, scale: 1, rotate: 0, zIndex: index + 1 };
+}
+function playerGraveyardPosition(props: { index: number; total: number }) {
+  const { index } = props;
+  const x = 80 + index * 0.025;
+  const y = 85 + index * 0.025;
+  return { x, y, scale: 1, rotate: 0, zIndex: index + 1 };
 }

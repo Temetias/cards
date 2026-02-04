@@ -1,9 +1,9 @@
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
-export const imp: CreatureCardDefintion = {
-  definitionId: cardDefinitionId("collectible_imp"),
+export const pawn: CreatureCardDefintion = {
+  definitionId: cardDefinitionId("noncollectible_pawn"),
   cost: 1,
-  name: "Imp",
+  name: "Pawn",
   description: [],
   type: "CREATURE",
   power: 1,

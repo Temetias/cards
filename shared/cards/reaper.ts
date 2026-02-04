@@ -7,14 +7,14 @@ export const reaper: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_reaper"),
   cost: 2,
   name: "Reaper",
-  description: "Gains 1 Power each time a card gets drawn.",
+  description: ["Gains 1 Power each time", "owner draws a card."],
   type: "CREATURE",
   power: 0,
   keywords: [],
   onPlay: null,
   triggers: {
-    CARD_DRAWN: buildCardTrigger((state, { initiator, self }) => {
-      // Don't buff if self is the one who died
+    CARD_DRAWN: buildCardTrigger((state, { initiator, self, target }) => {
+      // Don't buff if self is the one who was drawn (shouldn't happen anyway)
       if (initiator === self) return null;
       // Don't buff if im dead already
       const selfInField = getFieldCreatures(state).find((fc) => fc.id === self);
@@ -23,6 +23,8 @@ export const reaper: CreatureCardDefintion = {
         p.field.some((fc) => fc.id === self),
       );
       if (!owner) throw new Error(GAME_LOGIC_ERROR.CARD_COULDNT_FIND_OWNER);
+      // Don't buff if opponent drew
+      if (!owner.hand.some((c) => c.id === target)) return null;
       const next: GameState = {
         ...state,
         players: {

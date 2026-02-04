@@ -1,0 +1,15 @@
+.PreviewDisplayer {
+  position: relative;
+  width: 25%;
+  aspect-ratio: 2 / 3;
+}
+
+.PreviewDisplayer-content {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  font-size: 0.6rem;
+}
