@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import type {
   ClientMessage,
   GameAction,
+  GameConditionFailure,
+  GameLogicError,
   GameTrigger,
   ServerMessage,
 } from "../../shared/communication.ts";
@@ -76,6 +78,8 @@ export function useAnimationEngine(userId: UUID) {
     useState<Nullable<AnimatedGameState>>(null);
   const [currentLogItem, setCurrentLogItem] =
     useState<Nullable<GameLog[number]>>(null);
+  const [currentErrorItem, setCurrentErrorItem] =
+    useState<Nullable<GameConditionFailure | GameLogicError>>(null);
 
   const [playerUserSelectionState, setPlayerUserSelectionState] =
     useState<Player["userSelection"]>(null);
@@ -141,6 +145,11 @@ export function useAnimationEngine(userId: UUID) {
       latestAnimatedRef.current = msg.state;
       setCurrentLogItem(null);
       setProvidedGameState(msg.state);
+    } else if (
+      msg.message === "GAME_LOGIC_ERROR" ||
+      msg.message === "GAME_CONDITION_FAILURE"
+    ) {
+      setCurrentErrorItem(msg.error);
     }
   }, userId);
 
@@ -158,5 +167,6 @@ export function useAnimationEngine(userId: UUID) {
     currentLogItem,
     playerUserSelectionState,
     opponentUserSelectionState,
+    currentErrorItem,
   ] as const;
 }

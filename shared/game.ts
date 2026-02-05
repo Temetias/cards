@@ -72,6 +72,7 @@ export type GameState = {
     currentSeed: Seed;
   };
   players: Record<Player["id"], Player>;
+  cardPool: Card[];
   activePlayer: Player["id"];
   inactivePlayer: Player["id"];
   turnTimer: number;
@@ -284,6 +285,27 @@ export const conditionOpponentHasNoFieldCreatures: GameConditionAssert<
     throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
   }
   if (inactivePlayer.field.length > 0) {
-    throw new Error(GAME_CONDITION_FAILURE.CARD_PLAY_CONDITION_NOT_MET);
+    throw new Error(GAME_CONDITION_FAILURE.OPPONENT_HAS_FIELD_CREATURES);
+  }
+};
+
+export const conditionOpponentHasNoProtection: GameConditionAssert<
+  [playerId: Player["id"]]
+> = (state, playerId) => {
+  const player = state.players[playerId];
+  if (!player) {
+    throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
+  }
+  const inactivePlayer =
+    state.players[
+      state.activePlayer === playerId
+        ? state.inactivePlayer
+        : state.activePlayer
+    ];
+  if (!inactivePlayer) {
+    throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
+  }
+  if (inactivePlayer.protection.length > 0) {
+    throw new Error(GAME_CONDITION_FAILURE.OPPONENT_HAS_PROTECTION);
   }
 };

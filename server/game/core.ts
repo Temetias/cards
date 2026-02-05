@@ -54,6 +54,7 @@ import {
   getActivePlayer,
   getFieldCreatures,
   getObservers,
+  conditionOpponentHasNoProtection,
 } from "../../shared/game.ts";
 import { User } from "../../shared/user.ts";
 import { brand, UUID } from "../../shared/utils.ts";
@@ -551,19 +552,19 @@ const actionPlayCard = withConditions(
   },
 );
 
-const actionForfeit = withConditions([], (state, playerId) => {
+const actionForfeit = withConditions([], (state, playerId: Player["id"]) => {
   // Forfeiting can be done at any time, no conditions
   // assign winner to the other player
-  const inactivePlayerId = Object.keys(state.players).find(
+  const winningPlayerId = Object.keys(state.players).find(
     (id) => id !== playerId,
   ) as UUID | undefined; // Dunno why typescript cant figure out it's UUID even though it's explicitly the key of state.players
-  if (!inactivePlayerId) {
+  if (!winningPlayerId) {
     throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
   }
   return [
     {
       ...state,
-      winner: inactivePlayerId,
+      winner: winningPlayerId,
     },
     [],
     {
@@ -573,6 +574,33 @@ const actionForfeit = withConditions([], (state, playerId) => {
     },
   ];
 });
+
+const actionWin = withConditions(
+  [
+    conditionIsPlayerTurn,
+    conditionHasFieldCreaturesSelected,
+    conditionOpponentHasNoFieldCreatures,
+    conditionOpponentHasNoProtection,
+  ],
+  (state, playerId: Player["id"]) => {
+    const activePlayer = getActivePlayer(state);
+    if (activePlayer.id !== playerId) {
+      throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
+    }
+    return [
+      {
+        ...state,
+        winner: activePlayer.id,
+      },
+      [],
+      {
+        initiator: GAME_PLAYER,
+        self: GAME_PLAYER,
+        effectName: GAME_ACTION.WIN,
+      },
+    ];
+  },
+);
 
 type UpdateSender = (
   gs: GameState,
@@ -638,6 +666,9 @@ function handlePlayerAction(
         if (!targetId) throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
         return actionAttackCreature([playerId], [targetId]);
 
+      case GAME_ACTION.WIN:
+        return actionWin([playerId], [playerId]);
+
       default:
         throw new Error(GAME_LOGIC_ERROR.UNKNOWN_ACTION);
     }
@@ -693,6 +724,15 @@ function init(
   const [val, currentSeed] = rng(tempSeed2);
   const activePlayer = val < 0.5 ? player1.id : player2.id;
   const inactivePlayer = val < 0.5 ? player2.id : player1.id;
+
+  // Pawn is the equalizer for first turn advantage
+  const pawnCreature: FieldCreatureCard = {
+    ...(getCardDefinition(pawn.definitionId) as CreatureCardDefintion),
+    type: "CREATURE",
+    id: brand(crypto.randomUUID(), "UUID"),
+    attacked: true,
+  };
+
   let state: GameState = {
     rng: {
       initialSeed,
@@ -702,20 +742,14 @@ function init(
       [player1.id]: player1,
       [player2.id]: player2,
     },
+    cardPool: [...player1.startingDeck, ...player2.startingDeck, pawnCreature],
     activePlayer,
     inactivePlayer,
     turnTimer: 0,
     turnCount: 0,
     winner: null,
   };
-  const pawnCreature: FieldCreatureCard = {
-    ...(getCardDefinition(pawn.definitionId) as CreatureCardDefintion),
-    type: "CREATURE",
-    id: brand(crypto.randomUUID(), "UUID"),
-    attacked: true,
-  };
   state.players[inactivePlayer].field.push(pawnCreature);
-  state.players[inactivePlayer].startingDeck.push(pawnCreature);
   const sendUpdate: UpdateSender = (gs, logItem) => {
     [user1, user2].forEach((user) => {
       if (user.socket.readyState !== WebSocket.OPEN) return;

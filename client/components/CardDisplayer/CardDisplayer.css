@@ -116,3 +116,35 @@
 .CardDisplayer-Icon-Active {
   color: orangered;
 }
+
+.GameBoard-Status-Minor,
+.GameBoard-Status-Major {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.GameBoard-Status-Minor > div,
+.GameBoard-Status-Major > div {
+  background-color: black;
+  color: white;
+  border: white solid 2px;
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  box-shadow: 10px 10px 20px 0px rgba(0, 0, 0, 0.5);
+}
+
+.GameBoard-Status-Minor {
+  pointer-events: none;
+}
+
+.GameBoard-Status-Major {
+  background-color: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+}

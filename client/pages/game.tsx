@@ -1,4 +1,10 @@
-import { cloneElement, forwardRef, isValidElement, useEffect } from "react";
+import {
+  cloneElement,
+  forwardRef,
+  isValidElement,
+  useEffect,
+  useState,
+} from "react";
 import { useUser } from "../context/UserContext.tsx";
 import "./game.css";
 import { useAnimationEngine } from "../hooks/useAnimationEngine.ts";
@@ -19,33 +25,58 @@ function GameBoard({
   children,
   showFieldHighlight,
   showResourceHighlight,
+  showWinHighlight,
   onFieldClick,
   onResourceClick,
   onEndTurnClick,
+  onWinClick,
   inspectedCard,
   playerResource,
   opponentResource,
+  minorStatus,
+  majorStatus,
 }: {
   children: React.ReactNode;
   showResourceHighlight: boolean;
   showFieldHighlight: boolean;
+  showWinHighlight: boolean;
   onFieldClick: () => void;
   onResourceClick: () => void;
+  onWinClick: () => void;
   onEndTurnClick: (() => void) | null;
   inspectedCard?: Nullable<Card>;
   playerResource: [available: number, total: number];
   opponentResource: [available: number, total: number];
+  minorStatus?: string;
+  majorStatus?: string;
 }) {
+  const [displayedMinorStatus, setDisplayedMinorStatus] = useState<
+    string | null
+  >(null);
+  useEffect(() => {
+    if (minorStatus) {
+      setDisplayedMinorStatus(minorStatus);
+      const timeout = setTimeout(() => {
+        setDisplayedMinorStatus(null);
+      }, 2000);
+      return () => clearTimeout(timeout);
+    }
+  }, [minorStatus]);
   return (
     <div className="GameBoard">
       {showFieldHighlight && (
         <div className="GameBoard-Field" onClick={onFieldClick}>
-          field
+          Play card
         </div>
       )}
       {showResourceHighlight && (
         <div className="GameBoard-Resource" onClick={onResourceClick}>
-          resource
+          Add resource
+        </div>
+      )}
+      {showWinHighlight && (
+        <div className="GameBoard-Win" onClick={onWinClick}>
+          Finish it!
         </div>
       )}
       <div className="GameBoard-Resource-Indicator-Player">
@@ -76,6 +107,16 @@ function GameBoard({
       >
         End turn
       </button>
+      {displayedMinorStatus && (
+        <div className="GameBoard-Status-Minor">
+          <div>{displayedMinorStatus}</div>
+        </div>
+      )}
+      {majorStatus && (
+        <div className="GameBoard-Status-Major">
+          <div>{majorStatus}</div>
+        </div>
+      )}
     </div>
   );
 }
@@ -91,6 +132,7 @@ export default function Game() {
     currentLogItem,
     playerUserSelection,
     opponentUserSelection,
+    currentErrorItem,
   ] = useAnimationEngine(user.id);
 
   // Listen escape key to unselect
@@ -111,6 +153,14 @@ export default function Game() {
       value={{ gameState, playerUserSelection, opponentUserSelection }}
     >
       <GameBoard
+        majorStatus={
+          gameState.winner
+            ? gameState.winner === user.id
+              ? "You win!"
+              : "You lose!"
+            : undefined
+        }
+        minorStatus={currentErrorItem || undefined}
         playerResource={[
           getAvailableResource(gameState, user.id),
           getPlayer(gameState, user.id).resource.length,
@@ -131,6 +181,12 @@ export default function Game() {
             (res) => res.used === false,
           ).length >= (playerUserSelection as Card).cost
         }
+        showWinHighlight={
+          currentLogItem === null &&
+          getUserSelectionType(playerUserSelection) === "FIELD_CREATURES" &&
+          getOpponent(gameState, user.id).field.length === 0 &&
+          getOpponent(gameState, user.id).protection.length === 0
+        }
         onFieldClick={() => sendMessage({ action: "PLAY_CARD" })}
         onResourceClick={() => sendMessage({ action: "PLAY_RESOURCE" })}
         onEndTurnClick={
@@ -138,6 +194,7 @@ export default function Game() {
             ? () => sendMessage({ action: "END_TURN" })
             : null
         }
+        onWinClick={() => sendMessage({ action: "WIN" })}
         inspectedCard={getOpponent(gameState, user.id).hand.find(
           (card) =>
             (currentLogItem?.effectName === "CREATURE_PLAYED" ||
@@ -145,10 +202,7 @@ export default function Game() {
             currentLogItem?.initiator === card.id,
         )}
       >
-        {[
-          ...getOpponent(gameState, user.id).startingDeck,
-          ...getPlayer(gameState, user.id).startingDeck,
-        ].map((card) => {
+        {gameState.cardPool.map((card) => {
           const opponent = getOpponent(gameState, user.id);
           const player = getPlayer(gameState, user.id);
           switch (true) {

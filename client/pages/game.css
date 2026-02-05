@@ -11,10 +11,12 @@
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  user-select: none;
 }
 
 .GameBoard-Field,
-.GameBoard-Resource {
+.GameBoard-Resource,
+.GameBoard-Win {
   position: absolute;
   z-index: 10;
   display: flex;
@@ -36,6 +38,13 @@
   left: 10%;
   right: 65%;
   bottom: 5%;
+}
+
+.GameBoard-Win {
+  top: 10%;
+  left: 36%;
+  right: 27%;
+  bottom: 70%;
 }
 
 .GameBoard-Resource-Indicator-Player,
