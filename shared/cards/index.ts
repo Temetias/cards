@@ -17,13 +17,16 @@ import {
 } from "../utils.ts";
 import { bolster } from "./bolster.ts";
 import { butcher } from "./butcher.ts";
+import { chort } from "./chort.ts";
 import { cosmosWalker } from "./cosmoswalker.ts";
 import { doom } from "./doom.ts";
+import { farseer } from "./farseer.ts";
 import { firelash } from "./firelash.ts";
 import { ghoul } from "./ghoul.ts";
 import { imp } from "./imp.ts";
 import { pawn } from "./pawn.ts";
 import { reaper } from "./reaper.ts";
+import { summoner } from "./summoner.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -128,6 +131,9 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [cosmosWalker.definitionId]: cosmosWalker,
   [doom.definitionId]: doom,
   [bolster.definitionId]: bolster,
+  [summoner.definitionId]: summoner,
+  [chort.definitionId]: chort,
+  [farseer.definitionId]: farseer,
 } as const;
 
 export function getCardDefinition(

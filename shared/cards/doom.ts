@@ -29,7 +29,7 @@ export const doom: SpellCardDefintion = {
         ({ getDispatch, self }) =>
           getDispatch({
             effectName: GAME_TRIGGER.CREATURE_DIED,
-            initiator,
+            initiator: self,
             self,
           }),
       ),

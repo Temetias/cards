@@ -10,7 +10,7 @@ export const firelash: SpellCardDefintion = {
   cost: 2,
   type: "SPELL",
   keywords: [],
-  onPlay: buildCardOnPlayNonTargeted((state, { initiator }) => {
+  onPlay: buildCardOnPlayNonTargeted((state) => {
     const opponent = getInactivePlayer(state);
     const dyingCreatures = opponent.field.filter(
       (creature) => creature.power <= 3,
@@ -21,7 +21,7 @@ export const firelash: SpellCardDefintion = {
         ({ getDispatch, self }) =>
           getDispatch({
             effectName: GAME_TRIGGER.CREATURE_DIED,
-            initiator,
+            initiator: self,
             self,
           }),
       ),

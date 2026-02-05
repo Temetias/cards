@@ -1,3 +1,5 @@
+import type { GameLogicError } from "./communication.ts";
+
 export type Brand<T, B extends string> = T & { __brand: B };
 export type UUID = Brand<string, "UUID">;
 export function brand<T, B extends string>(value: T, _brand: B): Brand<T, B> {
@@ -17,3 +19,10 @@ export type Identified = {
 export type Named = {
   name: string;
 };
+export function gameLogicErrorLog(
+  error: GameLogicError,
+  at: string,
+  ...args: unknown[]
+) {
+  console.error("Game logic error at ", at, ":", error, ...args);
+}

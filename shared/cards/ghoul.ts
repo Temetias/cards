@@ -1,7 +1,8 @@
 import { GAME_LOGIC_ERROR } from "../communication.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 import { getFieldCreatures, type GameState } from "../game.ts";
-import { buildCardTrigger, drawWithEffects } from "./helpers.ts";
+import { buildCardTrigger, drawWithEffects, getOwner } from "./helpers.ts";
+import { gameLogicErrorLog, type UUID } from "../utils.ts";
 
 export const ghoul: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_ghoul"),
@@ -17,13 +18,10 @@ export const ghoul: CreatureCardDefintion = {
       // Don't draw if self is the one who died
       if (initiator === self) return null;
       // Don't draw if im dead already
-      // TODO: Abstract this check
+      // TODO: Likely obsolete check
       const selfInField = getFieldCreatures(state).find((fc) => fc.id === self);
       if (!selfInField) return null;
-      const owner = Object.values(state.players).find((p) =>
-        p.field.some((fc) => fc.id === self),
-      );
-      if (!owner) throw new Error(GAME_LOGIC_ERROR.CARD_COULDNT_FIND_OWNER);
+      const owner = getOwner(state, self as UUID, "ghoul.CREATURE_DIED");
       const [drawn, remaining, triggeredEffects] = drawWithEffects(
         owner.deck,
         1,

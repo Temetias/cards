@@ -26,6 +26,10 @@
   border: 1px solid white;
 }
 
+.GameBoard-Resource-Glow {
+  box-shadow: 0 0 10px 5px green;
+}
+
 .GameBoard-Field {
   top: 50%;
   left: 10%;

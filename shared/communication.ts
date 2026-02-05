@@ -4,16 +4,50 @@ import type { GameState } from "./game.ts";
 export const GAME_MECHANIC = "GAME_MECHANIC" as const;
 export const GAME_PLAYER = "GAME_PLAYER" as const;
 export const GAME_TRIGGER = {
+  /**
+   * Initiator: Card that was played
+   * Target: Card that was targeted by the cards "onPlay" (if any)
+   */
   CREATURE_PLAYED: "CREATURE_PLAYED",
+  /**
+   * Initiator: Card that caused summon or the player (in case of played from hand)
+   *
+   * (play causes summon)
+   */
+  CREATURE_SUMMONED: "CREATURE_SUMMONED",
+  /**
+   * Initiator: Attacking creature
+   * Target: Creature that got attacked
+   */
   CREATURE_ATTACKED: "CREATURE_ATTACKED",
+  /**
+   * Initiator: Creature that got attacked
+   */
   CREATURE_GOT_ATTACKED: "CREATURE_GOT_ATTACKED",
+  /**
+   * Initiator: Creature that died
+   */
   CREATURE_DIED: "CREATURE_DIED",
   CREATURE_REVIVED: "CREATURE_REVIVED",
+  /**
+   * Initiator: Card that was played
+   * Target: Card that was targeted by the cards "onPlay" (if any)
+   */
   SPELL_PLAYED: "SPELL_PLAYED",
+  /**
+   * Initiator: Player that played the resource
+   * Target: Card that was played into resource
+   */
   RESOURCE_PLAYED: "RESOURCE_PLAYED",
+  /**
+   * Initiator: GAME_MECHANIC or Card that caused the draw
+   * Target: Card that was drawn
+   */
   CARD_DRAWN: "CARD_DRAWN",
-  TURN_STARTED: "TURN_STARTED",
   TURN_ENDED: "TURN_ENDED",
+  /**
+   * Initiator: Protection that got destroyed
+   */
   PROTECTION_DESTROYED: "PROTECTION_DESTROYED",
 } as const;
 export type GameTrigger = keyof typeof GAME_TRIGGER;

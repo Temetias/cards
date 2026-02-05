@@ -4,8 +4,14 @@ import {
   GAME_PLAYER,
   GAME_TRIGGER,
 } from "../communication.ts";
-import { getFieldCreatures, getObservers, type GameState } from "../game.ts";
+import {
+  getFieldCreatures,
+  getObservers,
+  type Player,
+  type GameState,
+} from "../game.ts";
 import { draw } from "../rng.ts";
+import { gameLogicErrorLog } from "../utils.ts";
 import {
   type GameEffectDispatch,
   type Card,
@@ -73,7 +79,11 @@ export function buildCardOnPlayTargeted(
   };
 }
 
-export function getOwner(state: GameState, cardId: Card["id"]) {
+export function getOwner(
+  state: GameState,
+  cardId: Card["id"],
+  caller: string,
+): Player {
   const owner = Object.values(state.players).find(
     (p) =>
       p.hand.some((c) => c.id === cardId) ||
@@ -84,7 +94,10 @@ export function getOwner(state: GameState, cardId: Card["id"]) {
       p.resource.some((c) => c.id === cardId) ||
       p.discard.some((c) => c.id === cardId),
   );
-  if (!owner) throw new Error(GAME_LOGIC_ERROR.CARD_COULDNT_FIND_OWNER);
+  if (!owner) {
+    gameLogicErrorLog(GAME_LOGIC_ERROR.CARD_COULDNT_FIND_OWNER, caller, cardId);
+    throw new Error(GAME_LOGIC_ERROR.CARD_COULDNT_FIND_OWNER);
+  }
   return owner;
 }
 

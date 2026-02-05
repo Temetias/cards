@@ -20,11 +20,13 @@ import {
 } from "../utils/GameStateUtils.ts";
 import type { Nullable } from "../../shared/utils.ts";
 import { CardDisplayer } from "../components/CardDisplayer/CardDisplayer.tsx";
+import { useNavigate } from "react-router-dom";
 
 function GameBoard({
   children,
   showFieldHighlight,
   showResourceHighlight,
+  glowResourceHighlight,
   showWinHighlight,
   onFieldClick,
   onResourceClick,
@@ -33,11 +35,12 @@ function GameBoard({
   inspectedCard,
   playerResource,
   opponentResource,
-  minorStatus,
-  majorStatus,
+  gameMessage,
+  resultMessage,
 }: {
   children: React.ReactNode;
   showResourceHighlight: boolean;
+  glowResourceHighlight: boolean;
   showFieldHighlight: boolean;
   showWinHighlight: boolean;
   onFieldClick: () => void;
@@ -47,21 +50,23 @@ function GameBoard({
   inspectedCard?: Nullable<Card>;
   playerResource: [available: number, total: number];
   opponentResource: [available: number, total: number];
-  minorStatus?: string;
-  majorStatus?: string;
+  gameMessage?: string;
+  resultMessage?: string;
 }) {
   const [displayedMinorStatus, setDisplayedMinorStatus] = useState<
     string | null
   >(null);
   useEffect(() => {
-    if (minorStatus) {
-      setDisplayedMinorStatus(minorStatus);
+    if (gameMessage) {
+      setDisplayedMinorStatus(gameMessage);
       const timeout = setTimeout(() => {
         setDisplayedMinorStatus(null);
       }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [minorStatus]);
+  }, [gameMessage]);
+
+  const navigate = useNavigate();
   return (
     <div className="GameBoard">
       {showFieldHighlight && (
@@ -79,7 +84,12 @@ function GameBoard({
           Finish it!
         </div>
       )}
-      <div className="GameBoard-Resource-Indicator-Player">
+      <div
+        className={
+          "GameBoard-Resource-Indicator-Player" +
+          (glowResourceHighlight ? " GameBoard-Resource-Glow" : "")
+        }
+      >
         {playerResource[0]} / {playerResource[1]}
       </div>
       <div className="GameBoard-Resource-Indicator-Opponent">
@@ -112,9 +122,14 @@ function GameBoard({
           <div>{displayedMinorStatus}</div>
         </div>
       )}
-      {majorStatus && (
+      {resultMessage && (
         <div className="GameBoard-Status-Major">
-          <div>{majorStatus}</div>
+          <div>
+            <div>{resultMessage}</div>
+            <button type="button" onClick={() => navigate("/")}>
+              End game
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -153,14 +168,14 @@ export default function Game() {
       value={{ gameState, playerUserSelection, opponentUserSelection }}
     >
       <GameBoard
-        majorStatus={
+        resultMessage={
           gameState.winner
             ? gameState.winner === user.id
               ? "You win!"
               : "You lose!"
             : undefined
         }
-        minorStatus={currentErrorItem || undefined}
+        gameMessage={currentErrorItem || undefined}
         playerResource={[
           getAvailableResource(gameState, user.id),
           getPlayer(gameState, user.id).resource.length,
@@ -173,6 +188,10 @@ export default function Game() {
           currentLogItem === null &&
           getUserSelectionType(playerUserSelection) === "HAND_CARD" &&
           !getPlayer(gameState, user.id).hasPlayedResource
+        }
+        glowResourceHighlight={
+          isMyTurn(gameState, user.id) &&
+          getPlayer(gameState, user.id).hasPlayedResource === false
         }
         showFieldHighlight={
           currentLogItem === null &&

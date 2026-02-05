@@ -1,6 +1,7 @@
 import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
 import { type GameState, getObservers } from "../game.ts";
-import { buildCardOnPlayTargeted } from "./helpers.ts";
+import { brand, gameLogicErrorLog } from "../utils.ts";
+import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const cosmosWalker: CreatureCardDefintion = {
@@ -17,15 +18,19 @@ export const cosmosWalker: CreatureCardDefintion = {
       ({ getDispatch, self }) =>
         getDispatch({
           effectName: GAME_TRIGGER.CREATURE_DIED,
-          initiator,
+          initiator: self,
           self,
-          target,
         }),
     );
-    const owner = Object.values(state.players).find((player) =>
-      player.field.some((creature) => creature.id === target),
-    );
-    if (!owner) throw new Error(GAME_LOGIC_ERROR.CARD_NOT_FOUND);
+    if (!target) {
+      gameLogicErrorLog(
+        GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
+        "cosmosWalker.onPlay",
+        initiator,
+      );
+      throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+    }
+    const owner = getOwner(state, brand(target, "UUID"), "cosmosWalker.onPlay");
 
     const next: GameState = {
       ...state,

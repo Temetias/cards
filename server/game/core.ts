@@ -57,7 +57,7 @@ import {
   conditionOpponentHasNoProtection,
 } from "../../shared/game.ts";
 import { User } from "../../shared/user.ts";
-import { brand, UUID } from "../../shared/utils.ts";
+import { brand, gameLogicErrorLog, UUID } from "../../shared/utils.ts";
 import { draw, generateSeed, rng, shuffle } from "../../shared/rng.ts";
 import { pawn } from "../../shared/cards/pawn.ts";
 
@@ -88,9 +88,10 @@ const actionPlayResource = withConditions(
       GAME_TRIGGER.RESOURCE_PLAYED,
     ).map(({ getDispatch, self }) =>
       getDispatch({
-        initiator: selectedCard.id,
+        initiator: GAME_PLAYER,
         self,
         effectName: GAME_TRIGGER.RESOURCE_PLAYED,
+        target: selectedCard.id,
       }),
     );
     const next = {
@@ -292,6 +293,11 @@ const actionAttackProtection = withConditions(
     const player = getActivePlayer(state);
     const targetProtection = opponent.protection.find((c) => c.id === targetId);
     if (!targetProtection) {
+      gameLogicErrorLog(
+        GAME_LOGIC_ERROR.CARD_NOT_FOUND,
+        "core.actionAttackProtection",
+        targetId,
+      );
       throw new Error(GAME_LOGIC_ERROR.CARD_NOT_FOUND);
     }
     const attackingCreatures = player.userSelection as FieldCreatureCard[]; // Asserted by condition, sad TypeScript noises
@@ -364,6 +370,11 @@ const actionAttackCreature = withConditions(
     const player = getActivePlayer(state);
     const targetCreature = opponent.field.find((c) => c.id === targetId);
     if (!targetCreature) {
+      gameLogicErrorLog(
+        GAME_LOGIC_ERROR.CARD_NOT_FOUND,
+        "core.actionAttackCreature",
+        targetId,
+      );
       throw new Error(GAME_LOGIC_ERROR.CARD_NOT_FOUND);
     }
     const attackingCreatures = player.userSelection as FieldCreatureCard[]; // Asserted by condition, sad TypeScript noises
@@ -386,6 +397,7 @@ const actionAttackCreature = withConditions(
             initiator: ac.id,
             self,
             effectName: GAME_TRIGGER.CREATURE_ATTACKED,
+            target: targetCreature.id,
           }),
       ),
     );
@@ -504,6 +516,7 @@ const actionPlayCard = withConditions(
       selectedCard,
       targetId,
     );
+    const isCreatureCard = isCreature(selectedCard);
     const next = {
       ...state,
       players: {
@@ -511,7 +524,7 @@ const actionPlayCard = withConditions(
         [player.id]: {
           ...player,
           hand: player.hand.filter((c) => c.id !== selectedCard.id),
-          field: isCreature(selectedCard)
+          field: isCreatureCard
             ? [...player.field, creatureCardToFieldCreatureCard(selectedCard)]
             : player.field,
           discard: isSpell(selectedCard)
@@ -523,7 +536,7 @@ const actionPlayCard = withConditions(
       },
     };
 
-    const triggeredEffects = getObservers(
+    const triggeredPlayEffects = getObservers(
       state,
       isCreature(selectedCard)
         ? GAME_TRIGGER.CREATURE_PLAYED
@@ -532,16 +545,31 @@ const actionPlayCard = withConditions(
       getDispatch({
         initiator: selectedCard.id,
         self,
-        effectName: isCreature(selectedCard)
+        effectName: isCreatureCard
           ? GAME_TRIGGER.CREATURE_PLAYED
           : GAME_TRIGGER.SPELL_PLAYED,
+        target: targetId,
       }),
     );
+
+    const triggeredSummonEffects = isCreatureCard
+      ? getObservers(state, GAME_TRIGGER.CREATURE_SUMMONED).map(
+          ({ getDispatch, self }) =>
+            getDispatch({
+              initiator: GAME_PLAYER,
+              self,
+              effectName: GAME_TRIGGER.CREATURE_SUMMONED,
+              target: selectedCard.id,
+            }),
+        )
+      : [];
+
     return [
       next,
       [
         ...(triggeredEffectFromOnPlay ? [triggeredEffectFromOnPlay] : []),
-        ...triggeredEffects,
+        ...triggeredPlayEffects,
+        ...triggeredSummonEffects,
       ],
       {
         initiator: GAME_PLAYER,
@@ -559,6 +587,11 @@ const actionForfeit = withConditions([], (state, playerId: Player["id"]) => {
     (id) => id !== playerId,
   ) as UUID | undefined; // Dunno why typescript cant figure out it's UUID even though it's explicitly the key of state.players
   if (!winningPlayerId) {
+    gameLogicErrorLog(
+      GAME_LOGIC_ERROR.PLAYER_NOT_FOUND,
+      "core.actionForfeit",
+      playerId,
+    );
     throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
   }
   return [
@@ -585,6 +618,11 @@ const actionWin = withConditions(
   (state, playerId: Player["id"]) => {
     const activePlayer = getActivePlayer(state);
     if (activePlayer.id !== playerId) {
+      gameLogicErrorLog(
+        GAME_LOGIC_ERROR.PLAYER_NOT_FOUND,
+        "core.actionWin",
+        playerId,
+      );
       throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
     }
     return [
@@ -642,11 +680,25 @@ function handlePlayerAction(
         return actionPlayResource([playerId], []);
 
       case GAME_ACTION.USER_SELECT:
-        if (!targetId) throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        if (!targetId) {
+          gameLogicErrorLog(
+            GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
+            "core.handlePlayerAction",
+            playerId,
+          );
+          throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        }
         return actionUserSelect([playerId, targetId], [targetId]);
 
       case GAME_ACTION.USER_UNSELECT:
-        if (!targetId) throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        if (!targetId) {
+          gameLogicErrorLog(
+            GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
+            "core.handlePlayerAction",
+            playerId,
+          );
+          throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        }
         return actionUserUnselect([playerId, targetId], [targetId]);
 
       case GAME_ACTION.USER_CLEAR_SELECTION:
@@ -659,7 +711,14 @@ function handlePlayerAction(
         return actionForfeit([playerId], [playerId]);
 
       case GAME_ACTION.ATTACK_PROTECTION:
-        if (!targetId) throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        if (!targetId) {
+          gameLogicErrorLog(
+            GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
+            "core.handlePlayerAction",
+            playerId,
+          );
+          throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        }
         return actionAttackProtection([playerId], [targetId]);
 
       case GAME_ACTION.ATTACK_CREATURE:

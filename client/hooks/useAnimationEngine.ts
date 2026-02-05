@@ -47,6 +47,7 @@ function useWs(onMessage: (msg: ServerMessage) => void, userId: string) {
 
 const ANIMATION_LENGTHS: Record<GameTrigger | GameAction, number> = {
   CREATURE_PLAYED: 1000,
+  CREATURE_SUMMONED: 500,
   CREATURE_ATTACKED: 500,
   CREATURE_GOT_ATTACKED: 500,
   CREATURE_DIED: 500,
@@ -54,7 +55,6 @@ const ANIMATION_LENGTHS: Record<GameTrigger | GameAction, number> = {
   SPELL_PLAYED: 1000,
   RESOURCE_PLAYED: 0,
   CARD_DRAWN: 500,
-  TURN_STARTED: 0,
   TURN_ENDED: 0,
   PROTECTION_DESTROYED: 500,
   USER_SELECT: 0,

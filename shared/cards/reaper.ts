@@ -1,6 +1,7 @@
 import { GAME_LOGIC_ERROR } from "../communication.ts";
 import { type GameState, getFieldCreatures } from "../game.ts";
-import { buildCardTrigger } from "./helpers.ts";
+import { type UUID } from "../utils.ts";
+import { buildCardTrigger, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const reaper: CreatureCardDefintion = {
@@ -19,10 +20,7 @@ export const reaper: CreatureCardDefintion = {
       // Don't buff if im dead already
       const selfInField = getFieldCreatures(state).find((fc) => fc.id === self);
       if (!selfInField) return null;
-      const owner = Object.values(state.players).find((p) =>
-        p.field.some((fc) => fc.id === self),
-      );
-      if (!owner) throw new Error(GAME_LOGIC_ERROR.CARD_COULDNT_FIND_OWNER);
+      const owner = getOwner(state, self as UUID, "reaper.CARD_DRAWN");
       // Don't buff if opponent drew
       if (!owner.hand.some((c) => c.id === target)) return null;
       const next: GameState = {
