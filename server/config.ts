@@ -10,7 +10,7 @@ function getEnv(key: string, fallback: string) {
 
 export const DISCORD_CLIENT_ID = getEnv(
   "DISCORD_CLIENT_ID",
-  "DISCORD_APPLICATION_ID_HERE",
+  "DISCORD_CLIENT_ID_HERE",
 );
 export const DISCORD_CLIENT_SECRET = getEnv(
   "DISCORD_CLIENT_SECRET",

@@ -1,16 +1,10 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import type { UserData } from "../../shared/user.ts";
-import { type Nullable } from "../../shared/utils.ts";
-
-export function useUser(): Nullable<UserData> {
-  const userJson = localStorage.getItem("user");
-  if (!userJson) return null;
-  return JSON.parse(userJson);
-}
+import { useUserContext } from "../context/UserContext.tsx";
 
 function Register() {
   const navigate = useNavigate();
+  const { refresh } = useUserContext();
   return (
     <form
       onSubmit={(e) => {
@@ -27,8 +21,8 @@ function Register() {
           body: JSON.stringify({ username, password, name }),
         })
           .then((res) => res.json())
-          .then((user: UserData) => {
-            localStorage.setItem("user", JSON.stringify(user));
+          .then(() => refresh())
+          .then(() => {
             navigate("/");
           });
       }}
@@ -53,23 +47,16 @@ function Register() {
 
 export default function Login() {
   const navigate = useNavigate();
+  const { refresh } = useUserContext();
 
   useEffect(() => {
     const location = (globalThis as unknown as { location: Location }).location;
     if (!location.hash.startsWith("#discord=")) return;
-    const encoded = location.hash.replace("#discord=", "");
-    try {
-      const json = decodeURIComponent(
-        escape(atob(decodeURIComponent(encoded))),
-      );
-      const user = JSON.parse(json) as UserData;
-      localStorage.setItem("user", JSON.stringify(user));
-      location.hash = "";
+    location.hash = "";
+    refresh().finally(() => {
       navigate("/");
-    } catch {
-      // ignore malformed payload
-    }
-  }, [navigate]);
+    });
+  }, [navigate, refresh]);
 
   return (
     <div>
@@ -93,8 +80,8 @@ export default function Login() {
               }
               return res.json();
             })
-            .then((user: UserData) => {
-              localStorage.setItem("user", JSON.stringify(user));
+            .then(() => refresh())
+            .then(() => {
               navigate("/");
             })
             .catch(() => {

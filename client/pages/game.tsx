@@ -1,5 +1,5 @@
 import { cloneElement, forwardRef, isValidElement, useEffect } from "react";
-import { useUser } from "./login.tsx";
+import { useUser } from "../context/UserContext.tsx";
 import "./game.css";
 import { useAnimationEngine } from "../hooks/useAnimationEngine.ts";
 import type { Card } from "../../shared/cards/index.ts";
@@ -12,7 +12,6 @@ import {
   isMyTurn,
   isUserSelected,
 } from "../utils/GameStateUtils.ts";
-import { PreviewDisplayer } from "../components/PreviewDisplayer/PreviewDisplayer.tsx";
 import type { Nullable } from "../../shared/utils.ts";
 import { CardDisplayer } from "../components/CardDisplayer/CardDisplayer.tsx";
 
@@ -82,7 +81,8 @@ function GameBoard({
 }
 
 export default function Game() {
-  const user = useUser();
+  const { user, loading } = useUser();
+  if (loading) return <div>Loading...</div>;
   if (!user) return <div>Unauthorized</div>;
 
   const [

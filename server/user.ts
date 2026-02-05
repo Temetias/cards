@@ -13,6 +13,8 @@ import { DatabaseSync } from "node:sqlite";
 
 const LOCAL_PROVIDER = "local";
 const DISCORD_PROVIDER = "discord";
+const SESSION_COOKIE_NAME = "session";
+const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 type IdentityRow = {
   user_id: string;
@@ -30,6 +32,12 @@ type UserRow = {
   credits: number;
   decks: string;
   active_deck: string;
+};
+
+type SessionRow = {
+  id: string;
+  user_id: string;
+  expires_at: number;
 };
 
 type DiscordUser = {
@@ -200,6 +208,70 @@ function insertIdentity(
   stmt.run(userId, provider, providerId, null, null, null, Date.now());
 }
 
+function createSession(db: DatabaseSync, userId: string) {
+  const sessionId = crypto.randomUUID();
+  const expiresAt = Date.now() + SESSION_TTL_MS;
+  const stmt = db.prepare(
+    "INSERT INTO sessions (id, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
+  );
+  stmt.run(sessionId, userId, Date.now(), expiresAt);
+  return sessionId;
+}
+
+function deleteSession(db: DatabaseSync, sessionId: string) {
+  const stmt = db.prepare("DELETE FROM sessions WHERE id = ?");
+  stmt.run(sessionId);
+}
+
+function getUserBySession(db: DatabaseSync, sessionId: string) {
+  const stmt = db.prepare(
+    "SELECT u.id, u.name, u.collection, u.credits, u.decks, u.active_deck, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?",
+  );
+  const row = stmt.get(sessionId) as (UserRow & SessionRow) | undefined;
+  if (!row) return null;
+  if (row.expires_at <= Date.now()) {
+    deleteSession(db, sessionId);
+    return null;
+  }
+  return mapUserRow(row);
+}
+
+function setSessionCookie(
+  context: {
+    cookies: {
+      set: (
+        name: string,
+        value: string,
+        options: Record<string, unknown>,
+      ) => void;
+    };
+  },
+  sessionId: string,
+) {
+  context.cookies.set(SESSION_COOKIE_NAME, sessionId, {
+    httpOnly: true,
+    sameSite: "Lax",
+    path: "/",
+  });
+}
+
+function clearSessionCookie(context: {
+  cookies: {
+    set: (
+      name: string,
+      value: string,
+      options: Record<string, unknown>,
+    ) => void;
+  };
+}) {
+  context.cookies.set(SESSION_COOKIE_NAME, "", {
+    httpOnly: true,
+    sameSite: "Lax",
+    path: "/",
+    maxAge: 0,
+  });
+}
+
 function discordAuthorizeUrl() {
   const url = new URL("https://discord.com/api/oauth2/authorize");
   url.searchParams.set("client_id", DISCORD_CLIENT_ID);
@@ -236,16 +308,19 @@ export function initUserTables(db: DatabaseSync) {
   db.exec(
     "CREATE TABLE IF NOT EXISTS identities (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, provider TEXT NOT NULL, provider_id TEXT NOT NULL, password_hash TEXT, password_salt TEXT, password_iterations INTEGER, created_at INTEGER NOT NULL, UNIQUE(provider, provider_id), FOREIGN KEY(user_id) REFERENCES users(id))",
   );
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS sessions (id TEXT PRIMARY KEY, user_id TEXT NOT NULL, created_at INTEGER NOT NULL, expires_at INTEGER NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id))",
+  );
 }
 
 export function createUserMiddleware(db: DatabaseSync): Middleware<AppState> {
   return async (ctx, next) => {
-    const userId = ctx.request.url.searchParams.get("userId");
-    if (!userId) {
+    const sessionId = await ctx.cookies.get(SESSION_COOKIE_NAME);
+    if (!sessionId) {
       await next();
       return;
     }
-    const user = getUserById(db, userId);
+    const user = getUserBySession(db, sessionId);
     if (!user) {
       await next();
       return;
@@ -257,6 +332,25 @@ export function createUserMiddleware(db: DatabaseSync): Middleware<AppState> {
 }
 
 export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
+  router.get("/api/user/me", (context) => {
+    const user = context.state.user;
+    if (!user) {
+      context.response.status = 401;
+      context.response.body = "Unauthorized: User not found.";
+      return;
+    }
+    context.response.body = user;
+  });
+
+  router.post("/api/user/logout", async (context) => {
+    const sessionId = await context.cookies.get(SESSION_COOKIE_NAME);
+    if (sessionId) {
+      deleteSession(db, sessionId);
+    }
+    clearSessionCookie(context);
+    context.response.body = "Logged out.";
+  });
+
   router.get("/api/user/login/discord/start", (context) => {
     context.response.redirect(discordAuthorizeUrl());
   });
@@ -331,6 +425,8 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       }
     }
 
+    const sessionId = createSession(db, user.id);
+    setSessionCookie(context, sessionId);
     context.response.headers.set("Content-Type", "text/html");
     context.response.body = discordLoginHtml(user);
   });
@@ -386,6 +482,8 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       context.response.body = "Internal Server Error.";
       return;
     }
+    const sessionId = createSession(db, user.id);
+    setSessionCookie(context, sessionId);
     context.response.body = user;
   });
 
@@ -435,6 +533,8 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       context.response.body = "Not Found: User missing.";
       return;
     }
+    const sessionId = createSession(db, user.id);
+    setSessionCookie(context, sessionId);
     context.response.body = user;
   });
 }

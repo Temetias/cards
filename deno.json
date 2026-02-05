@@ -7,7 +7,7 @@
     "dev": "deno run -A npm:vite & deno run server:start",
     "build": "deno run -A npm:vite build",
     "client:start": "deno run -A npm:vite",
-    "server:start": "deno run -A --watch ./server/main.ts",
+    "server:start": "deno run -A --env-file --watch ./server/main.ts",
     "serve": "deno run build && deno run server:start"
   },
   "nodeModulesDir": "auto",
