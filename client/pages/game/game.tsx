@@ -136,6 +136,7 @@ export default function Game() {
   const { user, loading } = useUser();
   if (loading) return <div>Loading...</div>;
   if (!user) return <div>Unauthorized</div>;
+  const navigate = useNavigate();
 
   const [
     gameState,
@@ -541,7 +542,14 @@ export default function Game() {
       </GameBoard>
     </GameStateContext>
   ) : (
-    <div>matchmaking...</div>
+    <div className="GameBoard-Status-Major">
+      <div>
+        <div>Finding opponent...</div>
+        <button type="button" onClick={() => navigate("/")}>
+          Back to menu
+        </button>
+      </div>
+    </div>
   );
 }
 
