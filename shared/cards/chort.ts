@@ -1,8 +1,7 @@
-import { GAME_LOGIC_ERROR } from "../communication.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
-import { getFieldCreatures, type GameState } from "../game.ts";
-import { buildCardTrigger, drawWithEffects, getOwner } from "./helpers.ts";
-import { gameLogicErrorLog, type UUID } from "../utils.ts";
+import { type GameState } from "../game.ts";
+import { buildCardTrigger, getOwner } from "./helpers.ts";
+import { type UUID } from "../utils.ts";
 
 // TODO
 // Currently this basically has super windfury.

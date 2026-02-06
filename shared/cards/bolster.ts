@@ -1,10 +1,4 @@
-import { GAME_TRIGGER } from "../communication.ts";
-import {
-  type GameState,
-  getActivePlayer,
-  getInactivePlayer,
-  getObservers,
-} from "../game.ts";
+import { type GameState, getActivePlayer } from "../game.ts";
 import { buildCardOnPlayNonTargeted } from "./helpers.ts";
 import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
 

@@ -72,6 +72,7 @@ function GameBoard({
     <div className="GameBoard">
       {showFieldHighlight && (
         <div className="GameBoard-Field" onClick={onFieldClick}>
+          {/** TODO: this being on cards prevents onplays that target own field */}
           Play card
         </div>
       )}
@@ -454,14 +455,24 @@ export default function Game() {
                         ? "PLAYER"
                         : null
                     }
-                    onClick={() =>
-                      sendMessage({
-                        action: isUserSelected(playerUserSelection, card.id)
-                          ? "USER_UNSELECT"
-                          : "USER_SELECT",
-                        targetId: card.id,
-                      })
-                    }
+                    onClick={() => {
+                      if (
+                        getUserSelectionType(playerUserSelection) ===
+                        "HAND_CARD"
+                      ) {
+                        sendMessage({
+                          action: "PLAY_CARD",
+                          targetId: card.id,
+                        });
+                      } else {
+                        sendMessage({
+                          action: isUserSelected(playerUserSelection, card.id)
+                            ? "USER_UNSELECT"
+                            : "USER_SELECT",
+                          targetId: card.id,
+                        });
+                      }
+                    }}
                     onMouseEnter={() => setHoveredFieldCardId(card.id)}
                     onMouseLeave={() => setHoveredFieldCardId(null)}
                   />
