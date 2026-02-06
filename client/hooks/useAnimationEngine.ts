@@ -116,8 +116,6 @@ export function useAnimationEngine(userId: UUID) {
     // Default to 1ms if no animation length defined
     // This makes it so that instant animations won't apply state
     // before the next log item is processed
-    // TODO: Test if network latency affects this
-    // if it does, we will need message bundling instead of single messages
     const delay = ANIMATION_LENGTHS[next.effectName] || 1;
     timeoutRef.current = setTimeout(() => {
       setCurrentLogItem(null);
@@ -135,8 +133,8 @@ export function useAnimationEngine(userId: UUID) {
       setOpponentUserSelectionState(
         msg.state.players[opponentId as UUID].userSelection,
       );
-      if (msg.logItem) {
-        queueRef.current.push({ ...msg.logItem, state: msg.state });
+      if (msg.log && msg.log.length > 0) {
+        queueRef.current.push(...msg.log);
         processNext();
         return;
       }

@@ -4,7 +4,6 @@ import {
   CreatureCardDefintion,
   GameActionDispatch,
   GameEffectDispatch,
-  GameEffectDispatchArguments,
   GameEffectDispatchGetter,
   getCardDefinition,
   isCreature,
@@ -36,6 +35,7 @@ import {
   FieldCreatureCard,
   fieldCreatureCardToCreatureCard,
   GameConditionAssert,
+  GameLog,
   GameState,
   Player,
   ResourceCard,
@@ -640,28 +640,26 @@ const actionWin = withConditions(
   },
 );
 
-type UpdateSender = (
-  gs: GameState,
-  logItem?: GameEffectDispatchArguments,
-) => void;
+type UpdateSender = (gs: GameState, log?: GameLog) => void;
 
 function processTriggeredEffects(
-  sendUpdate: UpdateSender,
   state: GameState,
   dispatches: GameEffectDispatch[],
+  log: GameLog,
 ): GameState {
   if (!dispatches.length) return state;
   const [dispatch, ...restDispatches] = dispatches;
   const dispatchResult = dispatch(state);
   if (!dispatchResult) {
-    return processTriggeredEffects(sendUpdate, state, restDispatches);
+    return processTriggeredEffects(state, restDispatches, log);
   }
   const [nextState, nextDispatches, dispatchArgs] = dispatchResult;
-  sendUpdate(nextState, dispatchArgs);
-  return processTriggeredEffects(sendUpdate, nextState, [
-    ...restDispatches,
-    ...nextDispatches,
-  ]);
+  log.push({ ...dispatchArgs, state: nextState });
+  return processTriggeredEffects(
+    nextState,
+    [...restDispatches, ...nextDispatches],
+    log,
+  );
 }
 
 function handlePlayerAction(
@@ -722,7 +720,14 @@ function handlePlayerAction(
         return actionAttackProtection([playerId], [targetId]);
 
       case GAME_ACTION.ATTACK_CREATURE:
-        if (!targetId) throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        if (!targetId) {
+          gameLogicErrorLog(
+            GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
+            "core.handlePlayerAction",
+            playerId,
+          );
+          throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+        }
         return actionAttackCreature([playerId], [targetId]);
 
       case GAME_ACTION.WIN:
@@ -732,7 +737,10 @@ function handlePlayerAction(
         throw new Error(GAME_LOGIC_ERROR.UNKNOWN_ACTION);
     }
   })();
-  return processTriggeredEffects(sendUpdate, state, [dispatch]);
+  const log: GameLog = [];
+  const nextState = processTriggeredEffects(state, [dispatch], log);
+  sendUpdate(nextState, log.length ? log : undefined);
+  return nextState;
 }
 
 function initPlayer(
@@ -809,14 +817,14 @@ function init(
     winner: null,
   };
   state.players[inactivePlayer].field.push(pawnCreature);
-  const sendUpdate: UpdateSender = (gs, logItem) => {
+  const sendUpdate: UpdateSender = (gs, log) => {
     [user1, user2].forEach((user) => {
       if (user.socket.readyState !== WebSocket.OPEN) return;
       sendMessage(
         {
           message: "GAME_STATE_UPDATE",
           state: gs,
-          ...(logItem ? { logItem } : {}),
+          ...(log ? { log } : {}),
         },
         user.socket,
       );
