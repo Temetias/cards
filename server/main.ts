@@ -8,7 +8,10 @@ import { DatabaseSync } from "node:sqlite";
 
 const app = new Application<AppState>();
 const router = new Router<AppState>();
-const db = new DatabaseSync(`${Deno.cwd()}/data/database.sqlite`);
+const dataDirUrl = new URL("../data", import.meta.url);
+const dbUrl = new URL("../data/database.sqlite", import.meta.url);
+await Deno.mkdir(dataDirUrl, { recursive: true });
+const db = new DatabaseSync(dbUrl.pathname);
 
 initUserTables(db);
 
@@ -34,7 +37,9 @@ app.use(oakCors());
 app.use(createUserMiddleware(db));
 app.use(router.routes());
 app.use(router.allowedMethods());
-app.use(routeStaticFilesFrom([`${Deno.cwd()}/dist`, `${Deno.cwd()}/public`]));
+const distUrl = new URL("../dist", import.meta.url);
+const publicUrl = new URL("../public", import.meta.url);
+app.use(routeStaticFilesFrom([distUrl.pathname, publicUrl.pathname]));
 
 if (import.meta.main) {
   console.log("Server listening on port http://localhost:8000");

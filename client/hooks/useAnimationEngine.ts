@@ -11,10 +11,14 @@ import type { GameLog, GameState, Player } from "../../shared/game.ts";
 import type { Nullable, UUID } from "../../shared/utils.ts";
 
 function useWs(onMessage: (msg: ServerMessage) => void, userId: string) {
+  const protocol = location.protocol === "https:" ? "wss" : "ws";
   const wsRef = useRef<Nullable<WebSocket>>(null);
   useEffect(() => {
+    const host = location.host.includes("localhost")
+      ? "localhost:8000"
+      : location.host;
     const ws = new WebSocket(
-      "ws://localhost:8000/api/game/matchmaking?userId=" + userId,
+      `${protocol}://${host}/api/game/matchmaking?userId=` + userId,
     );
     wsRef.current = ws;
     ws.onopen = () => {
