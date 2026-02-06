@@ -21,6 +21,7 @@ import {
 import type { Nullable } from "../../shared/utils.ts";
 import { CardDisplayer } from "../components/CardDisplayer/CardDisplayer.tsx";
 import { useNavigate } from "react-router-dom";
+import { LineFromChild } from "../components/LineFromChild/LineFromChild.tsx";
 
 function GameBoard({
   children,
@@ -150,6 +151,32 @@ export default function Game() {
     currentErrorItem,
   ] = useAnimationEngine(user.id);
 
+  const [hoveredFieldCardId, setHoveredFieldCardId] = useState<string | null>(
+    null,
+  );
+  const [hoverInspectedCard, setHoverInspectedCard] =
+    useState<Nullable<Card>>(null);
+  const selectionType = getUserSelectionType(playerUserSelection);
+
+  useEffect(() => {
+    if (selectionType === "FIELD_CREATURES") {
+      setHoverInspectedCard(null);
+      return;
+    }
+    if (!hoveredFieldCardId) {
+      setHoverInspectedCard(null);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      if (!gameState) return;
+      const hoveredCard = gameState.cardPool.find(
+        (card) => card.id === hoveredFieldCardId,
+      );
+      setHoverInspectedCard(hoveredCard ?? null);
+    }, 666);
+    return () => clearTimeout(timeout);
+  }, [gameState, hoveredFieldCardId, selectionType]);
+
   // Listen escape key to unselect
   useEffect(() => {
     function onEscKeyDown(e: KeyboardEvent) {
@@ -214,12 +241,15 @@ export default function Game() {
             : null
         }
         onWinClick={() => sendMessage({ action: "WIN" })}
-        inspectedCard={getOpponent(gameState, user.id).hand.find(
-          (card) =>
-            (currentLogItem?.effectName === "CREATURE_PLAYED" ||
-              currentLogItem?.effectName === "SPELL_PLAYED") &&
-            currentLogItem?.initiator === card.id,
-        )}
+        inspectedCard={
+          hoverInspectedCard ??
+          getOpponent(gameState, user.id).hand.find(
+            (card) =>
+              (currentLogItem?.effectName === "CREATURE_PLAYED" ||
+                currentLogItem?.effectName === "SPELL_PLAYED") &&
+              currentLogItem?.initiator === card.id,
+          )
+        }
       >
         {gameState.cardPool.map((card) => {
           const opponent = getOpponent(gameState, user.id);
@@ -323,7 +353,7 @@ export default function Game() {
                     total: opponent.resource.length,
                   })}
                 >
-                  <CardDisplayer card={card} />
+                  <CardDisplayer card={card} flipside />
                 </Positioner>
               );
             case !!player.resource.find((c) => c.id === card.id):
@@ -335,7 +365,7 @@ export default function Game() {
                     total: player.resource.length,
                   })}
                 >
-                  <CardDisplayer card={card} />
+                  <CardDisplayer card={card} flipside />
                 </Positioner>
               );
             case !!opponent.field.find((c) => c.id === card.id):
@@ -381,6 +411,8 @@ export default function Game() {
                             targetId: card.id,
                           })
                     }
+                    onMouseEnter={() => setHoveredFieldCardId(card.id)}
+                    onMouseLeave={() => setHoveredFieldCardId(null)}
                   />
                 </Positioner>
               );
@@ -392,6 +424,7 @@ export default function Game() {
                     index: player.field.findIndex((c) => c.id === card.id),
                     total: player.field.length,
                   })}
+                  showLine={isUserSelected(playerUserSelection, card.id)}
                 >
                   <CardDisplayer
                     card={player.field.find((c) => c.id === card.id)!}
@@ -429,6 +462,8 @@ export default function Game() {
                         targetId: card.id,
                       })
                     }
+                    onMouseEnter={() => setHoveredFieldCardId(card.id)}
+                    onMouseLeave={() => setHoveredFieldCardId(null)}
                   />
                 </Positioner>
               );
@@ -456,6 +491,10 @@ export default function Game() {
               return (
                 <Positioner
                   key={card.id}
+                  showLine={
+                    isUserSelected(playerUserSelection, card.id) &&
+                    card.onPlay?.type === "TARGETED"
+                  }
                   {...playerHandPosition({
                     index: player.hand.findIndex((c) => c.id === card.id),
                     total: player.hand.length,
@@ -512,25 +551,30 @@ const Positioner = forwardRef<
     scale: number;
     rotate: number;
     zIndex?: number;
+    showLine?: boolean;
   }
 >((props, ref) => {
   const { children, x, y, scale, rotate, zIndex } = props;
   if (!isValidElement(children)) {
     throw new Error("Positioner expects a single React element child");
   }
-  return cloneElement(children, {
-    ref,
-    style: {
-      position: "absolute",
-      top: `${y}%`,
-      left: `${x}%`,
-      width: "7%",
-      transition: "top 0.5s ease, left 0.5s ease , transform 0.5s ease",
-      transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
-      zIndex: zIndex ?? children.props.style?.zIndex,
-      ...children.props.style,
-    },
-  });
+  return (
+    <LineFromChild show={props.showLine}>
+      {cloneElement(children, {
+        ref,
+        style: {
+          position: "absolute",
+          top: `${y}%`,
+          left: `${x}%`,
+          width: "7%",
+          transition: "top 0.5s ease, left 0.5s ease , transform 0.5s ease",
+          transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
+          zIndex: zIndex ?? children.props.style?.zIndex,
+          ...children.props.style,
+        },
+      })}
+    </LineFromChild>
+  );
 });
 
 const RESOURCE_SPACING = 2;

@@ -1,5 +1,5 @@
 import { createContext } from "react";
-import type { Player } from "../../shared/game.ts";
+import type { GameState, Player } from "../../shared/game.ts";
 import type { UUID } from "../../shared/utils.ts";
 import type { AnimatedGameState } from "../hooks/useAnimationEngine.ts";
 
@@ -49,6 +49,6 @@ export function isUserSelected(
   return selection.id === cardId;
 }
 
-export function isMyTurn(gs: AnimatedGameState, userId: UUID) {
+export function isMyTurn(gs: AnimatedGameState | GameState, userId: UUID) {
   return gs.activePlayer === userId;
 }

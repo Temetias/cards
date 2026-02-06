@@ -9,6 +9,7 @@ import type {
 } from "../../shared/communication.ts";
 import type { GameLog, GameState, Player } from "../../shared/game.ts";
 import type { Nullable, UUID } from "../../shared/utils.ts";
+import { isMyTurn } from "../utils/GameStateUtils.ts";
 import { IS_PROD } from "../utils/runtime.ts";
 
 function useWs(onMessage: (msg: ServerMessage) => void, userId: string) {
@@ -49,13 +50,13 @@ function useWs(onMessage: (msg: ServerMessage) => void, userId: string) {
 }
 
 const ANIMATION_LENGTHS: Record<GameTrigger | GameAction, number> = {
-  CREATURE_PLAYED: 1000,
-  CREATURE_SUMMONED: 500,
+  CREATURE_PLAYED: 2000,
+  CREATURE_SUMMONED: 0,
   CREATURE_ATTACKED: 500,
   CREATURE_GOT_ATTACKED: 500,
   CREATURE_DIED: 500,
   CREATURE_REVIVED: 500,
-  SPELL_PLAYED: 1000,
+  SPELL_PLAYED: 2000,
   RESOURCE_PLAYED: 0,
   CARD_DRAWN: 500,
   TURN_ENDED: 0,
@@ -116,7 +117,12 @@ export function useAnimationEngine(userId: UUID) {
     // Default to 1ms if no animation length defined
     // This makes it so that instant animations won't apply state
     // before the next log item is processed
-    const delay = ANIMATION_LENGTHS[next.effectName] || 1;
+    const baseDelay = ANIMATION_LENGTHS[next.effectName] || 1;
+    const skipSelfPlayDelay =
+      (next.effectName === "CREATURE_PLAYED" ||
+        next.effectName === "SPELL_PLAYED") &&
+      isMyTurn(next.state, userId);
+    const delay = skipSelfPlayDelay ? 1 : baseDelay;
     timeoutRef.current = setTimeout(() => {
       setCurrentLogItem(null);
       timeoutRef.current = null;

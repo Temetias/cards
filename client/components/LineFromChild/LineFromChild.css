@@ -1,0 +1,23 @@
+.LineFromChild {
+  height: 0.25%;
+  position: relative;
+  width: 100%;
+  background-color: white;
+  border-radius: 999px;
+}
+
+/* Arrow tip as pseudo, make a triangle */
+.LineFromChild::after {
+  content: "";
+  position: absolute;
+  right: -6%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8%;
+  min-width: 0.8rem;
+  height: 250%;
+  min-height: 1.5rem;
+  background-color: white;
+  clip-path: polygon(0 10%, 100% 50%, 0 90%);
+  filter: drop-shadow(0 0 6px rgba(255, 80, 80, 0.5));
+}
