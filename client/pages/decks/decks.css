@@ -1,0 +1,53 @@
+.DeckEdit {
+  display: flex;
+  width: 100vw;
+}
+
+.DeckEdit-Collection {
+  box-sizing: border-box;
+  padding: 2%;
+  flex: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
+  gap: 2%;
+  height: 100vh;
+  overflow-y: scroll;
+}
+
+.DeckEdit-Collection-Card {
+  width: 18%;
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+.DeckEdit-Deck {
+  box-sizing: border-box;
+  padding: 2%;
+  flex: 1;
+  height: 100vh;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.DeckEdit-DeckItem {
+  display: flex;
+  justify-content: space-between;
+  background-size: cover;
+  background-position: center;
+  background-position: 0 -1rem;
+  box-sizing: border-box;
+  padding: 4%;
+  box-shadow: 4px 4px 6px 0px rgba(0, 0, 0, 0.3);
+  border: 1px solid black;
+}
+
+.DeckEdit-DeckList {
+  display: flex;
+  flex-direction: column;
+  gap: 1%;
+  flex: 1;
+}

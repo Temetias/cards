@@ -5,6 +5,7 @@ import type { FieldCreatureCard } from "../../../shared/game.ts";
 import {
   GiAbstract047,
   GiBroadsword,
+  GiBrokenShield,
   GiChewedSkull,
   GiHumanTarget,
 } from "react-icons/gi";
@@ -17,6 +18,7 @@ type CardDisplayerProps = {
   showPower?: true;
   showDetails?: true;
   showIcons?: true;
+  showShield?: true;
   flipside?: true;
   handHover?: true;
   fieldAnimations?: {
@@ -146,6 +148,7 @@ export function CardDisplayer({
   showPower,
   showDetails,
   showIcons,
+  showShield,
   flipside,
   handHover,
   fieldAnimations,
@@ -175,14 +178,20 @@ export function CardDisplayer({
       ].join(" ")}
       style={{
         ...native.style,
-        backgroundImage: flipside ? "url(cardback.png)" : undefined,
+        backgroundImage: flipside ? "url(/cardback.png)" : undefined,
       }}
     >
+      {showShield && (
+        <>
+          <GiBrokenShield className="CardDisplayer-Power CardDisplayer-Shield-Decor" />
+          <PowerSvg power={2} />
+        </>
+      )}
       {!flipside && (
         <div
           className="CardDisplayer-Inner"
           style={{
-            backgroundImage: `url(${card.definitionId}.png)`,
+            backgroundImage: `url(/${card.definitionId}.png)`,
           }}
         >
           {showCost && <CostSvg cost={card.cost} />}

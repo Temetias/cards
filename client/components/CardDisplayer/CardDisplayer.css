@@ -3,6 +3,7 @@
   background-size: cover;
   background-position: center;
   aspect-ratio: 2 / 3;
+  user-select: none;
 }
 
 .CardDisplayer-HandHover:hover .CardDisplayer-Inner {
@@ -86,12 +87,21 @@
   transform: translate(-50%, -50%);
 }
 
+.CardDisplayer-Power-Decor,
+.CardDisplayer-Shield-Decor {
+  stroke: black;
+  stroke-width: 15;
+}
+.CardDisplayer-Shield-Decor {
+  width: 45%;
+  height: 45%;
+  transform: translate(-50%, -50%);
+}
+
 .CardDisplayer-Power-Decor {
   width: 40%;
   height: 40%;
   transform: rotate(90deg) translate(-84%, 40%);
-  stroke: black;
-  stroke-width: 15;
 }
 
 .CardDisplayer-Cost {

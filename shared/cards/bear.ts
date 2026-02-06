@@ -1,12 +1,12 @@
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
-export const butcher: CreatureCardDefintion = {
-  definitionId: cardDefinitionId("collectible_butcher"),
-  cost: 6,
-  name: "Butcher",
+export const bear: CreatureCardDefintion = {
+  definitionId: cardDefinitionId("collectible_bear"),
+  cost: 3,
+  name: "Bear",
   description: [],
   type: "CREATURE",
-  power: 6,
+  power: 3,
   keywords: [],
   onPlay: null,
   triggers: {},

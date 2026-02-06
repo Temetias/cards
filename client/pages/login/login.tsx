@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUserContext } from "../context/UserContext.tsx";
+import { useUserContext } from "../../context/UserContext.tsx";
 
 function Register() {
   const navigate = useNavigate();

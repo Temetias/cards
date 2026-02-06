@@ -7,6 +7,9 @@ export default function Index() {
       <Link to="/game">
         <button type="button">Find Match</button>
       </Link>
+      <Link to="/decks">
+        <button>My decks</button>
+      </Link>
       <Link to="/logout">
         <button type="button">Logout</button>
       </Link>

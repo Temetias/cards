@@ -103,17 +103,18 @@ async function verifyPassword(
 }
 
 function createUserRow(name: string): UserData {
+  const defaultDeck = {
+    id: uuid(),
+    name: "Default Deck",
+    cards: DEFAULT_DECK(),
+  };
   return {
     id: uuid(),
     name,
     collection: [],
     credits: 100,
-    decks: [],
-    activeDeck: {
-      id: uuid(),
-      name: "Default Deck",
-      cards: DEFAULT_DECK(),
-    },
+    decks: [defaultDeck],
+    activeDeck: defaultDeck,
   };
 }
 

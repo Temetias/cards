@@ -1,7 +1,7 @@
 import type { Card } from "./cards/index.ts";
 import type { Identified, Named } from "./utils.ts";
 
-type Deck = Identified &
+export type Deck = Identified &
   Named & {
     cards: Pick<Card, "id" | "definitionId">[];
   };

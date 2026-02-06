@@ -15,11 +15,14 @@ import {
   type Nullable,
   type Typed,
 } from "../utils.ts";
+import { bat } from "./bat.ts";
+import { bear } from "./bear.ts";
 import { bolster } from "./bolster.ts";
 import { butcher } from "./butcher.ts";
 import { chort } from "./chort.ts";
 import { cosmosWalker } from "./cosmoswalker.ts";
 import { doom } from "./doom.ts";
+import { explorer } from "./explorer.ts";
 import { farseer } from "./farseer.ts";
 import { firelash } from "./firelash.ts";
 import { ghoul } from "./ghoul.ts";
@@ -27,6 +30,7 @@ import { imp } from "./imp.ts";
 import { pawn } from "./pawn.ts";
 import { reaper } from "./reaper.ts";
 import { summoner } from "./summoner.ts";
+import { warg } from "./warg.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -134,6 +138,10 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [summoner.definitionId]: summoner,
   [chort.definitionId]: chort,
   [farseer.definitionId]: farseer,
+  [bat.definitionId]: bat,
+  [bear.definitionId]: bear,
+  [warg.definitionId]: warg,
+  [explorer.definitionId]: explorer,
 } as const;
 
 export function getCardDefinition(

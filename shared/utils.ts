@@ -26,3 +26,18 @@ export function gameLogicErrorLog(
 ) {
   console.error("Game logic error at ", at, ":", error, ...args);
 }
+/**
+ * Make a array of objects unique by key
+ */
+export function uniqueByKey<T, K extends keyof T>(array: T[], key: K): T[] {
+  const seen = new Set<T[K]>();
+  return array.filter((item) => {
+    const k = item[key];
+    if (seen.has(k)) {
+      return false;
+    } else {
+      seen.add(k);
+      return true;
+    }
+  });
+}

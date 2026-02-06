@@ -7,8 +7,9 @@ import {
   Routes,
 } from "react-router-dom";
 import Index from "./pages/index.tsx";
-import Game from "./pages/game.tsx";
-import Login from "./pages/login.tsx";
+import Game from "./pages/game/game.tsx";
+import Login from "./pages/login/login.tsx";
+import Decks, { DeckEdit } from "./pages/decks/decks.tsx";
 import { useUser, useUserContext } from "./context/UserContext.tsx";
 
 function RequireUser() {
@@ -55,6 +56,9 @@ function App() {
         <Route element={<RequireUser />}>
           <Route path="/" element={<Index />} />
           <Route path="/game" element={<Game />} />
+          <Route path="/decks" element={<Decks />} />
+          <Route path="/decks/new" element={<DeckEdit />} />
+          <Route path="/decks/:id" element={<DeckEdit />} />
         </Route>
       </Routes>
     </BrowserRouter>

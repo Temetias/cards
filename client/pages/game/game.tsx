@@ -5,10 +5,10 @@ import {
   useEffect,
   useState,
 } from "react";
-import { useUser } from "../context/UserContext.tsx";
+import { useUser } from "../../context/UserContext.tsx";
 import "./game.css";
-import { useAnimationEngine } from "../hooks/useAnimationEngine.ts";
-import type { Card } from "../../shared/cards/index.ts";
+import { useAnimationEngine } from "../../hooks/useAnimationEngine.ts";
+import type { Card } from "../../../shared/cards/index.ts";
 import {
   GameStateContext,
   getAvailableResource,
@@ -17,11 +17,11 @@ import {
   getUserSelectionType,
   isMyTurn,
   isUserSelected,
-} from "../utils/GameStateUtils.ts";
-import type { Nullable } from "../../shared/utils.ts";
-import { CardDisplayer } from "../components/CardDisplayer/CardDisplayer.tsx";
+} from "../../utils/GameStateUtils.ts";
+import type { Nullable } from "../../../shared/utils.ts";
+import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx";
 import { useNavigate } from "react-router-dom";
-import { LineFromChild } from "../components/LineFromChild/LineFromChild.tsx";
+import { LineFromChild } from "../../components/LineFromChild/LineFromChild.tsx";
 
 function GameBoard({
   children,
@@ -101,13 +101,7 @@ function GameBoard({
 
       {inspectedCard && (
         <div className="GameBoard-Inspector">
-          <CardDisplayer
-            showCost
-            showPower
-            showDetails
-            showIcons
-            card={inspectedCard}
-          />
+          <CardDisplayer showCost showPower showDetails card={inspectedCard} />
         </div>
       )}
 
@@ -325,6 +319,7 @@ export default function Game() {
                   <CardDisplayer
                     card={card}
                     flipside
+                    showShield
                     onClick={() =>
                       sendMessage({
                         action: "ATTACK_PROTECTION",
@@ -342,7 +337,7 @@ export default function Game() {
                     index: player.protection.findIndex((c) => c.id === card.id),
                   })}
                 >
-                  <CardDisplayer card={card} flipside />
+                  <CardDisplayer card={card} showShield flipside />
                 </Positioner>
               );
             case !!opponent.resource.find((c) => c.id === card.id):
