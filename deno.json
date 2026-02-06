@@ -4,11 +4,10 @@
     "@tajpouria/cors": "jsr:@tajpouria/cors@^1.2.1"
   },
   "tasks": {
-    "dev": "deno run -A npm:vite & deno run server:start",
     "build": "VITE_IS_PROD=true deno run -A npm:vite build",
-    "client:start": "deno run -A npm:vite",
-    "server:start": "deno run -A --env-file --watch ./server/main.ts",
-    "serve": "deno run server:start"
+    "client:dev": "deno run -A npm:vite",
+    "server:dev": "deno run -A --env-file --watch ./server/main.ts",
+    "server:start": "deno run -A --env-file ./server/main.ts"
   },
   "nodeModulesDir": "auto",
   "compilerOptions": {
