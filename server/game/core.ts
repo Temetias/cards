@@ -230,7 +230,11 @@ const actionUserUnselect = withConditions(
             ...state.players,
             [player.id]: {
               ...player,
-              userSelection: userSelection.filter((c) => c.id !== targetId),
+              // Dont leave an empty array hanging
+              userSelection: userSelection.filter((c) => c.id !== targetId)
+                .length
+                ? userSelection.filter((c) => c.id !== targetId)
+                : null,
             },
           },
         }

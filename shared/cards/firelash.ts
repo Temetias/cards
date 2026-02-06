@@ -16,12 +16,12 @@ export const firelash: SpellCardDefintion = {
       (creature) => creature.power <= 3,
     );
 
-    const deathEffects = dyingCreatures.flatMap(() =>
+    const deathEffects = dyingCreatures.flatMap((dc) =>
       getObservers(state, GAME_TRIGGER.CREATURE_DIED).map(
         ({ getDispatch, self }) =>
           getDispatch({
             effectName: GAME_TRIGGER.CREATURE_DIED,
-            initiator: self,
+            initiator: dc.id,
             self,
           }),
       ),
