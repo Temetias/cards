@@ -254,9 +254,6 @@ export function DeckEdit() {
             {saving ? "Saving..." : "Save"}
           </button>
           {error ? <div>{error}</div> : null}
-          <Link to="/decks">
-            <button type="button">Back to decks</button>
-          </Link>
         </div>
       </div>
     </main>

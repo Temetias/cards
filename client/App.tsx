@@ -6,7 +6,7 @@ import {
   Route,
   Routes,
 } from "react-router-dom";
-import Index from "./pages/index.tsx";
+import Index from "./pages/index/index.tsx";
 import Game from "./pages/game/game.tsx";
 import Login from "./pages/login/login.tsx";
 import Decks, { DeckEdit } from "./pages/decks/decks.tsx";
@@ -15,6 +15,7 @@ import {
   LoadingOverlayProvider,
   useLoadingOverlay,
 } from "./context/LoadingOverlayContext/LoadingOverlayContext.tsx";
+import { Layout } from "./components/Layout/Layout.tsx";
 
 function RequireUser() {
   const { user, loading } = useUser();
@@ -69,17 +70,19 @@ function App() {
   return (
     <BrowserRouter>
       <LoadingOverlayProvider>
-        <Routes>
-          <Route path="/login" element={<LoginRoute />} />
-          <Route path="/logout" element={<LogoutRoute />} />
-          <Route element={<RequireUser />}>
-            <Route path="/" element={<Index />} />
-            <Route path="/game" element={<Game />} />
-            <Route path="/decks" element={<Decks />} />
-            <Route path="/decks/new" element={<DeckEdit />} />
-            <Route path="/decks/:id" element={<DeckEdit />} />
-          </Route>
-        </Routes>
+        <Layout>
+          <Routes>
+            <Route path="/login" element={<LoginRoute />} />
+            <Route path="/logout" element={<LogoutRoute />} />
+            <Route element={<RequireUser />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/game" element={<Game />} />
+              <Route path="/decks" element={<Decks />} />
+              <Route path="/decks/new" element={<DeckEdit />} />
+              <Route path="/decks/:id" element={<DeckEdit />} />
+            </Route>
+          </Routes>
+        </Layout>
       </LoadingOverlayProvider>
     </BrowserRouter>
   );

@@ -22,6 +22,7 @@ import type { Nullable } from "../../../shared/utils.ts";
 import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx";
 import { useNavigate } from "react-router-dom";
 import { LineFromChild } from "../../components/LineFromChild/LineFromChild.tsx";
+import { Guide } from "../../components/Guide/Guide.tsx";
 
 function GameBoard({
   children,
@@ -38,6 +39,8 @@ function GameBoard({
   opponentResource,
   gameMessage,
   resultMessage,
+  playerName,
+  opponentName,
 }: {
   children: React.ReactNode;
   showResourceHighlight: boolean;
@@ -53,10 +56,13 @@ function GameBoard({
   opponentResource: [available: number, total: number];
   gameMessage?: string;
   resultMessage?: string;
+  playerName?: string;
+  opponentName?: string;
 }) {
   const [displayedMinorStatus, setDisplayedMinorStatus] = useState<
     string | null
   >(null);
+  const [showGuide, setShowGuide] = useState(false);
   useEffect(() => {
     if (gameMessage) {
       setDisplayedMinorStatus(gameMessage);
@@ -69,65 +75,86 @@ function GameBoard({
 
   const navigate = useNavigate();
   return (
-    <div className="GameBoard">
-      {showFieldHighlight && (
-        <div className="GameBoard-Field" onClick={onFieldClick}>
-          {/** TODO: this being on cards prevents onplays that target own field */}
-          Play card
-        </div>
-      )}
-      {showResourceHighlight && (
-        <div className="GameBoard-Resource" onClick={onResourceClick}>
-          Add resource
-        </div>
-      )}
-      {showWinHighlight && (
-        <div className="GameBoard-Win" onClick={onWinClick}>
-          Finish it!
-        </div>
-      )}
-      <div
-        className={
-          "GameBoard-Resource-Indicator-Player" +
-          (glowResourceHighlight ? " GameBoard-Resource-Glow" : "")
-        }
-      >
-        {playerResource[0]} / {playerResource[1]}
-      </div>
-      <div className="GameBoard-Resource-Indicator-Opponent">
-        {opponentResource[0]} / {opponentResource[1]}
-      </div>
-      {children}
-
-      {inspectedCard && (
-        <div className="GameBoard-Inspector">
-          <CardDisplayer showCost showPower showDetails card={inspectedCard} />
-        </div>
-      )}
-
-      <button
-        type="button"
-        className="end-turn-button"
-        disabled={onEndTurnClick === null}
-        onClick={onEndTurnClick ?? undefined}
-      >
-        End turn
-      </button>
-      {displayedMinorStatus && (
-        <div className="GameBoard-Status-Minor">
-          <div>{displayedMinorStatus}</div>
-        </div>
-      )}
-      {resultMessage && (
-        <div className="GameBoard-Status-Major">
-          <div>
-            <div>{resultMessage}</div>
-            <button type="button" onClick={() => navigate("/")}>
-              End game
-            </button>
+    <div className="GameBoard-Wrap">
+      <div className="GameBoard">
+        {showFieldHighlight && (
+          <div className="GameBoard-Field" onClick={onFieldClick}>
+            {/** TODO: this being on cards prevents onplays that target own field */}
+            Play card
           </div>
+        )}
+        {showResourceHighlight && (
+          <div className="GameBoard-Resource" onClick={onResourceClick}>
+            Add resource
+          </div>
+        )}
+        {showWinHighlight && (
+          <div className="GameBoard-Win" onClick={onWinClick}>
+            Finish it!
+          </div>
+        )}
+        <div
+          className={
+            "GameBoard-Resource-Indicator-Player" +
+            (glowResourceHighlight ? " GameBoard-Resource-Glow" : "")
+          }
+        >
+          {playerResource[0]} / {playerResource[1]}
         </div>
-      )}
+        <div className="GameBoard-Resource-Indicator-Opponent">
+          {opponentResource[0]} / {opponentResource[1]}
+        </div>
+        {children}
+
+        {inspectedCard && (
+          <div className="GameBoard-Inspector">
+            <CardDisplayer
+              showCost
+              showPower
+              showDetails
+              card={inspectedCard}
+            />
+          </div>
+        )}
+
+        <button
+          type="button"
+          className="GameBoard-EndTurnButton"
+          disabled={onEndTurnClick === null}
+          onClick={onEndTurnClick ?? undefined}
+        >
+          End turn
+        </button>
+        {displayedMinorStatus && (
+          <div className="GameBoard-Status-Minor">
+            <div>{displayedMinorStatus}</div>
+          </div>
+        )}
+        {resultMessage && (
+          <div className="GameBoard-Status-Major">
+            <div>
+              <div>{resultMessage}</div>
+              <button type="button" onClick={() => navigate("/")}>
+                End game
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="GameBoard-Player GameBoard-Player-Opponent">
+          {opponentName}
+        </div>
+        <div className="GameBoard-Player GameBoard-Player-Player">
+          {playerName}
+        </div>
+      </div>
+      {showGuide && <Guide onClose={() => setShowGuide(false)} />}
+      <button
+        className="GameBoard-Guide-Button"
+        type="button"
+        onClick={() => setShowGuide(true)}
+      >
+        Guide
+      </button>
     </div>
   );
 }
@@ -199,6 +226,8 @@ export default function Game() {
             : undefined
         }
         gameMessage={currentErrorItem || undefined}
+        playerName={user.name}
+        opponentName={getOpponent(gameState, user.id).name}
         playerResource={[
           getAvailableResource(gameState, user.id),
           getPlayer(gameState, user.id).resource.length,

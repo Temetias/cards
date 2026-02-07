@@ -8,7 +8,7 @@
 
 .CardDisplayer-HandHover:hover .CardDisplayer-Inner {
   transition: transform 0.25s ease-in-out;
-  transform: scale(2.65) translateY(-70%);
+  transform: scale(2.25) translateY(-70%);
 }
 
 .CardDisplayer-Inner {

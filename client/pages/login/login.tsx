@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUserContext } from "../../context/UserContext.tsx";
+import "./login.css";
 
 function Register() {
   const navigate = useNavigate();
@@ -28,18 +29,9 @@ function Register() {
       }}
     >
       <h2>Register</h2>
-      <label>
-        Username:
-        <input type="text" name="username" required />
-      </label>
-      <label>
-        Display name:
-        <input type="text" name="name" required />
-      </label>
-      <label>
-        Password:
-        <input type="password" name="password" required />
-      </label>
+      <input type="text" name="username" placeholder="Username" required />
+      <input type="text" name="name" placeholder="Display name" required />
+      <input type="password" name="password" placeholder="Password" required />
       <button type="submit">Register</button>
     </form>
   );
@@ -59,51 +51,56 @@ export default function Login() {
   }, [navigate, refresh]);
 
   return (
-    <div>
+    <div className="Login">
       <h1>v2cards</h1>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          const formData = new FormData(e.currentTarget);
-          const username = formData.get("username") as string;
-          const password = formData.get("password") as string;
-          fetch("/api/user/login", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ username, password }),
-          })
-            .then((res) => {
-              if (!res.ok) {
-                throw new Error("Login failed");
-              }
-              return res.json();
+      <div className="Login-Content">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.currentTarget);
+            const username = formData.get("username") as string;
+            const password = formData.get("password") as string;
+            fetch("/api/user/login", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ username, password }),
             })
-            .then(() => refresh())
-            .then(() => {
-              navigate("/");
-            })
-            .catch(() => {
-              alert("Login failed.");
-            });
-        }}
-      >
-        <h2>Login</h2>
-        <label>
-          Username:
-          <input type="text" name="username" required />
-        </label>
-        <label>
-          Password:
-          <input type="password" name="password" required />
-        </label>
-        <button type="submit">Login</button>
-      </form>
-      <a href="/api/user/login/discord/start">
-        <button type="button">Login with Discord</button>
-      </a>
-      <Register />
+              .then((res) => {
+                if (!res.ok) {
+                  throw new Error("Login failed");
+                }
+                return res.json();
+              })
+              .then(() => refresh())
+              .then(() => {
+                navigate("/");
+              })
+              .catch(() => {
+                alert("Login failed.");
+              });
+          }}
+        >
+          <h2>Login</h2>
+          <input type="text" name="username" placeholder="Username" required />
+
+          <input
+            placeholder="Password"
+            type="password"
+            name="password"
+            required
+          />
+
+          <button type="submit">Login</button>
+        </form>
+        <a href="/api/user/login/discord/start">
+          <button className="Login-Discord" type="button">
+            Login with Discord
+          </button>
+        </a>
+        <Register />
+      </div>
     </div>
   );
 }

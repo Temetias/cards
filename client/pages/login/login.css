@@ -1,0 +1,29 @@
+.Login {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.Login-Content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 30rem;
+  background-color: black;
+  border: 1px solid white;
+  box-shadow: 4px 4px 6px 0px rgba(0, 0, 0, 0.3);
+  padding: 2rem 1.5rem;
+}
+
+.Login-Content form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.Login-Discord {
+  background-color: #5865f2;
+  width: 100%;
+}

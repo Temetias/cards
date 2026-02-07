@@ -2,7 +2,7 @@
   display: flex;
   gap: 2%;
   width: 100vw;
-  height: 100vh;
+  height: 100%;
   box-sizing: border-box;
   padding: 2%;
 }
@@ -54,6 +54,7 @@
 .DeckEdit {
   display: flex;
   width: 100vw;
+  height: 100%;
 }
 
 .DeckEdit-Collection {
@@ -65,8 +66,8 @@
   align-items: flex-start;
   align-content: flex-start;
   gap: 2%;
-  height: 100vh;
-  overflow-y: scroll;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .DeckEdit-Collection-Card {
@@ -79,8 +80,7 @@
   box-sizing: border-box;
   padding: 2%;
   flex: 1;
-  height: 100vh;
-  overflow-y: scroll;
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 2%;
@@ -113,6 +113,7 @@
 .DeckEdit-DeckList {
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
   gap: 1%;
   flex: 1;
 }
@@ -123,4 +124,8 @@
   gap: 0.5rem;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.DeckEdit-Actions button {
+  width: 100%;
 }
