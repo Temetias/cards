@@ -342,7 +342,6 @@ export function createUserMiddleware(db: DatabaseSync): Middleware<AppState> {
       await next();
       return;
     }
-    console.log("Authenticated user:", user.id);
     ctx.state.user = user;
     await next();
   };
@@ -444,6 +443,7 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
 
     const sessionId = createSession(db, user.id);
     setSessionCookie(context, sessionId);
+    console.log("User logged in via Discord:", user.id);
     context.response.headers.set("Content-Type", "text/html");
     context.response.body = discordLoginHtml(user);
   });
@@ -627,6 +627,7 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
     }
     const sessionId = createSession(db, user.id);
     setSessionCookie(context, sessionId);
+    console.log("User registered:", user.id);
     context.response.body = user;
   });
 
@@ -678,6 +679,7 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
     }
     const sessionId = createSession(db, user.id);
     setSessionCookie(context, sessionId);
+    console.log("User logged in:", user.id);
     context.response.body = user;
   });
 }

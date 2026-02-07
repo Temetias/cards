@@ -8,7 +8,6 @@ import {
 import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx";
 import { uniqueByKey, uuid, type UUID } from "../../../shared/utils.ts";
 import {
-  type User,
   validateDeck,
   type Deck,
   type UserData,
@@ -92,6 +91,7 @@ export default function Decks() {
   };
   return (
     <div className="Decks">
+      <DeckItem user={user} onActivate={handleActivate} activating={false} />
       {user?.decks.map((deck) => (
         <DeckItem
           key={deck.id}
@@ -101,7 +101,6 @@ export default function Decks() {
           activating={activatingId === deck.id}
         />
       ))}
-      <DeckItem user={user} onActivate={handleActivate} activating={false} />
     </div>
   );
 }

@@ -72,6 +72,7 @@
 
 .DeckEdit-Collection-Card {
   width: 18%;
+  max-width: 11rem;
   flex: 0 0 auto;
   align-self: flex-start;
 }
