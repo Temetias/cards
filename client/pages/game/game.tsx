@@ -421,7 +421,10 @@ export default function Game() {
                     index: player.field.findIndex((c) => c.id === card.id),
                     total: player.field.length,
                   })}
-                  showLine={isUserSelected(playerUserSelection, card.id)}
+                  showLine={
+                    !gameState.winner &&
+                    isUserSelected(playerUserSelection, card.id)
+                  }
                 >
                   <CardDisplayer
                     card={player.field.find((c) => c.id === card.id)!}
@@ -499,6 +502,7 @@ export default function Game() {
                 <Positioner
                   key={card.id}
                   showLine={
+                    !gameState.winner &&
                     isUserSelected(playerUserSelection, card.id) &&
                     card.onPlay?.type === "TARGETED"
                   }

@@ -7,65 +7,101 @@ import {
 } from "../../../shared/cards/index.ts";
 import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx";
 import { uniqueByKey, uuid, type UUID } from "../../../shared/utils.ts";
-import { validateDeck, type Deck } from "../../../shared/user.ts";
+import {
+  type User,
+  validateDeck,
+  type Deck,
+  type UserData,
+} from "../../../shared/user.ts";
 import { useState } from "react";
 
-function DeckItem({ deck }: { deck?: Deck }) {
-  // First two
-  const displayCardImage1 =
-    uniqueByKey(deck?.cards || [], "definitionId")[0]?.definitionId ||
-    "cardback";
-  const displayCardImage2 =
-    uniqueByKey(deck?.cards || [], "definitionId")[1]?.definitionId ||
-    "cardback";
-  // last two
-  const displayCardImage3 =
-    uniqueByKey(deck?.cards || [], "definitionId")[
-      uniqueByKey(deck?.cards || [], "definitionId").length - 1
-    ]?.definitionId || "cardback";
-  const displayCardImage4 =
-    uniqueByKey(deck?.cards || [], "definitionId")[
-      uniqueByKey(deck?.cards || [], "definitionId").length - 2
-    ]?.definitionId || "cardback";
+function DeckItem({
+  deck,
+  user,
+  onActivate,
+  activating,
+}: {
+  deck?: Deck;
+  user: UserData;
+  onActivate: (deckId: Deck["id"]) => void;
+  activating: boolean;
+}) {
+  const displayPool = uniqueByKey(deck?.cards || [], "definitionId").sort(
+    (a, b) =>
+      getCardDefinition(a.definitionId).cost -
+      getCardDefinition(b.definitionId).cost,
+  );
+  const displayPoolImages = [
+    displayPool[0]?.definitionId || "cardback",
+    displayPool[1]?.definitionId || "cardback",
+    displayPool[displayPool.length - 2]?.definitionId || "cardback",
+    displayPool[displayPool.length - 1]?.definitionId || "cardback",
+  ];
   return (
     <div className="DeckItem">
       <div className="DeckItem-Cards">
-        <div
-          style={{
-            backgroundImage: `url(/${displayCardImage1}.png)`,
-          }}
-        ></div>
-        <div
-          style={{
-            backgroundImage: `url(/${displayCardImage2}.png)`,
-          }}
-        ></div>
-        <div
-          style={{
-            backgroundImage: `url(/${displayCardImage3}.png)`,
-          }}
-        ></div>
-        <div
-          style={{
-            backgroundImage: `url(/${displayCardImage4}.png)`,
-          }}
-        ></div>
+        {displayPoolImages.map((defId, index) => (
+          <div
+            key={index}
+            style={{
+              backgroundImage: `url(/${defId || "cardback"}.png)`,
+            }}
+          ></div>
+        ))}
       </div>
       <Link to={`/decks/${deck?.id || "new"}`}>
         <div className="DeckItem-Name">{deck?.name || "Create new"}</div>
       </Link>
+      {deck && (
+        <button
+          className="DeckItem-Button"
+          type="button"
+          onClick={() => onActivate(deck.id)}
+          disabled={user.activeDeckId === deck.id || activating}
+        >
+          {user.activeDeckId === deck.id
+            ? "Active"
+            : activating
+              ? "Setting..."
+              : "Make active"}
+        </button>
+      )}
     </div>
   );
 }
 
 export default function Decks() {
   const { user } = useUser();
+  const { setUser } = useUserContext();
+  const [activatingId, setActivatingId] = useState<Deck["id"] | null>(null);
+  if (!user) return <div className="Decks"></div>;
+  const handleActivate = async (deckId: Deck["id"]) => {
+    setActivatingId(deckId);
+    try {
+      const res = await fetch(`/api/user/setActiveDeck/${deckId}`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        return;
+      }
+      const updatedUser = (await res.json()) as UserData;
+      setUser(updatedUser);
+    } finally {
+      setActivatingId(null);
+    }
+  };
   return (
     <div className="Decks">
       {user?.decks.map((deck) => (
-        <DeckItem key={deck.id} deck={deck} />
+        <DeckItem
+          key={deck.id}
+          deck={deck}
+          user={user}
+          onActivate={handleActivate}
+          activating={activatingId === deck.id}
+        />
       ))}
-      <DeckItem />
+      <DeckItem user={user} onActivate={handleActivate} activating={false} />
     </div>
   );
 }

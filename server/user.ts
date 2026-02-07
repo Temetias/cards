@@ -114,7 +114,7 @@ function createUserRow(name: string): UserData {
     collection: [],
     credits: 100,
     decks: [defaultDeck],
-    activeDeck: defaultDeck,
+    activeDeckId: defaultDeck.id,
   };
 }
 
@@ -125,7 +125,7 @@ function mapUserRow(row: UserRow): UserData {
     collection: JSON.parse(row.collection),
     credits: row.credits,
     decks: JSON.parse(row.decks),
-    activeDeck: JSON.parse(row.active_deck),
+    activeDeckId: brand(row.active_deck, "UUID"),
   };
 }
 
@@ -170,7 +170,7 @@ function insertUser(db: DatabaseSync, user: UserData) {
     JSON.stringify(user.collection),
     user.credits,
     JSON.stringify(user.decks),
-    JSON.stringify(user.activeDeck),
+    user.activeDeckId,
     Date.now(),
   );
 }
@@ -213,16 +213,16 @@ function updateUserDecks(db: DatabaseSync, user: UserData) {
   const stmt = db.prepare(
     "UPDATE users SET decks = ?, active_deck = ? WHERE id = ?",
   );
-  stmt.run(
-    JSON.stringify(user.decks),
-    JSON.stringify(user.activeDeck),
-    user.id,
-  );
+  stmt.run(JSON.stringify(user.decks), user.activeDeckId, user.id);
 }
 
-function updateUserActiveDeck(db: DatabaseSync, userId: string, deck: Deck) {
+function updateUserActiveDeck(
+  db: DatabaseSync,
+  userId: string,
+  deckId: Deck["id"],
+) {
   const stmt = db.prepare("UPDATE users SET active_deck = ? WHERE id = ?");
-  stmt.run(JSON.stringify(deck), userId);
+  stmt.run(deckId, userId);
 }
 
 function createSession(db: DatabaseSync, userId: string) {
@@ -471,8 +471,8 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       context.response.body = "Not Found: Deck missing.";
       return;
     }
-    const updatedUser = { ...user, activeDeck: deck };
-    updateUserActiveDeck(db, user.id, deck);
+    const updatedUser = { ...user, activeDeckId: deck.id };
+    updateUserActiveDeck(db, user.id, deck.id);
     context.state.user = updatedUser;
     context.response.body = updatedUser;
   };
@@ -561,12 +561,12 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       nextDecks.push(nextDeck);
     }
 
-    const activeDeck =
-      user.activeDeck.id === deckIdParam ? nextDeck : user.activeDeck;
+    const activeDeckId =
+      user.activeDeckId === deckIdParam ? nextDeck.id : user.activeDeckId;
     const updatedUser = {
       ...user,
       decks: nextDecks,
-      activeDeck,
+      activeDeckId,
     };
 
     updateUserDecks(db, updatedUser);

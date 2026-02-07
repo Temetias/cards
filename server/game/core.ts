@@ -748,9 +748,13 @@ function handlePlayerAction(
 }
 
 function initPlayer(
-  { activeDeck, id, name }: User,
+  { activeDeckId, decks, id, name }: User,
   seed: Seed,
 ): [player: Player, seed: Seed] {
+  const activeDeck = decks.find((deck) => deck.id === activeDeckId) ?? decks[0];
+  if (!activeDeck) {
+    throw new Error(GAME_LOGIC_ERROR.ACTIVE_DECK_MISSING);
+  }
   const startingDeck = activeDeck.cards.map((c) => ({
     ...getCardDefinition(c.definitionId),
     id: c.id,

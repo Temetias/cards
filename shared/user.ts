@@ -27,7 +27,7 @@ export type UserData = Identified &
     collection: Pick<Card, "id" | "definitionId">[];
     credits: number;
     decks: Deck[];
-    activeDeck: Deck;
+    activeDeckId: Deck["id"];
   };
 
 export type User = UserData & {
