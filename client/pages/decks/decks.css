@@ -34,6 +34,7 @@
 }
 
 .DeckEdit-DeckItem {
+  user-select: none;
   display: flex;
   justify-content: space-between;
   background-size: cover;
