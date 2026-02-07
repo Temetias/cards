@@ -510,8 +510,8 @@ function processResourceSpending(
 const actionPlayCard = withConditions(
   [
     conditionIsPlayerTurn,
-    conditionHasEnoughResource,
     conditionHasHandCardSelected,
+    conditionHasEnoughResource,
   ],
   (state, targetId: Card["id"] | undefined) => {
     const player = getActivePlayer(state);
