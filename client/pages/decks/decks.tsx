@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router-dom";
 import "./decks.css";
-import { useUser } from "../../context/UserContext.tsx";
+import { useUser, useUserContext } from "../../context/UserContext.tsx";
 import {
   CARD_DEFINITIONS,
   getCardDefinition,
@@ -10,27 +10,69 @@ import { uniqueByKey, uuid, type UUID } from "../../../shared/utils.ts";
 import type { Deck } from "../../../shared/user.ts";
 import { useState } from "react";
 
+function DeckItem({ deck }: { deck?: Deck }) {
+  // First two
+  const displayCardImage1 =
+    uniqueByKey(deck?.cards || [], "definitionId")[0]?.definitionId ||
+    "cardback";
+  const displayCardImage2 =
+    uniqueByKey(deck?.cards || [], "definitionId")[1]?.definitionId ||
+    "cardback";
+  // last two
+  const displayCardImage3 =
+    uniqueByKey(deck?.cards || [], "definitionId")[
+      uniqueByKey(deck?.cards || [], "definitionId").length - 1
+    ]?.definitionId || "cardback";
+  const displayCardImage4 =
+    uniqueByKey(deck?.cards || [], "definitionId")[
+      uniqueByKey(deck?.cards || [], "definitionId").length - 2
+    ]?.definitionId || "cardback";
+  return (
+    <div className="DeckItem">
+      <div className="DeckItem-Cards">
+        <div
+          style={{
+            backgroundImage: `url(/${displayCardImage1}.png)`,
+          }}
+        ></div>
+        <div
+          style={{
+            backgroundImage: `url(/${displayCardImage2}.png)`,
+          }}
+        ></div>
+        <div
+          style={{
+            backgroundImage: `url(/${displayCardImage3}.png)`,
+          }}
+        ></div>
+        <div
+          style={{
+            backgroundImage: `url(/${displayCardImage4}.png)`,
+          }}
+        ></div>
+      </div>
+      <Link to={`/decks/${deck?.id || "new"}`}>
+        <div className="DeckItem-Name">{deck?.name || "Create new"}</div>
+      </Link>
+    </div>
+  );
+}
+
 export default function Decks() {
   const { user } = useUser();
   return (
-    <main className="decks-page">
-      <h1>My Decks</h1>
-      <Link to="/decks/new">
-        <button type="button">Create deck</button>
-      </Link>
-      <ul className="decks-list">
-        {user?.decks.map((deck) => (
-          <Link to={`/decks/${deck.id}`} key={deck.id}>
-            <div key={deck.id}>{deck.name}</div>
-          </Link>
-        ))}
-      </ul>
-    </main>
+    <div className="Decks">
+      {user?.decks.map((deck) => (
+        <DeckItem key={deck.id} deck={deck} />
+      ))}
+      <DeckItem />
+    </div>
   );
 }
 
 export function DeckEdit() {
   const { user } = useUser();
+  const { setUser } = useUserContext();
   const deckId = useParams().id;
   const [deck, setDeck] = useState<Deck>(
     user?.decks.find((d) => d.id === deckId) ?? {
@@ -39,6 +81,53 @@ export function DeckEdit() {
       cards: [],
     },
   );
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (!user) {
+    return (
+      <main className="DeckEdit">
+        <p>Please sign in to edit decks.</p>
+      </main>
+    );
+  }
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/user/deck/${deck.id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: deck.name,
+          cards: deck.cards,
+        }),
+      });
+      if (!res.ok) {
+        const message = await res.text();
+        setError(message || "Failed to save deck.");
+        return;
+      }
+      const updatedUser = (await res.json()) as typeof user;
+      setUser(updatedUser);
+      if (deck.id === "new") {
+        const createdDeck = updatedUser.decks[updatedUser.decks.length - 1];
+        if (createdDeck) {
+          setDeck(createdDeck);
+        }
+      } else {
+        const updatedDeck = updatedUser.decks.find((d) => d.id === deck.id);
+        if (updatedDeck) {
+          setDeck(updatedDeck);
+        }
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
   return (
     <main className="DeckEdit">
       <div className="DeckEdit-Collection">
@@ -76,6 +165,16 @@ export function DeckEdit() {
           )}
       </div>
       <div className="DeckEdit-Deck">
+        <div className="DeckEdit-Name">
+          <input
+            type="text"
+            value={deck.name}
+            onChange={(event) => {
+              setDeck({ ...deck, name: event.target.value });
+            }}
+            placeholder="New deck"
+          />
+        </div>
         <div className="DeckEdit-DeckList">
           {uniqueByKey(deck.cards, "definitionId")
             .sort((a, b) => {
@@ -110,8 +209,11 @@ export function DeckEdit() {
               </div>
             ))}
         </div>
-        <div>
-          <button type="button">Save</button>
+        <div className="DeckEdit-Actions">
+          <button type="button" onClick={handleSave} disabled={saving}>
+            {saving ? "Saving..." : "Save"}
+          </button>
+          {error ? <div>{error}</div> : null}
           <Link to="/decks">
             <button type="button">Back to decks</button>
           </Link>

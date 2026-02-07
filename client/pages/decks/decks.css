@@ -1,3 +1,50 @@
+.Decks {
+  display: flex;
+  gap: 2%;
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  padding: 2%;
+}
+
+.DeckItem {
+  position: relative;
+  width: 20%;
+  height: 10%;
+  border: 1px solid black;
+  box-shadow: 4px 4px 6px 0px rgba(0, 0, 0, 0.3);
+}
+
+.DeckItem-Cards {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: grid;
+  /*2 by 2 grid*/
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+}
+
+.DeckItem-Cards > div {
+  background-size: cover;
+  background-position: center;
+  background-position: 0 -1rem;
+}
+
+.DeckItem-Name {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: black;
+  color: white;
+  border: 1px solid white;
+  box-sizing: border-box;
+  padding: 0.2rem;
+}
+
 .DeckEdit {
   display: flex;
   width: 100vw;
@@ -30,7 +77,18 @@
   overflow-y: scroll;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 2%;
+}
+
+.DeckEdit-Name label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.DeckEdit-Name input {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .DeckEdit-DeckItem {
@@ -51,4 +109,12 @@
   flex-direction: column;
   gap: 1%;
   flex: 1;
+}
+
+.DeckEdit-Actions {
+  margin-top: auto;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
 }

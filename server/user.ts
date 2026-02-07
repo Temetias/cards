@@ -1,5 +1,5 @@
 import { Middleware, Router } from "@oak/oak";
-import { UserData } from "../shared/user.ts";
+import { Deck, UserData } from "../shared/user.ts";
 import {
   AppState,
   DISCORD_CLIENT_ID,
@@ -207,6 +207,22 @@ function insertIdentity(
     "INSERT INTO identities (user_id, provider, provider_id, password_hash, password_salt, password_iterations, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
   );
   stmt.run(userId, provider, providerId, null, null, null, Date.now());
+}
+
+function updateUserDecks(db: DatabaseSync, user: UserData) {
+  const stmt = db.prepare(
+    "UPDATE users SET decks = ?, active_deck = ? WHERE id = ?",
+  );
+  stmt.run(
+    JSON.stringify(user.decks),
+    JSON.stringify(user.activeDeck),
+    user.id,
+  );
+}
+
+function updateUserActiveDeck(db: DatabaseSync, userId: string, deck: Deck) {
+  const stmt = db.prepare("UPDATE users SET active_deck = ? WHERE id = ?");
+  stmt.run(JSON.stringify(deck), userId);
 }
 
 function createSession(db: DatabaseSync, userId: string) {
@@ -430,6 +446,126 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
     setSessionCookie(context, sessionId);
     context.response.headers.set("Content-Type", "text/html");
     context.response.body = discordLoginHtml(user);
+  });
+
+  const setActiveDeckHandler = (context: {
+    params: { id?: string };
+    state: AppState;
+    response: { status?: number; body?: unknown };
+  }) => {
+    const user = context.state.user;
+    if (!user) {
+      context.response.status = 401;
+      context.response.body = "Unauthorized: User not found.";
+      return;
+    }
+    const deckId = context.params.id;
+    if (!deckId) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Missing deck id.";
+      return;
+    }
+    const deck = user.decks.find((candidate) => candidate.id === deckId);
+    if (!deck) {
+      context.response.status = 404;
+      context.response.body = "Not Found: Deck missing.";
+      return;
+    }
+    const updatedUser = { ...user, activeDeck: deck };
+    updateUserActiveDeck(db, user.id, deck);
+    context.state.user = updatedUser;
+    context.response.body = updatedUser;
+  };
+
+  router.get("/api/user/setActiveDeck/:id", setActiveDeckHandler);
+  router.post("/api/user/setActiveDeck/:id", setActiveDeckHandler);
+
+  router.post("/api/user/deck/:id", async (context) => {
+    const user = context.state.user;
+    if (!user) {
+      context.response.status = 401;
+      context.response.body = "Unauthorized: User not found.";
+      return;
+    }
+    const deckIdParam = context.params.id;
+    if (!deckIdParam) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Missing deck id.";
+      return;
+    }
+    if (!context.request.hasBody) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: No data provided.";
+      return;
+    }
+    const payload: { name?: string; cards?: Deck["cards"] } =
+      await context.request.body.json();
+    if (payload.name !== undefined && typeof payload.name !== "string") {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Invalid deck name.";
+      return;
+    }
+
+    const cards = payload.cards;
+    if (cards !== undefined && !Array.isArray(cards)) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Invalid cards payload.";
+      return;
+    }
+    if (
+      Array.isArray(cards) &&
+      cards.some(
+        (card) =>
+          !card ||
+          typeof card.id !== "string" ||
+          typeof card.definitionId !== "string",
+      )
+    ) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Invalid card entries.";
+      return;
+    }
+
+    const existingIndex = user.decks.findIndex(
+      (candidate) => candidate.id === deckIdParam,
+    );
+    const isNewDeck = deckIdParam === "new";
+    const deckId = isNewDeck ? uuid() : deckIdParam;
+    const deckName =
+      typeof payload.name === "string" && payload.name.trim()
+        ? payload.name.trim()
+        : existingIndex >= 0
+          ? user.decks[existingIndex].name
+          : "New Deck";
+    const deckCards = Array.isArray(cards)
+      ? cards
+      : existingIndex >= 0
+        ? user.decks[existingIndex].cards
+        : [];
+    const nextDeck: Deck = {
+      id: brand(deckId, "UUID"),
+      name: deckName,
+      cards: deckCards,
+    };
+
+    const nextDecks = [...user.decks];
+    if (existingIndex >= 0) {
+      nextDecks[existingIndex] = nextDeck;
+    } else {
+      nextDecks.push(nextDeck);
+    }
+
+    const activeDeck =
+      user.activeDeck.id === deckIdParam ? nextDeck : user.activeDeck;
+    const updatedUser = {
+      ...user,
+      decks: nextDecks,
+      activeDeck,
+    };
+
+    updateUserDecks(db, updatedUser);
+    context.state.user = updatedUser;
+    context.response.body = updatedUser;
   });
 
   router.post("/api/user/register", async (context) => {
