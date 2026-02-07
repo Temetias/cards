@@ -127,6 +127,10 @@
   flex-wrap: wrap;
 }
 
-.DeckEdit-Actions button {
+.DeckEdit-Actions-Save {
+  flex: 1;
+}
+
+.DeckEdit-Actions-Save > button {
   width: 100%;
 }

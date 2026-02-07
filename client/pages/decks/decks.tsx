@@ -13,6 +13,7 @@ import {
   type UserData,
 } from "../../../shared/user.ts";
 import { useState } from "react";
+import { GAME_RULE } from "../../../shared/constants.ts";
 
 function DeckItem({
   deck,
@@ -176,6 +177,14 @@ export function DeckEdit() {
               <div key={cardDefinitionId} className="DeckEdit-Collection-Card">
                 <CardDisplayer
                   onClick={() => {
+                    if (deck.cards.length >= GAME_RULE.DECK_SIZE) return;
+                    if (
+                      deck.cards.filter(
+                        (c) => c.definitionId === cardDefinitionId,
+                      ).length >= GAME_RULE.DECK_MAX_COPIES
+                    ) {
+                      return;
+                    }
                     setDeck({
                       ...deck,
                       cards: [
@@ -245,13 +254,18 @@ export function DeckEdit() {
             ))}
         </div>
         <div className="DeckEdit-Actions">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={saving || !validateDeck(deck)}
-          >
-            {saving ? "Saving..." : "Save"}
-          </button>
+          <div>
+            {deck.cards.length}/{GAME_RULE.DECK_SIZE}
+          </div>
+          <div className="DeckEdit-Actions-Save">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || !validateDeck(deck)}
+            >
+              {saving ? "Saving..." : "Save"}
+            </button>
+          </div>
           {error ? <div>{error}</div> : null}
         </div>
       </div>
