@@ -1,5 +1,5 @@
 import { Middleware, Router } from "@oak/oak";
-import { Deck, UserData } from "../shared/user.ts";
+import { Deck, UserData, validateDeck } from "../shared/user.ts";
 import {
   AppState,
   DISCORD_CLIENT_ID,
@@ -547,6 +547,12 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       name: deckName,
       cards: deckCards,
     };
+
+    if (!validateDeck(nextDeck)) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Deck validation failed.";
+      return;
+    }
 
     const nextDecks = [...user.decks];
     if (existingIndex >= 0) {

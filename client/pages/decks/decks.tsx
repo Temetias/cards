@@ -7,7 +7,7 @@ import {
 } from "../../../shared/cards/index.ts";
 import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx";
 import { uniqueByKey, uuid, type UUID } from "../../../shared/utils.ts";
-import type { Deck } from "../../../shared/user.ts";
+import { validateDeck, type Deck } from "../../../shared/user.ts";
 import { useState } from "react";
 
 function DeckItem({ deck }: { deck?: Deck }) {
@@ -210,7 +210,11 @@ export function DeckEdit() {
             ))}
         </div>
         <div className="DeckEdit-Actions">
-          <button type="button" onClick={handleSave} disabled={saving}>
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={saving || !validateDeck(deck)}
+          >
             {saving ? "Saving..." : "Save"}
           </button>
           {error ? <div>{error}</div> : null}

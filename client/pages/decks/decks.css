@@ -9,8 +9,8 @@
 
 .DeckItem {
   position: relative;
-  width: 20%;
-  height: 10%;
+  aspect-ratio: 2 / 1;
+  height: 15%;
   border: 1px solid black;
   box-shadow: 4px 4px 6px 0px rgba(0, 0, 0, 0.3);
 }
@@ -30,7 +30,7 @@
 .DeckItem-Cards > div {
   background-size: cover;
   background-position: center;
-  background-position: 0 -1rem;
+  background-position: 0 -2rem;
 }
 
 .DeckItem-Name {

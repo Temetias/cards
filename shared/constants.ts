@@ -14,6 +14,8 @@ import { uuid } from "./utils.ts";
 export const GAME_RULE = {
   TURN_LENGTH_SECONDS: 60,
   PROTECTION_POWER: 2,
+  DECK_SIZE: 50,
+  DECK_MAX_COPIES: 4,
 };
 
 export const DEFAULT_DECK = () => [
