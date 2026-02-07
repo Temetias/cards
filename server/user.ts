@@ -364,6 +364,9 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       deleteSession(db, sessionId);
     }
     clearSessionCookie(context);
+    if (context.state.user) {
+      console.log("User logged out:", context.state.user.id);
+    }
     context.response.body = "Logged out.";
   });
 
