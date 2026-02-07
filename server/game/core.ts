@@ -57,7 +57,7 @@ import {
   conditionOpponentHasNoProtection,
 } from "../../shared/game.ts";
 import { User } from "../../shared/user.ts";
-import { brand, gameLogicErrorLog, UUID } from "../../shared/utils.ts";
+import { brand, gameLogicErrorLog, uuid, UUID } from "../../shared/utils.ts";
 import { draw, generateSeed, rng, shuffle } from "../../shared/rng.ts";
 import { pawn } from "../../shared/cards/pawn.ts";
 
@@ -804,7 +804,7 @@ function init(
   const pawnCreature: FieldCreatureCard = {
     ...(getCardDefinition(pawn.definitionId) as CreatureCardDefintion),
     type: "CREATURE",
-    id: brand(crypto.randomUUID(), "UUID"),
+    id: uuid(),
     attacked: true,
   };
 

@@ -4,7 +4,7 @@ import {
   type GameState,
   getObservers,
 } from "../game.ts";
-import { brand, type UUID } from "../utils.ts";
+import { brand, uuid, type UUID } from "../utils.ts";
 import { buildCardTrigger, getOwner } from "./helpers.ts";
 import {
   cardDefinitionId,
@@ -39,7 +39,7 @@ export const summoner: CreatureCardDefintion = {
       ) as CreatureCardDefintion;
       const impCard: FieldCreatureCard = {
         ...imp,
-        id: brand(crypto.randomUUID(), "UUID"),
+        id: uuid(),
         attacked: true,
       };
       const next: GameState = {
