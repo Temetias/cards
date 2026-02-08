@@ -462,7 +462,7 @@ export default function Game() {
                       isMyTurn(gameState, user.id) &&
                       !playerUserSelection &&
                       !player.field.find((c) => c.id === card.id)?.attacked &&
-                      (card as FieldCreatureCard).power > 0
+                      !!player.field.find((c) => c.id === card.id)?.power
                     }
                     showPower
                     showIcons
@@ -547,7 +547,7 @@ export default function Game() {
                     showCost
                     showPower
                     showDetails
-                    card={card}
+                    card={player.hand.find((c) => c.id === card.id)!}
                     playable={
                       isMyTurn(gameState, user.id) &&
                       !playerUserSelection &&

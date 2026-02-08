@@ -1,5 +1,9 @@
 import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
-import { type GameState, getObservers } from "../game.ts";
+import {
+  fieldCreatureCardToCreatureCard,
+  type GameState,
+  getObservers,
+} from "../game.ts";
 import { brand, gameLogicErrorLog } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
@@ -43,7 +47,9 @@ export const cosmosWalker: CreatureCardDefintion = {
           field: owner.field.filter((creature) => creature.id !== target),
           graveyard: [
             ...owner.graveyard,
-            owner.field.find((creature) => creature.id === target)!,
+            fieldCreatureCardToCreatureCard(
+              owner.field.find((creature) => creature.id === target)!,
+            ),
           ],
         },
       },

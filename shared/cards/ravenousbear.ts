@@ -1,6 +1,11 @@
 import { getOpponent } from "../../client/utils/GameStateUtils.ts";
 import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
-import { getObservers, type GameState } from "../game.ts";
+import {
+  cardToResourceCard,
+  fieldCreatureCardToCreatureCard,
+  getObservers,
+  type GameState,
+} from "../game.ts";
 import { gameLogicErrorLog, type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
@@ -64,7 +69,12 @@ export const ravenousbear: CreatureCardDefintion = {
           ...state.players,
           [owner.id]: {
             ...owner,
-            resource: [...owner.resource, { ...cardToResource, used: false }],
+            resource: [
+              ...owner.resource,
+              cardToResourceCard(
+                fieldCreatureCardToCreatureCard(cardToResource),
+              ),
+            ],
           },
           [opponent.id]: {
             ...opponent,

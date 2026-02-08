@@ -95,7 +95,7 @@ const actionPlayResource = withConditions(
         target: selectedCard.id,
       }),
     );
-    const next = {
+    const next: GameState = {
       ...state,
       players: {
         ...state.players,

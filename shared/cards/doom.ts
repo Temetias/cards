@@ -1,5 +1,6 @@
 import { GAME_TRIGGER } from "../communication.ts";
 import {
+  fieldCreatureCardToCreatureCard,
   type GameState,
   getActivePlayer,
   getInactivePlayer,
@@ -43,12 +44,18 @@ export const doom: SpellCardDefintion = {
         [opponent.id]: {
           ...opponent,
           field: [],
-          graveyard: [...opponent.graveyard, ...opponentDyingCreatures],
+          graveyard: [
+            ...opponent.graveyard,
+            ...opponentDyingCreatures.map(fieldCreatureCardToCreatureCard),
+          ],
         },
         [player.id]: {
           ...player,
           field: [],
-          graveyard: [...player.graveyard, ...playerDyingCreatures],
+          graveyard: [
+            ...player.graveyard,
+            ...playerDyingCreatures.map(fieldCreatureCardToCreatureCard),
+          ],
         },
       },
     };

@@ -1,6 +1,6 @@
 import { GAME_TRIGGER } from "../communication.ts";
 import { GAME_RULE } from "../constants.ts";
-import { type GameState, getObservers } from "../game.ts";
+import { type GameState, getObservers, resourceCardToCard } from "../game.ts";
 import type { UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import {
@@ -68,9 +68,12 @@ export const necroticgrowth: SpellCardDefintion = {
           ...owner,
           hand: [
             ...owner.hand,
-            ...actuallyDrawn.map((card) => ({ ...card, cost: 0 })),
+            ...actuallyDrawn
+              .map(resourceCardToCard)
+              .map((card) => ({ ...card, cost: 0 })),
           ],
           resource: [],
+          // Technically discarded cards should be converted in case but discarded cards are never seen again so it doesn't matter
           discard: [...owner.discard, ...discarded],
         },
       },

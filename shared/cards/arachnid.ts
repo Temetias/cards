@@ -1,5 +1,5 @@
 import { GAME_TRIGGER } from "../communication.ts";
-import { getObservers, type GameState } from "../game.ts";
+import { cardToResourceCard, getObservers, type GameState } from "../game.ts";
 import { type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";
@@ -41,7 +41,7 @@ export const arachnid: CreatureCardDefintion = {
         [owner.id]: {
           ...owner,
           graveyard: owner.graveyard.filter((c) => c.id !== cardToResource.id),
-          resource: [...owner.resource, { ...cardToResource, used: false }],
+          resource: [...owner.resource, cardToResourceCard(cardToResource)],
         },
       },
     };

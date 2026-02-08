@@ -1,5 +1,11 @@
 import { GAME_TRIGGER } from "../communication.ts";
-import { type GameState, getInactivePlayer, getObservers } from "../game.ts";
+import {
+  creatureCardToFieldCreatureCard,
+  fieldCreatureCardToCreatureCard,
+  type GameState,
+  getInactivePlayer,
+  getObservers,
+} from "../game.ts";
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayNonTargeted } from "./helpers.ts";
 import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
@@ -37,7 +43,10 @@ export const firelash: SpellCardDefintion = {
           field: opponent.field.filter((creature) =>
             dyingCreatures.every((dc) => dc.id !== creature.id),
           ),
-          graveyard: [...opponent.graveyard, ...dyingCreatures],
+          graveyard: [
+            ...opponent.graveyard,
+            ...dyingCreatures.map(fieldCreatureCardToCreatureCard),
+          ],
         },
       },
     };
