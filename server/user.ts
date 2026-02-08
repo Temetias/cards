@@ -9,12 +9,24 @@ import {
 } from "./config.ts";
 import { brand, uuid } from "../shared/utils.ts";
 import { DEFAULT_DECK } from "../shared/constants.ts";
+import { type Faction } from "../shared/cards/index.ts";
+import { FACTIONS } from "../shared/cards/factions.ts";
 import { DatabaseSync } from "node:sqlite";
 
 const LOCAL_PROVIDER = "local";
 const DISCORD_PROVIDER = "discord";
 const SESSION_COOKIE_NAME = "session";
 const SESSION_TTL_MS = 1000 * 60 * 60 * 24 * 30; // 30 days
+const FACTION_VALUES = new Set(Object.values(FACTIONS));
+
+function isFaction(value: unknown): value is Faction {
+  return typeof value === "string" && FACTION_VALUES.has(value as Faction);
+}
+
+const DEFAULT_DECK_FACTIONS: [Faction, Faction] = [
+  FACTIONS.WORLDFORGED,
+  FACTIONS.ASTRALS,
+];
 
 type IdentityRow = {
   user_id: string;
@@ -103,10 +115,12 @@ async function verifyPassword(
 }
 
 function createUserRow(name: string): UserData {
+  const defaultDeckCards = DEFAULT_DECK();
   const defaultDeck = {
     id: uuid(),
     name: "Default Deck",
-    cards: DEFAULT_DECK(),
+    cards: defaultDeckCards,
+    factions: DEFAULT_DECK_FACTIONS,
   };
   return {
     id: uuid(),
@@ -501,8 +515,11 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       context.response.body = "Bad Request: No data provided.";
       return;
     }
-    const payload: { name?: string; cards?: Deck["cards"] } =
-      await context.request.body.json();
+    const payload: {
+      name?: string;
+      cards?: Deck["cards"];
+      factions?: Deck["factions"];
+    } = await context.request.body.json();
     if (payload.name !== undefined && typeof payload.name !== "string") {
       context.response.status = 400;
       context.response.body = "Bad Request: Invalid deck name.";
@@ -529,6 +546,18 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       return;
     }
 
+    const factions = payload.factions;
+    if (!Array.isArray(factions)) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Missing factions payload.";
+      return;
+    }
+    if (factions.length !== 2 || factions.some((value) => !isFaction(value))) {
+      context.response.status = 400;
+      context.response.body = "Bad Request: Invalid factions payload.";
+      return;
+    }
+
     const existingIndex = user.decks.findIndex(
       (candidate) => candidate.id === deckIdParam,
     );
@@ -549,6 +578,7 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
       id: brand(deckId, "UUID"),
       name: deckName,
       cards: deckCards,
+      factions,
     };
 
     if (!validateDeck(nextDeck)) {

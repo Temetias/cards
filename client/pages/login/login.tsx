@@ -52,8 +52,8 @@ export default function Login() {
 
   return (
     <div className="Login">
-      <h1>v2cards</h1>
       <div className="Login-Content">
+        <h1 className="Login-Content-Title">Realmfall</h1>
         <form
           onSubmit={(e) => {
             e.preventDefault();

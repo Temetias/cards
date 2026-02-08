@@ -5,6 +5,7 @@ import {
   getObservers,
 } from "../game.ts";
 import { brand, uuid, type UUID } from "../utils.ts";
+import { FACTIONS } from "./factions.ts";
 import { buildCardTrigger, getOwner } from "./helpers.ts";
 import {
   cardDefinitionId,
@@ -18,12 +19,13 @@ export const summoner: CreatureCardDefintion = {
   description: [
     "Whenever a hostile creature",
     "creature dies, summon",
-    "a 1 power imp",
+    "a Pesky Imp.",
   ],
   cost: 4,
   type: "CREATURE",
   power: 3,
   keywords: [],
+  faction: FACTIONS.DOMINION,
   triggers: {
     CREATURE_DIED: buildCardTrigger((state, { initiator, self }) => {
       const owner = getOwner(state, self as UUID, "summoner.CREATURE_DIED");
@@ -35,7 +37,7 @@ export const summoner: CreatureCardDefintion = {
       // Don't summon if the creature that died was mine
       if (deadCreatureOwner.id === owner.id) return null;
       const imp = getCardDefinition(
-        brand("collectible_imp", "CARD_DEFINITION_ID"),
+        brand("collectible_peskyimp", "CARD_DEFINITION_ID"),
       ) as CreatureCardDefintion;
       const impCard: FieldCreatureCard = {
         ...imp,

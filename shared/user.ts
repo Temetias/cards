@@ -1,10 +1,11 @@
-import type { Card } from "./cards/index.ts";
+import type { Card, Faction } from "./cards/index.ts";
 import { GAME_RULE } from "./constants.ts";
 import type { Identified, Named } from "./utils.ts";
 
 export type Deck = Identified &
   Named & {
     cards: Pick<Card, "id" | "definitionId">[];
+    factions: [Faction, Faction];
   };
 
 export function validateDeck(deck: Deck): boolean {

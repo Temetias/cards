@@ -15,22 +15,36 @@ import {
   type Nullable,
   type Typed,
 } from "../utils.ts";
-import { bat } from "./bat.ts";
-import { bear } from "./bear.ts";
+import { leechingbat } from "./leechingbat.ts";
+import { polarbear } from "./polarbear.ts";
 import { bolster } from "./bolster.ts";
 import { butcher } from "./butcher.ts";
 import { chort } from "./chort.ts";
 import { cosmosWalker } from "./cosmoswalker.ts";
 import { doom } from "./doom.ts";
-import { explorer } from "./explorer.ts";
+import { beasttamer } from "./beasttamer.ts";
 import { farseer } from "./farseer.ts";
 import { firelash } from "./firelash.ts";
 import { ghoul } from "./ghoul.ts";
-import { imp } from "./imp.ts";
+import { peskyimp } from "./peskyimp.ts";
 import { pawn } from "./pawn.ts";
 import { reaper } from "./reaper.ts";
 import { summoner } from "./summoner.ts";
 import { warg } from "./warg.ts";
+import { FACTIONS } from "./factions.ts";
+import { caverat } from "./caverat.ts";
+import { fieryfiend } from "./fieryfiend.ts";
+import { tundracat } from "./tundracat.ts";
+import { emberwolf } from "./emberwolf.ts";
+import { arachnid } from "./arachnid.ts";
+import { spriggan } from "./spriggan.ts";
+import { lonelyarcher } from "./lonelyarcher.ts";
+import { spiritbunny } from "./spiritbunny.ts";
+import { whitestag } from "./whitestag.ts";
+import { royalknight } from "./royalknight.ts";
+import { whitewolf } from "./whitewolf.ts";
+import { stablemaster } from "./stablemaster.ts";
+import { ravenousbear } from "./ravenousbear.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -91,12 +105,15 @@ type CommonKeyword = "";
 type CreatureKeyword = CommonKeyword | "";
 type SpellKeyword = CommonKeyword | "";
 
+export type Faction = (typeof FACTIONS)[keyof typeof FACTIONS];
+
 type CardInfo = Identified &
   Named & {
     definitionId: CardDefinitionId;
     description: string[];
     cost: number;
     onPlay: Nullable<GameEffect>;
+    faction: Faction;
   };
 
 export type CreatureCard = CardInfo &
@@ -126,7 +143,7 @@ export function isSpell(card: Card): card is SpellCard {
 }
 
 export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
-  [imp.definitionId]: imp,
+  [peskyimp.definitionId]: peskyimp,
   [ghoul.definitionId]: ghoul,
   [reaper.definitionId]: reaper,
   [firelash.definitionId]: firelash,
@@ -138,16 +155,30 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [summoner.definitionId]: summoner,
   [chort.definitionId]: chort,
   [farseer.definitionId]: farseer,
-  [bat.definitionId]: bat,
-  [bear.definitionId]: bear,
+  [leechingbat.definitionId]: leechingbat,
+  [polarbear.definitionId]: polarbear,
   [warg.definitionId]: warg,
-  [explorer.definitionId]: explorer,
+  [beasttamer.definitionId]: beasttamer,
+  [caverat.definitionId]: caverat,
+  [fieryfiend.definitionId]: fieryfiend,
+  [tundracat.definitionId]: tundracat,
+  [emberwolf.definitionId]: emberwolf,
+  [arachnid.definitionId]: arachnid,
+  [spriggan.definitionId]: spriggan,
+  [lonelyarcher.definitionId]: lonelyarcher,
+  [spiritbunny.definitionId]: spiritbunny,
+  [whitestag.definitionId]: whitestag,
+  [royalknight.definitionId]: royalknight,
+  [whitewolf.definitionId]: whitewolf,
+  [stablemaster.definitionId]: stablemaster,
+  [ravenousbear.definitionId]: ravenousbear,
 } as const;
 
 export function getCardDefinition(
   definitionId: CardDefinitionId,
 ): CardDefinition {
   if (!(definitionId in CARD_DEFINITIONS)) {
+    console.error(`Card definition not found for id: ${definitionId}`);
     throw new Error(GAME_LOGIC_ERROR.CARD_DEFINITION_NOT_FOUND);
   }
   return CARD_DEFINITIONS[definitionId];

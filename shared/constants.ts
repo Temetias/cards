@@ -1,25 +1,32 @@
-import { bat } from "./cards/bat.ts";
-import { bear } from "./cards/bear.ts";
+import { leechingbat } from "./cards/leechingbat.ts";
+import { polarbear } from "./cards/polarbear.ts";
 import { bolster } from "./cards/bolster.ts";
 import { butcher } from "./cards/butcher.ts";
-import { chort } from "./cards/chort.ts";
 import { cosmosWalker } from "./cards/cosmoswalker.ts";
 import { doom } from "./cards/doom.ts";
-import { explorer } from "./cards/explorer.ts";
+import { beasttamer } from "./cards/beasttamer.ts";
 import { farseer } from "./cards/farseer.ts";
 import { firelash } from "./cards/firelash.ts";
 import { ghoul } from "./cards/ghoul.ts";
-import { imp } from "./cards/imp.ts";
+import { peskyimp } from "./cards/peskyimp.ts";
 import { reaper } from "./cards/reaper.ts";
-import { summoner } from "./cards/summoner.ts";
 import { warg } from "./cards/warg.ts";
 import { uuid } from "./utils.ts";
+import { fieryfiend } from "./cards/fieryfiend.ts";
+import { tundracat } from "./cards/tundracat.ts";
+import { whitestag } from "./cards/whitestag.ts";
+import { emberwolf } from "./cards/emberwolf.ts";
+import { spiritbunny } from "./cards/spiritbunny.ts";
+import { lonelyarcher } from "./cards/lonelyarcher.ts";
+import { royalknight } from "./cards/royalknight.ts";
+import { stablemaster } from "./cards/stablemaster.ts";
 
 export const GAME_RULE = {
   TURN_LENGTH_SECONDS: 60,
   PROTECTION_POWER: 2,
   DECK_SIZE: 50,
   DECK_MAX_COPIES: 4,
+  MAX_HAND_SIZE: 10,
 };
 
 export const DEFAULT_DECK = () => [
@@ -27,39 +34,39 @@ export const DEFAULT_DECK = () => [
     .fill(0)
     .map(() => ({
       id: uuid(),
-      definitionId: imp.definitionId,
+      definitionId: fieryfiend.definitionId,
     })),
   ...Array(4)
     .fill(0)
     .map(() => ({
       id: uuid(),
-      definitionId: bat.definitionId,
+      definitionId: tundracat.definitionId,
     })),
   ...Array(4)
     .fill(0)
     .map(() => ({
       id: uuid(),
-      definitionId: bear.definitionId,
+      definitionId: whitestag.definitionId,
     })),
   ...Array(4)
     .fill(0)
     .map(() => ({
       id: uuid(),
-      definitionId: explorer.definitionId,
+      definitionId: emberwolf.definitionId,
     })),
   ...Array(4)
     .fill(0)
     .map(() => ({
       id: uuid(),
-      definitionId: warg.definitionId,
+      definitionId: spiritbunny.definitionId,
     })),
-  ...Array(4)
+  ...Array(2)
     .fill(0)
     .map(() => ({
       id: uuid(),
-      definitionId: butcher.definitionId,
+      definitionId: doom.definitionId,
     })),
-  ...Array(4)
+  ...Array(2)
     .fill(0)
     .map(() => ({
       id: uuid(),
@@ -69,7 +76,31 @@ export const DEFAULT_DECK = () => [
     .fill(0)
     .map(() => ({
       id: uuid(),
-      definitionId: doom.definitionId,
+      definitionId: lonelyarcher.definitionId,
+    })),
+  ...Array(4)
+    .fill(0)
+    .map(() => ({
+      id: uuid(),
+      definitionId: polarbear.definitionId,
+    })),
+  ...Array(4)
+    .fill(0)
+    .map(() => ({
+      id: uuid(),
+      definitionId: royalknight.definitionId,
+    })),
+  ...Array(4)
+    .fill(0)
+    .map(() => ({
+      id: uuid(),
+      definitionId: beasttamer.definitionId,
+    })),
+  ...Array(4)
+    .fill(0)
+    .map(() => ({
+      id: uuid(),
+      definitionId: stablemaster.definitionId,
     })),
   ...Array(4)
     .fill(0)
@@ -77,28 +108,10 @@ export const DEFAULT_DECK = () => [
       id: uuid(),
       definitionId: farseer.definitionId,
     })),
-  ...Array(4)
+  ...Array(2)
     .fill(0)
     .map(() => ({
       id: uuid(),
       definitionId: cosmosWalker.definitionId,
-    })),
-  ...Array(4)
-    .fill(0)
-    .map(() => ({
-      id: uuid(),
-      definitionId: bolster.definitionId,
-    })),
-  ...Array(3)
-    .fill(0)
-    .map(() => ({
-      id: uuid(),
-      definitionId: ghoul.definitionId,
-    })),
-  ...Array(3)
-    .fill(0)
-    .map(() => ({
-      id: uuid(),
-      definitionId: reaper.definitionId,
     })),
 ];

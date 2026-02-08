@@ -1,3 +1,4 @@
+import { FACTIONS } from "./factions.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const butcher: CreatureCardDefintion = {
@@ -10,4 +11,5 @@ export const butcher: CreatureCardDefintion = {
   keywords: [],
   onPlay: null,
   triggers: {},
+  faction: FACTIONS.DOMINION,
 };

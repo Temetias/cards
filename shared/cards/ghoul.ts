@@ -3,6 +3,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 import { getFieldCreatures, type GameState } from "../game.ts";
 import { buildCardTrigger, drawWithEffects, getOwner } from "./helpers.ts";
 import { gameLogicErrorLog, type UUID } from "../utils.ts";
+import { FACTIONS } from "./factions.ts";
 
 export const ghoul: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_ghoul"),
@@ -13,6 +14,7 @@ export const ghoul: CreatureCardDefintion = {
   power: 1,
   keywords: [],
   onPlay: null,
+  faction: FACTIONS.WORLDFORGED,
   triggers: {
     CREATURE_DIED: buildCardTrigger((state, { initiator, self }) => {
       // Don't draw if self is the one who died
@@ -22,8 +24,8 @@ export const ghoul: CreatureCardDefintion = {
       const selfInField = getFieldCreatures(state).find((fc) => fc.id === self);
       if (!selfInField) return null;
       const owner = getOwner(state, self as UUID, "ghoul.CREATURE_DIED");
-      const [drawn, remaining, triggeredEffects] = drawWithEffects(
-        owner.deck,
+      const { hand, deck, discard, triggeredEffects } = drawWithEffects(
+        owner.id,
         1,
         state,
         self,
@@ -34,8 +36,9 @@ export const ghoul: CreatureCardDefintion = {
           ...state.players,
           [owner.id]: {
             ...owner,
-            hand: [...owner.hand, ...drawn],
-            deck: remaining,
+            hand,
+            deck,
+            discard,
           },
         },
       };

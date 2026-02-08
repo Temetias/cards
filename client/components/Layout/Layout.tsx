@@ -13,7 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="Layout">
       <header className="Layout-Header">
         <div>
-          <h1>v2cards</h1>
+          <h1>Realmfall</h1>
         </div>
         <div>{user?.name || ""}</div>
       </header>

@@ -1,4 +1,5 @@
 import { type GameState, getActivePlayer } from "../game.ts";
+import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayNonTargeted } from "./helpers.ts";
 import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
 
@@ -9,6 +10,7 @@ export const bolster: SpellCardDefintion = {
   cost: 2,
   type: "SPELL",
   keywords: [],
+  faction: FACTIONS.ASTRALS,
   onPlay: buildCardOnPlayNonTargeted((state) => {
     const player = getActivePlayer(state);
 

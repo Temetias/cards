@@ -3,7 +3,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: 100vh;
+  background-image: url("/background.png");
+  background-size: cover;
+  background-position: center;
 }
 
 .Login-Content {
@@ -17,10 +20,17 @@
   padding: 2rem 1.5rem;
 }
 
+.Login-Content-Title {
+  text-align: center;
+}
+
 .Login-Content form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+.Login-Content h2 {
+  margin: 1rem 0 0 0;
 }
 
 .Login-Discord {

@@ -5,6 +5,7 @@ import {
   getInactivePlayer,
   getObservers,
 } from "../game.ts";
+import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayNonTargeted } from "./helpers.ts";
 import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
 
@@ -14,6 +15,7 @@ export const doom: SpellCardDefintion = {
   description: ["Destroy all creatures"],
   cost: 2,
   type: "SPELL",
+  faction: FACTIONS.WORLDFORGED,
   keywords: [],
   onPlay: buildCardOnPlayNonTargeted((state, { initiator }) => {
     const opponent = getInactivePlayer(state);

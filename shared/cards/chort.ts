@@ -2,6 +2,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 import { type GameState } from "../game.ts";
 import { buildCardTrigger, getOwner } from "./helpers.ts";
 import { type UUID } from "../utils.ts";
+import { FACTIONS } from "./factions.ts";
 
 // TODO
 // Currently this basically has super windfury.
@@ -16,6 +17,7 @@ export const chort: CreatureCardDefintion = {
   power: 5,
   keywords: [],
   onPlay: null,
+  faction: FACTIONS.DOMINION,
   triggers: {
     CREATURE_DIED: buildCardTrigger((state, { initiator, self }) => {
       // Don't care if self died

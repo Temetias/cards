@@ -1,27 +1,21 @@
 import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
 import { type GameState, getObservers } from "../game.ts";
 import { brand, gameLogicErrorLog } from "../utils.ts";
+import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const cosmosWalker: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_cosmoswalker"),
   name: "Cosmos Walker",
-  description: ["Destroy a creature"],
-  cost: 5,
+  description: ["On play: Destroy a creature"],
+  cost: 6,
   type: "CREATURE",
   power: 3,
   keywords: [],
   triggers: {},
+  faction: FACTIONS.ASTRALS,
   onPlay: buildCardOnPlayTargeted((state, { initiator, target }) => {
-    const deathEffects = getObservers(state, GAME_TRIGGER.CREATURE_DIED).map(
-      ({ getDispatch, self }) =>
-        getDispatch({
-          effectName: GAME_TRIGGER.CREATURE_DIED,
-          initiator: self,
-          self,
-        }),
-    );
     if (!target) {
       gameLogicErrorLog(
         GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
@@ -30,6 +24,14 @@ export const cosmosWalker: CreatureCardDefintion = {
       );
       throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
     }
+    const deathEffects = getObservers(state, GAME_TRIGGER.CREATURE_DIED).map(
+      ({ getDispatch, self }) =>
+        getDispatch({
+          effectName: GAME_TRIGGER.CREATURE_DIED,
+          initiator: self,
+          self,
+        }),
+    );
     const owner = getOwner(state, brand(target, "UUID"), "cosmosWalker.onPlay");
 
     const next: GameState = {

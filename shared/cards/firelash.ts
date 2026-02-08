@@ -1,5 +1,6 @@
 import { GAME_TRIGGER } from "../communication.ts";
 import { type GameState, getInactivePlayer, getObservers } from "../game.ts";
+import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayNonTargeted } from "./helpers.ts";
 import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
 
@@ -10,6 +11,7 @@ export const firelash: SpellCardDefintion = {
   cost: 2,
   type: "SPELL",
   keywords: [],
+  faction: FACTIONS.WORLDFORGED,
   onPlay: buildCardOnPlayNonTargeted((state) => {
     const opponent = getInactivePlayer(state);
     const dyingCreatures = opponent.field.filter(

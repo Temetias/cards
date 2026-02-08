@@ -60,6 +60,7 @@ import { User } from "../../shared/user.ts";
 import { brand, gameLogicErrorLog, uuid, UUID } from "../../shared/utils.ts";
 import { draw, generateSeed, rng, shuffle } from "../../shared/rng.ts";
 import { pawn } from "../../shared/cards/pawn.ts";
+import { drawWithEffects } from "../../shared/cards/helpers.ts";
 
 function withConditions<P extends unknown[], C extends unknown[]>(
   conditions: GameConditionAssert<C>[],
@@ -85,12 +86,12 @@ const actionPlayResource = withConditions(
     const selectedCard = player.userSelection as Card; // Asserted by condition, sad TypeScript noises
     const triggeredEffects = getObservers(
       state,
-      GAME_TRIGGER.RESOURCE_PLAYED,
+      GAME_TRIGGER.RESOURCE_GAINED,
     ).map(({ getDispatch, self }) =>
       getDispatch({
         initiator: GAME_PLAYER,
         self,
-        effectName: GAME_TRIGGER.RESOURCE_PLAYED,
+        effectName: GAME_TRIGGER.RESOURCE_GAINED,
         target: selectedCard.id,
       }),
     );
@@ -113,7 +114,7 @@ const actionPlayResource = withConditions(
       {
         initiator: GAME_PLAYER,
         self: selectedCard.id,
-        effectName: GAME_TRIGGER.RESOURCE_PLAYED,
+        effectName: GAME_TRIGGER.RESOURCE_GAINED,
       },
     ];
   },
@@ -122,7 +123,12 @@ const actionPlayResource = withConditions(
 const actionEndTurn = withConditions([conditionIsPlayerTurn], (state) => {
   const activePlayer = getActivePlayer(state);
   const inactivePlayer = getInactivePlayer(state);
-  const [drawn, remaining] = draw(inactivePlayer.deck, 1);
+  const {
+    hand,
+    deck,
+    discard,
+    triggeredEffects: triggeredDrawEffects,
+  } = drawWithEffects(inactivePlayer.id, 1, state, GAME_MECHANIC);
   const next = {
     ...state,
     players: {
@@ -132,8 +138,9 @@ const actionEndTurn = withConditions([conditionIsPlayerTurn], (state) => {
       },
       [inactivePlayer.id]: {
         ...inactivePlayer,
-        hand: [...inactivePlayer.hand, ...drawn],
-        deck: remaining,
+        hand,
+        deck,
+        discard,
         hasPlayedResource: false,
         field: inactivePlayer.field.map((fc) => ({ ...fc, attacked: false })),
         resource: inactivePlayer.resource.map((rc) => ({ ...rc, used: false })),
@@ -155,17 +162,6 @@ const actionEndTurn = withConditions([conditionIsPlayerTurn], (state) => {
     }),
   );
 
-  const triggeredDrawEffects = drawn[0]
-    ? getObservers(state, GAME_TRIGGER.CARD_DRAWN).map(
-        ({ getDispatch, self }) =>
-          getDispatch({
-            initiator: GAME_MECHANIC,
-            self,
-            effectName: GAME_TRIGGER.CARD_DRAWN,
-            target: drawn[0].id,
-          }),
-      )
-    : [];
   return [
     next,
     [...triggeredTurnEndEffects, ...triggeredDrawEffects],
@@ -521,7 +517,7 @@ const actionPlayCard = withConditions(
       targetId,
     );
     const isCreatureCard = isCreature(selectedCard);
-    const next = {
+    const next: GameState = {
       ...state,
       players: {
         ...state.players,

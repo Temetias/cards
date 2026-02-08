@@ -11,6 +11,7 @@ export const GAME_TRIGGER = {
   CREATURE_PLAYED: "CREATURE_PLAYED",
   /**
    * Initiator: Card that caused summon or the player (in case of played from hand)
+   * Target: Creature that got summoned
    *
    * (play causes summon)
    */
@@ -35,10 +36,10 @@ export const GAME_TRIGGER = {
    */
   SPELL_PLAYED: "SPELL_PLAYED",
   /**
-   * Initiator: Player that played the resource
+   * Initiator: GAME_PLAYER or Card that caused the resource play
    * Target: Card that was played into resource
    */
-  RESOURCE_PLAYED: "RESOURCE_PLAYED",
+  RESOURCE_GAINED: "RESOURCE_GAINED",
   /**
    * Initiator: GAME_MECHANIC or Card that caused the draw
    * Target: Card that was drawn
@@ -49,6 +50,11 @@ export const GAME_TRIGGER = {
    * Initiator: Protection that got destroyed
    */
   PROTECTION_DESTROYED: "PROTECTION_DESTROYED",
+  /**
+   * Initiator: The card that caused the discard
+   * Target: The card that got discarded
+   */
+  DISCARD: "DISCARD",
 } as const;
 export type GameTrigger = keyof typeof GAME_TRIGGER;
 

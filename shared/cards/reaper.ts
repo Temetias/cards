@@ -1,6 +1,6 @@
-import { GAME_LOGIC_ERROR } from "../communication.ts";
 import { type GameState, getFieldCreatures } from "../game.ts";
 import { type UUID } from "../utils.ts";
+import { FACTIONS } from "./factions.ts";
 import { buildCardTrigger, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
@@ -13,6 +13,7 @@ export const reaper: CreatureCardDefintion = {
   power: 0,
   keywords: [],
   onPlay: null,
+  faction: FACTIONS.DOMINION,
   triggers: {
     CARD_DRAWN: buildCardTrigger((state, { initiator, self, target }) => {
       // Don't buff if self is the one who was drawn (shouldn't happen anyway)

@@ -4,12 +4,8 @@ import {
   GAME_PLAYER,
   GAME_TRIGGER,
 } from "../communication.ts";
-import {
-  getFieldCreatures,
-  getObservers,
-  type Player,
-  type GameState,
-} from "../game.ts";
+import { GAME_RULE } from "../constants.ts";
+import { getObservers, type Player, type GameState } from "../game.ts";
 import { draw } from "../rng.ts";
 import { gameLogicErrorLog } from "../utils.ts";
 import {
@@ -102,13 +98,51 @@ export function getOwner(
 }
 
 export function drawWithEffects(
-  deck: Card[],
+  playerId: Player["id"],
   amount: number,
   state: GameState,
   initiator: Card["id"] | typeof GAME_MECHANIC | typeof GAME_PLAYER,
-): [drawn: Card[], remaining: Card[], effects: GameEffectDispatch[]] {
-  const [drawn, remaining] = draw(deck, amount);
-  const triggeredEffects = drawn.flatMap((card) =>
+): {
+  hand: Card[];
+  deck: Card[];
+  discard: Card[];
+  triggeredEffects: GameEffectDispatch[];
+} {
+  const player = state.players[playerId];
+  if (!player) throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
+  if (player.deck.length === 0) {
+    return {
+      hand: player.hand,
+      deck: player.deck,
+      discard: player.discard,
+      triggeredEffects: [],
+    };
+  }
+  const [attemptedDrawn, remaining] = draw(player.deck, amount);
+  const nextHand = [...player.hand, ...attemptedDrawn].slice(
+    0,
+    GAME_RULE.MAX_HAND_SIZE,
+  );
+  const discarded = [...player.hand, ...attemptedDrawn].slice(
+    GAME_RULE.MAX_HAND_SIZE,
+  );
+  const actuallyDrawn = attemptedDrawn.slice(
+    0,
+    nextHand.length - player.hand.length,
+  );
+
+  const triggeredDiscardEffects = discarded.flatMap((card) =>
+    getObservers(state, GAME_TRIGGER.DISCARD).map(({ getDispatch, self }) =>
+      getDispatch({
+        effectName: GAME_TRIGGER.DISCARD,
+        initiator,
+        self,
+        target: card.id,
+      }),
+    ),
+  );
+
+  const triggeredDrawEffects = actuallyDrawn.flatMap((card) =>
     getObservers(state, GAME_TRIGGER.CARD_DRAWN).map(({ getDispatch, self }) =>
       getDispatch({
         initiator,
@@ -118,5 +152,10 @@ export function drawWithEffects(
       }),
     ),
   );
-  return [drawn, remaining, triggeredEffects];
+  return {
+    hand: nextHand,
+    deck: remaining,
+    discard: [...player.discard, ...discarded],
+    triggeredEffects: [...triggeredDrawEffects, ...triggeredDiscardEffects],
+  };
 }

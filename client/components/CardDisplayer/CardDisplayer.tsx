@@ -130,7 +130,7 @@ function NameSvg({ name }: { name: string }) {
         y="50%"
         dominantBaseline="middle"
         textAnchor="middle"
-        fontSize="20"
+        fontSize="16"
         fill="white"
         fontFamily="Arial, sans-serif"
       >

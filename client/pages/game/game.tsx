@@ -23,6 +23,7 @@ import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx"
 import { useNavigate } from "react-router-dom";
 import { LineFromChild } from "../../components/LineFromChild/LineFromChild.tsx";
 import { Guide } from "../../components/Guide/Guide.tsx";
+import type { FieldCreatureCard } from "../../../shared/game.ts";
 
 function GameBoard({
   children,
@@ -196,7 +197,7 @@ export default function Game() {
         (card) => card.id === hoveredFieldCardId,
       );
       setHoverInspectedCard(hoveredCard ?? null);
-    }, 666);
+    }, 1000);
     return () => clearTimeout(timeout);
   }, [gameState, hoveredFieldCardId, selectionType]);
 
@@ -460,7 +461,8 @@ export default function Game() {
                     playable={
                       isMyTurn(gameState, user.id) &&
                       !playerUserSelection &&
-                      !player.field.find((c) => c.id === card.id)?.attacked
+                      !player.field.find((c) => c.id === card.id)?.attacked &&
+                      (card as FieldCreatureCard).power > 0
                     }
                     showPower
                     showIcons
@@ -567,6 +569,14 @@ export default function Game() {
                   />
                 </Positioner>
               );
+            case !![...opponent.discard, ...player.discard].find(
+              (c) => c.id === card.id,
+            ):
+              return (
+                <Positioner key={card.id} {...discardPosition()}>
+                  <CardDisplayer card={card} showCost showPower showDetails />
+                </Positioner>
+              );
 
             default:
               return null;
@@ -599,6 +609,8 @@ const Positioner = forwardRef<
     rotate: number;
     zIndex?: number;
     showLine?: boolean;
+    opacity?: number;
+    pointerEvents?: React.CSSProperties["pointerEvents"];
   }
 >((props, ref) => {
   const { children, x, y, scale, rotate, zIndex } = props;
@@ -614,7 +626,10 @@ const Positioner = forwardRef<
           top: `${y}%`,
           left: `${x}%`,
           width: "7%",
-          transition: "top 0.5s ease, left 0.5s ease , transform 0.5s ease",
+          opacity: props.opacity ?? 1,
+          pointerEvents: props.pointerEvents ?? "auto",
+          transition:
+            "top 0.5s ease, left 0.5s ease , transform 0.5s ease, opacity 0.5s ease",
           transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
           zIndex: zIndex ?? children.props.style?.zIndex,
           ...children.props.style,
@@ -659,6 +674,17 @@ function playerHandPosition(props: { index: number; total: number }) {
   // Fan orientation
   const rotate = (index - (props.total - 1) / 2) * 8;
   return { x, y, scale: 1, rotate, zIndex: (index + 1) * 10 };
+}
+function discardPosition() {
+  return {
+    x: 50,
+    y: 50,
+    scale: 2,
+    zIndex: 100,
+    opacity: 0,
+    rotate: 0,
+    pointerEvents: "none" as React.CSSProperties["pointerEvents"],
+  };
 }
 
 const PROTECTION_SPACING = 7.25;
