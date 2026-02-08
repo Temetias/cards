@@ -11,6 +11,7 @@ import {
   GAME_LOGIC_ERROR,
   type GameTrigger,
 } from "./communication.ts";
+import { GAME_RULE } from "./constants.ts";
 import type { Brand, Identified, Named, Nullable } from "./utils.ts";
 
 export type FieldCreatureCard = CreatureCard & {
@@ -176,6 +177,22 @@ export const conditionHasHandCardSelected: GameConditionAssert<
   }
   if (!isHandCardSelection(player.userSelection)) {
     throw new Error(GAME_CONDITION_FAILURE.NO_CARD_SELECTED);
+  }
+};
+
+export const conditionHasEnoughFieldSpace: GameConditionAssert<
+  [playerId: Player["id"]]
+> = (state, playerId) => {
+  const player = state.players[playerId];
+  if (!player) {
+    throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
+  }
+  if (
+    isHandCardSelection(player.userSelection) &&
+    player.userSelection.type === "CREATURE" &&
+    player.field.length >= GAME_RULE.MAX_FIELD_SIZE
+  ) {
+    throw new Error(GAME_CONDITION_FAILURE.NO_FIELD_SPACE);
   }
 };
 

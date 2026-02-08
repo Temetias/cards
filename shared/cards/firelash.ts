@@ -1,6 +1,5 @@
 import { GAME_TRIGGER } from "../communication.ts";
 import {
-  creatureCardToFieldCreatureCard,
   fieldCreatureCardToCreatureCard,
   type GameState,
   getInactivePlayer,
@@ -14,7 +13,7 @@ export const firelash: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_firelash"),
   name: "Fire Lash",
   description: ["Destroy enemy creatures", "with 3 or less power"],
-  cost: 2,
+  cost: 4,
   type: "SPELL",
   keywords: [],
   faction: FACTIONS.WORLDFORGED,

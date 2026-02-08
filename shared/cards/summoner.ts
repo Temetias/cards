@@ -1,4 +1,5 @@
 import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
+import { GAME_RULE } from "../constants.ts";
 import {
   type FieldCreatureCard,
   type GameState,
@@ -36,6 +37,9 @@ export const summoner: CreatureCardDefintion = {
       );
       // Don't summon if the creature that died was mine
       if (deadCreatureOwner.id === owner.id) return null;
+      if (owner.field.length >= GAME_RULE.MAX_FIELD_SIZE) {
+        return null;
+      }
       const imp = getCardDefinition(
         brand("collectible_peskyimp", "CARD_DEFINITION_ID"),
       ) as CreatureCardDefintion;

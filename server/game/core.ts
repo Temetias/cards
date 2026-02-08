@@ -55,6 +55,7 @@ import {
   getFieldCreatures,
   getObservers,
   conditionOpponentHasNoProtection,
+  conditionHasEnoughFieldSpace,
 } from "../../shared/game.ts";
 import { User } from "../../shared/user.ts";
 import { brand, gameLogicErrorLog, uuid, UUID } from "../../shared/utils.ts";
@@ -130,7 +131,7 @@ const actionEndTurn = withConditions([conditionIsPlayerTurn], (state) => {
     discard,
     triggeredEffects: triggeredDrawEffects,
   } = drawWithEffects(inactivePlayer.id, 1, state, GAME_MECHANIC);
-  const next = {
+  const next: GameState = {
     ...state,
     players: {
       [activePlayer.id]: {
@@ -180,7 +181,7 @@ const actionUserSelect = withConditions(
     const player = getActivePlayer(state);
     const targetCard = (player.hand.find((c) => c.id === targetId) ||
       player.field.find((c) => c.id === targetId)) as Card | FieldCreatureCard; // Asserted by condition, sad TypeScript noises
-    const next = isFieldCreature(targetCard)
+    const next: GameState = isFieldCreature(targetCard)
       ? {
           ...state,
           players: {
@@ -220,7 +221,7 @@ const actionUserUnselect = withConditions(
   (state, targetId: Card["id"]) => {
     const player = getActivePlayer(state);
     const userSelection = player.userSelection;
-    const next = isFieldCreatureSelection(userSelection)
+    const next: GameState = isFieldCreatureSelection(userSelection)
       ? {
           ...state,
           players: {
@@ -261,7 +262,7 @@ const actionUserClearSelection = withConditions(
   [conditionIsPlayerTurn],
   (state) => {
     const player = getActivePlayer(state);
-    const next = {
+    const next: GameState = {
       ...state,
       players: {
         ...state.players,
@@ -309,7 +310,7 @@ const actionAttackProtection = withConditions(
     if (attackingCreaturesPower < GAME_RULE.PROTECTION_POWER) {
       throw new Error(GAME_CONDITION_FAILURE.NOT_ENOUGH_POWER);
     }
-    const next = {
+    const next: GameState = {
       ...state,
       players: {
         ...state.players,
@@ -422,7 +423,7 @@ const actionAttackCreature = withConditions(
           }),
       ),
     );
-    const next = {
+    const next: GameState = {
       ...state,
       players: {
         [player.id]: {
@@ -509,6 +510,7 @@ const actionPlayCard = withConditions(
     conditionIsPlayerTurn,
     conditionHasHandCardSelected,
     conditionHasEnoughResource,
+    conditionHasEnoughFieldSpace,
   ],
   (state, targetId: Card["id"] | undefined) => {
     const player = getActivePlayer(state);

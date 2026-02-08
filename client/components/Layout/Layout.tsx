@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import "./Layout.css";
 import { useUser } from "../../context/UserContext.tsx";
 import { useState } from "react";
@@ -7,6 +7,7 @@ import { Guide } from "../Guide/Guide.tsx";
 export function Layout({ children }: { children: React.ReactNode }) {
   const { user } = useUser();
   const location = useLocation();
+  const navigate = useNavigate();
   const [showGuide, setShowGuide] = useState(false);
   if (!user || location.pathname === "/game") return children;
   return (
@@ -21,9 +22,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <footer className="Layout-Footer">
         <div>
           {location.pathname !== "/" && (
-            <Link to="..">
-              <button type="button">Back</button>
-            </Link>
+            <button type="button" onClick={() => navigate(-1)}>
+              Back
+            </button>
           )}
         </div>
         <div>

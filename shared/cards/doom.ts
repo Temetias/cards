@@ -14,11 +14,11 @@ export const doom: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_doom"),
   name: "Doom",
   description: ["Destroy all creatures"],
-  cost: 2,
+  cost: 5,
   type: "SPELL",
   faction: FACTIONS.WORLDFORGED,
   keywords: [],
-  onPlay: buildCardOnPlayNonTargeted((state, { initiator }) => {
+  onPlay: buildCardOnPlayNonTargeted((state) => {
     const opponent = getInactivePlayer(state);
     const player = getActivePlayer(state);
     const opponentDyingCreatures = opponent.field;

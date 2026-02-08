@@ -1,4 +1,5 @@
 import { GAME_TRIGGER } from "../communication.ts";
+import { GAME_RULE } from "../constants.ts";
 import {
   getObservers,
   type FieldCreatureCard,
@@ -23,6 +24,9 @@ export const stablemaster: CreatureCardDefintion = {
   keywords: [],
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "stablemaster.onPlay");
+    if (owner.field.length >= GAME_RULE.MAX_FIELD_SIZE) {
+      return [state, []];
+    }
     const whitewolf = getCardDefinition(
       brand("noncollectible_whitewolf", "CARD_DEFINITION_ID"),
     ) as CreatureCardDefintion;

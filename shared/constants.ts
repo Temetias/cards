@@ -27,6 +27,7 @@ export const GAME_RULE = {
   DECK_SIZE: 50,
   DECK_MAX_COPIES: 4,
   MAX_HAND_SIZE: 10,
+  MAX_FIELD_SIZE: 5,
 };
 
 export const DEFAULT_DECK = () => [
