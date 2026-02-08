@@ -95,6 +95,10 @@ export function useAnimationEngine(userId: UUID) {
   const queueRef = useRef<GameLog>([]);
   const timeoutRef = useRef<number | null>(null);
 
+  useEffect(() => {
+    console.log("[animation] providedGameState changed", providedGameState);
+  }, [providedGameState]);
+
   const processNext = () => {
     if (timeoutRef.current !== null) return;
     const next = queueRef.current.shift();

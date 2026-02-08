@@ -10,7 +10,7 @@ export const peskyimp: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_peskyimp"),
   cost: 1,
   name: "Pesky imp",
-  description: ["On play: Discard the leftmost card", "from your opponent."],
+  description: ["On play: Discard the", "leftmost card from", "your opponent."],
   type: "CREATURE",
   faction: FACTIONS.DOMINION,
   power: 1,

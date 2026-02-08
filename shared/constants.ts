@@ -7,7 +7,7 @@ import { doom } from "./cards/doom.ts";
 import { beasttamer } from "./cards/beasttamer.ts";
 import { farseer } from "./cards/farseer.ts";
 import { firelash } from "./cards/firelash.ts";
-import { ghoul } from "./cards/ghoul.ts";
+import { maggotghoul } from "./cards/maggotghoul.ts";
 import { peskyimp } from "./cards/peskyimp.ts";
 import { reaper } from "./cards/reaper.ts";
 import { warg } from "./cards/warg.ts";

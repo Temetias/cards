@@ -639,7 +639,7 @@ const Positioner = forwardRef<
   );
 });
 
-const RESOURCE_SPACING = 2;
+const RESOURCE_SPACING = 0.5;
 
 function opponentResourcePosition(props: { index: number; total: number }) {
   const { index } = props;
@@ -664,7 +664,7 @@ function opponentHandPosition(props: { index: number; total: number }) {
   const x = 40 + (index * HAND_SPACING * 5) / props.total;
   // Fan orientation
   const rotate = (index - (props.total - 1) / 2) * -8;
-  return { x, y, scale: 1, rotate, zIndex: index * 10 };
+  return { x, y, scale: 1, rotate, zIndex: (index + 1) * 10 };
 }
 function playerHandPosition(props: { index: number; total: number }) {
   const { index } = props;

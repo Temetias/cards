@@ -11,6 +11,7 @@
   position: relative;
   aspect-ratio: 2 / 1;
   height: 15%;
+  min-height: 8rem;
   border: 1px solid black;
   box-shadow: 4px 4px 6px 0px rgba(0, 0, 0, 0.3);
 }

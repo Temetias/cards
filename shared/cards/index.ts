@@ -25,7 +25,7 @@ import { doom } from "./doom.ts";
 import { beasttamer } from "./beasttamer.ts";
 import { farseer } from "./farseer.ts";
 import { firelash } from "./firelash.ts";
-import { ghoul } from "./ghoul.ts";
+import { maggotghoul } from "./maggotghoul.ts";
 import { peskyimp } from "./peskyimp.ts";
 import { pawn } from "./pawn.ts";
 import { reaper } from "./reaper.ts";
@@ -45,6 +45,8 @@ import { royalknight } from "./royalknight.ts";
 import { whitewolf } from "./whitewolf.ts";
 import { stablemaster } from "./stablemaster.ts";
 import { ravenousbear } from "./ravenousbear.ts";
+import { maggot } from "./maggot.ts";
+import { necroticgrowth } from "./necroticgrowth.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -144,7 +146,7 @@ export function isSpell(card: Card): card is SpellCard {
 
 export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [peskyimp.definitionId]: peskyimp,
-  [ghoul.definitionId]: ghoul,
+  [maggotghoul.definitionId]: maggotghoul,
   [reaper.definitionId]: reaper,
   [firelash.definitionId]: firelash,
   [butcher.definitionId]: butcher,
@@ -172,6 +174,8 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [whitewolf.definitionId]: whitewolf,
   [stablemaster.definitionId]: stablemaster,
   [ravenousbear.definitionId]: ravenousbear,
+  [maggot.definitionId]: maggot,
+  [necroticgrowth.definitionId]: necroticgrowth,
 } as const;
 
 export function getCardDefinition(

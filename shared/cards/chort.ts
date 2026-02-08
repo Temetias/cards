@@ -10,7 +10,7 @@ import { FACTIONS } from "./factions.ts";
 // "card memory"
 export const chort: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_chort"),
-  cost: 3,
+  cost: 6,
   name: "Chort",
   description: ["Can only attack if another", "creature died this turn."],
   type: "CREATURE",

@@ -115,6 +115,7 @@ const actionPlayResource = withConditions(
         initiator: GAME_PLAYER,
         self: selectedCard.id,
         effectName: GAME_TRIGGER.RESOURCE_GAINED,
+        target: selectedCard.id,
       },
     ];
   },
