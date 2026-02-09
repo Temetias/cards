@@ -191,6 +191,20 @@ export default function Game() {
       setHoverInspectedCard(null);
       return;
     }
+    // If card died
+    if (
+      gameState &&
+      !getPlayer(gameState, user.id).field.find(
+        (c) => c.id === hoveredFieldCardId,
+      ) &&
+      !getOpponent(gameState, user.id).field.find(
+        (c) => c.id === hoveredFieldCardId,
+      )
+    ) {
+      setHoverInspectedCard(null);
+      return;
+    }
+
     const timeout = setTimeout(() => {
       if (!gameState) return;
       const hoveredCard = gameState.cardPool.find(
