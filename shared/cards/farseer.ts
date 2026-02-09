@@ -1,3 +1,4 @@
+import { getOpponent } from "../../client/utils/GameStateUtils.ts";
 import { type GameState } from "../game.ts";
 import { type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
@@ -6,39 +7,60 @@ import {
   drawWithEffects,
   getOwner,
 } from "./helpers.ts";
-import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
+import {
+  cardDefinitionId,
+  isCreature,
+  type CreatureCardDefintion,
+} from "./index.ts";
 
 export const farseer: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_farseer"),
   name: "Farseer",
-  description: ["On play: Draw a card"],
+  description: [
+    "On play: The top card of your",
+    "deck gets +2, the top card of",
+    "your opponent's deck gets -2.",
+  ],
   cost: 5,
   type: "CREATURE",
-  power: 2,
+  power: 4,
   keywords: [],
   triggers: {},
   faction: FACTIONS.ASTRALS,
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "farseer.onPlay");
-    const { hand, deck, discard, triggeredEffects } = drawWithEffects(
-      owner.id,
-      1,
-      state,
-      self,
-    );
+    const opponent = getOpponent(state, owner.id);
+    const opponentTopCard = opponent.deck[0];
+    const transformedOpponentCard =
+      opponentTopCard && isCreature(opponentTopCard)
+        ? { ...opponentTopCard, power: Math.max(0, opponentTopCard.power - 2) }
+        : opponentTopCard;
+    const playerTopCard = owner.deck[0];
+    const transformedPlayerCard =
+      playerTopCard && isCreature(playerTopCard)
+        ? { ...playerTopCard, power: playerTopCard.power + 2 }
+        : playerTopCard;
     const next: GameState = {
       ...state,
       players: {
         ...state.players,
         [owner.id]: {
           ...owner,
-          hand,
-          deck,
-          discard,
+          deck: [
+            ...(transformedPlayerCard ? [transformedPlayerCard] : []),
+            ...owner.deck.slice(1),
+          ],
+        },
+        [opponent.id]: {
+          ...opponent,
+          deck: [
+            ...(transformedOpponentCard ? [transformedOpponentCard] : []),
+            ...opponent.deck.slice(1),
+          ],
         },
       },
     };
-    return [next, triggeredEffects];
+    return [next, []];
   }),
 };

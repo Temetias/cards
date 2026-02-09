@@ -6,7 +6,11 @@ import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
 export const bolster: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_bolster"),
   name: "Bolster",
-  description: ["Give +1 power to", "all friendly creatures"],
+  description: [
+    "Give +2 power to",
+    "your leftmost and rightmost",
+    "creatures.",
+  ],
   cost: 2,
   type: "SPELL",
   keywords: [],
@@ -21,10 +25,15 @@ export const bolster: SpellCardDefintion = {
         ...state.players,
         [player.id]: {
           ...player,
-          field: player.field.map((creature) => ({
-            ...creature,
-            power: creature.power + 1,
-          })),
+          field: player.field.map((creature, index, array) => {
+            if (index === 0 || index === array.length - 1) {
+              return {
+                ...creature,
+                power: creature.power + 2,
+              };
+            }
+            return creature;
+          }),
         },
       },
     };

@@ -15,7 +15,7 @@ export const cosmosWalker: CreatureCardDefintion = {
   description: ["On play: Destroy a creature"],
   cost: 6,
   type: "CREATURE",
-  power: 3,
+  power: 5,
   keywords: [],
   triggers: {},
   faction: FACTIONS.ASTRALS,
