@@ -619,7 +619,9 @@ const actionForfeit = withConditions([], (state, playerId: Player["id"]) => {
   return [
     {
       ...state,
-      winner: winningPlayerId,
+      // If winner is already assigned, keep it. This avoids
+      // disconnecting after winning to change the state.
+      winner: state.winner ? state.winner : winningPlayerId,
     },
     [],
     {

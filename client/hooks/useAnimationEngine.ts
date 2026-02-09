@@ -93,22 +93,46 @@ export function useAnimationEngine(userId: UUID) {
 
   const latestAnimatedRef = useRef<Nullable<GameState>>(null);
   const queueRef = useRef<GameLog>([]);
+  const pendingQueueRef = useRef<GameLog>([]);
+  const pendingStateRef = useRef<Nullable<GameState>>(null);
   const timeoutRef = useRef<number | null>(null);
+  const isProcessingRef = useRef(false);
 
   useEffect(() => {
     console.log("[animation] providedGameState changed", providedGameState);
   }, [providedGameState]);
 
+  const finalizeChain = () => {
+    console.log("[animation] queue empty");
+    isProcessingRef.current = false;
+    const finalState = latestAnimatedRef.current ?? pendingStateRef.current;
+    if (finalState) {
+      setProvidedGameState(finalState);
+    }
+    if (pendingQueueRef.current.length > 0) {
+      queueRef.current = pendingQueueRef.current;
+      pendingQueueRef.current = [];
+      pendingStateRef.current = null;
+      setCurrentLogItem(null);
+      // Let the state render before starting the next chain
+      timeoutRef.current = setTimeout(() => {
+        timeoutRef.current = null;
+        processNext();
+      }, 1);
+      return;
+    }
+    setCurrentLogItem(null);
+  };
+
   const processNext = () => {
     if (timeoutRef.current !== null) return;
     const next = queueRef.current.shift();
     if (!next) {
-      console.log("[animation] queue empty");
-      setProvidedGameState(latestAnimatedRef.current);
-      setCurrentLogItem(null);
+      finalizeChain();
       return;
     }
 
+    isProcessingRef.current = true;
     setCurrentLogItem(next);
     console.log("[animation] apply", {
       effectName: next.effectName,
@@ -145,8 +169,17 @@ export function useAnimationEngine(userId: UUID) {
         msg.state.players[opponentId as UUID].userSelection,
       );
       if (msg.log && msg.log.length > 0) {
+        if (isProcessingRef.current) {
+          pendingQueueRef.current.push(...msg.log);
+          pendingStateRef.current = msg.state;
+          return;
+        }
         queueRef.current.push(...msg.log);
         processNext();
+        return;
+      }
+      if (isProcessingRef.current) {
+        pendingStateRef.current = msg.state;
         return;
       }
       if (timeoutRef.current !== null) {
