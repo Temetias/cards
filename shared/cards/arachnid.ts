@@ -17,6 +17,7 @@ export const arachnid: CreatureCardDefintion = {
   type: "CREATURE",
   power: 2,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self: arachnidSelf }) => {
     const owner = getOwner(state, arachnidSelf as UUID, "arachnid.onPlay");
     if (owner.graveyard.length === 0) return [state, []];

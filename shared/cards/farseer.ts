@@ -18,6 +18,7 @@ export const farseer: CreatureCardDefintion = {
   keywords: [],
   triggers: {},
   faction: FACTIONS.ASTRALS,
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "farseer.onPlay");
     const { hand, deck, discard, triggeredEffects } = drawWithEffects(

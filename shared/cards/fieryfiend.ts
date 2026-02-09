@@ -18,6 +18,7 @@ export const fieryfiend: CreatureCardDefintion = {
   keywords: [],
   triggers: {},
   faction: FACTIONS.WORLDFORGED,
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "fieryfiend.onPlay");
     const { hand, deck, discard, triggeredEffects } = drawWithEffects(

@@ -10,6 +10,7 @@ export const lonelyarcher: CreatureCardDefintion = {
   power: 3,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   triggers: {},
   faction: FACTIONS.NEUTRAL,
 };

@@ -17,6 +17,7 @@ export const firelash: SpellCardDefintion = {
   type: "SPELL",
   keywords: [],
   faction: FACTIONS.WORLDFORGED,
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state) => {
     const opponent = getInactivePlayer(state);
     const dyingCreatures = opponent.field.filter(

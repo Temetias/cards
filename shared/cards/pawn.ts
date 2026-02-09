@@ -11,5 +11,6 @@ export const pawn: CreatureCardDefintion = {
   power: 1,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   triggers: {},
 };

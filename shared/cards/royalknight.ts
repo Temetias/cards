@@ -10,6 +10,7 @@ export const royalknight: CreatureCardDefintion = {
   power: 4,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   triggers: {},
   faction: FACTIONS.NEUTRAL,
 };

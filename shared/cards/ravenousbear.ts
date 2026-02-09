@@ -23,6 +23,7 @@ export const ravenousbear: CreatureCardDefintion = {
   type: "CREATURE",
   power: 3,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayTargeted(
     (state, { initiator, self: ravenousbearSelf, target }) => {
       if (!target) {

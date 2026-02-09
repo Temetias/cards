@@ -17,6 +17,7 @@ export const chort: CreatureCardDefintion = {
   power: 5,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   faction: FACTIONS.DOMINION,
   triggers: {
     CREATURE_DIED: buildCardTrigger((state, { initiator, self }) => {

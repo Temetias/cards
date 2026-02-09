@@ -15,6 +15,7 @@ export const emberwolf: CreatureCardDefintion = {
   keywords: [],
   onPlay: null,
   faction: FACTIONS.WORLDFORGED,
+  onResourcePlay: null,
   triggers: {
     CARD_DRAWN: buildCardTrigger((state, { initiator, self, target }) => {
       // GAME_MECHANIC card draw is the start of turn draw and most reliable way to detect it

@@ -11,5 +11,6 @@ export const warg: CreatureCardDefintion = {
   power: 5,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   triggers: {},
 };

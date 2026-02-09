@@ -16,9 +16,10 @@ export const spriggan: CreatureCardDefintion = {
     "gains resource, lose -1.",
   ],
   type: "CREATURE",
-  power: 2,
+  power: 4,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   faction: FACTIONS.THORNBOUND,
   triggers: {
     RESOURCE_GAINED: buildCardTrigger((state, { initiator, self, target }) => {

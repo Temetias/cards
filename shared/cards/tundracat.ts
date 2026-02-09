@@ -14,6 +14,7 @@ export const tundracat: CreatureCardDefintion = {
   power: 1,
   keywords: [],
   triggers: {},
+  onResourcePlay: null,
   faction: FACTIONS.ASTRALS,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "tundracat.onPlay");

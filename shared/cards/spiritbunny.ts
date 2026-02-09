@@ -14,6 +14,7 @@ export const spiritbunny: CreatureCardDefintion = {
   keywords: [],
   triggers: {},
   faction: FACTIONS.ASTRALS,
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "spiritbunny.onPlay");
     const next: GameState = {

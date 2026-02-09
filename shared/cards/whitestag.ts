@@ -8,6 +8,7 @@ export const whitestag: CreatureCardDefintion = {
   description: [],
   type: "CREATURE",
   power: 2,
+  onResourcePlay: null,
   keywords: [],
   onPlay: null,
   triggers: {},

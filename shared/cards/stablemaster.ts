@@ -22,6 +22,7 @@ export const stablemaster: CreatureCardDefintion = {
   type: "CREATURE",
   power: 4,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "stablemaster.onPlay");
     if (owner.field.length >= GAME_RULE.MAX_FIELD_SIZE) {

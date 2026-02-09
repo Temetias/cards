@@ -17,6 +17,7 @@ export const beasttamer: CreatureCardDefintion = {
   type: "CREATURE",
   power: 3,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "beasttamer.onPlay");
     const opponent = getOpponent(state, owner.id);

@@ -20,6 +20,7 @@ export const polarbear: CreatureCardDefintion = {
   type: "CREATURE",
   power: 2,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "polarbear.onPlay");
     const boost = owner.field.filter((creature) => creature.power > 2).length;

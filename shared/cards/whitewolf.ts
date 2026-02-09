@@ -10,6 +10,7 @@ export const whitewolf: CreatureCardDefintion = {
   power: 2,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   triggers: {},
   faction: FACTIONS.NEUTRAL,
 };

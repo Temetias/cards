@@ -27,6 +27,7 @@ export const summoner: CreatureCardDefintion = {
   power: 3,
   keywords: [],
   faction: FACTIONS.DOMINION,
+  onResourcePlay: null,
   triggers: {
     CREATURE_DIED: buildCardTrigger((state, { initiator, self }) => {
       const owner = getOwner(state, self as UUID, "summoner.CREATURE_DIED");

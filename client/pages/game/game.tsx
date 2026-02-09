@@ -629,7 +629,7 @@ const Positioner = forwardRef<
           opacity: props.opacity ?? 1,
           pointerEvents: props.pointerEvents ?? "auto",
           transition:
-            "top 0.5s ease, left 0.5s ease , transform 0.5s ease, opacity 0.5s ease",
+            "top 0.5s ease, left 0.5s ease , transform 0.5s ease, opacity 2s ease",
           transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
           zIndex: zIndex ?? children.props.style?.zIndex,
           ...children.props.style,

@@ -13,6 +13,7 @@ export const reaper: CreatureCardDefintion = {
   power: 0,
   keywords: [],
   onPlay: null,
+  onResourcePlay: null,
   faction: FACTIONS.DOMINION,
   triggers: {
     CARD_DRAWN: buildCardTrigger((state, { initiator, self, target }) => {

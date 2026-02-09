@@ -22,6 +22,7 @@ export const necroticgrowth: SpellCardDefintion = {
   type: "SPELL",
   faction: FACTIONS.THORNBOUND,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self, initiator }) => {
     const owner = getOwner(state, self as UUID, "necroticgrowth.onPlay");
     const attemptedDrawn = owner.resource;

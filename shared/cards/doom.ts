@@ -18,6 +18,7 @@ export const doom: SpellCardDefintion = {
   type: "SPELL",
   faction: FACTIONS.WORLDFORGED,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state) => {
     const opponent = getInactivePlayer(state);
     const player = getActivePlayer(state);

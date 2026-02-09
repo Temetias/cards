@@ -11,6 +11,7 @@ export const bolster: SpellCardDefintion = {
   type: "SPELL",
   keywords: [],
   faction: FACTIONS.ASTRALS,
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state) => {
     const player = getActivePlayer(state);
 

@@ -85,6 +85,8 @@ const actionPlayResource = withConditions(
   (state) => {
     const player = getActivePlayer(state);
     const selectedCard = player.userSelection as Card; // Asserted by condition, sad TypeScript noises
+    const triggeredEffectFromOnResourcePlay =
+      processOnResourcePlayGameEffect(selectedCard);
     const triggeredEffects = getObservers(
       state,
       GAME_TRIGGER.RESOURCE_GAINED,
@@ -111,7 +113,12 @@ const actionPlayResource = withConditions(
     };
     return [
       next,
-      triggeredEffects,
+      [
+        ...(triggeredEffectFromOnResourcePlay
+          ? [triggeredEffectFromOnResourcePlay]
+          : []),
+        ...triggeredEffects,
+      ],
       {
         initiator: GAME_PLAYER,
         self: selectedCard.id,
@@ -486,6 +493,18 @@ function processOnPlayGameEffect(
       effectName: GAME_ACTION.PLAY_CARD,
     });
   } else return null;
+}
+
+function processOnResourcePlayGameEffect(
+  card: Card,
+): GameEffectDispatch | null {
+  if (!card.onResourcePlay) return null;
+  return card.onResourcePlay.getDispatch({
+    initiator: GAME_PLAYER,
+    self: card.id,
+    effectName: GAME_ACTION.PLAY_RESOURCE,
+    target: card.id,
+  });
 }
 
 /**

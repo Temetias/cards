@@ -47,6 +47,7 @@ import { stablemaster } from "./stablemaster.ts";
 import { ravenousbear } from "./ravenousbear.ts";
 import { maggot } from "./maggot.ts";
 import { necroticgrowth } from "./necroticgrowth.ts";
+import { maggotbomb } from "./maggotbomb.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -115,6 +116,7 @@ type CardInfo = Identified &
     description: string[];
     cost: number;
     onPlay: Nullable<GameEffect>;
+    onResourcePlay: Nullable<GameEffectNonTargeted>;
     faction: Faction;
   };
 
@@ -176,6 +178,7 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [ravenousbear.definitionId]: ravenousbear,
   [maggot.definitionId]: maggot,
   [necroticgrowth.definitionId]: necroticgrowth,
+  [maggotbomb.definitionId]: maggotbomb,
 } as const;
 
 export function getCardDefinition(

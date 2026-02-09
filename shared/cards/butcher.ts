@@ -22,6 +22,7 @@ export const butcher: CreatureCardDefintion = {
   type: "CREATURE",
   power: 4,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "butcher.onPlay");
     const maggot = getCardDefinition(

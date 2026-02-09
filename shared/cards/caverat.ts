@@ -15,6 +15,7 @@ export const caverat: CreatureCardDefintion = {
   faction: FACTIONS.THORNBOUND,
   power: 1,
   keywords: [],
+  onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "caverat.onPlay");
     const next: GameState = {

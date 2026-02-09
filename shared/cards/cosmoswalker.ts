@@ -19,6 +19,7 @@ export const cosmosWalker: CreatureCardDefintion = {
   keywords: [],
   triggers: {},
   faction: FACTIONS.ASTRALS,
+  onResourcePlay: null,
   onPlay: buildCardOnPlayTargeted((state, { initiator, target }) => {
     if (!target) {
       gameLogicErrorLog(
