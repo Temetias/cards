@@ -4,6 +4,7 @@
   background-position: center;
   aspect-ratio: 2 / 3;
   user-select: none;
+  border-radius: 4%;
 }
 
 .CardDisplayer-HandHover:hover .CardDisplayer-Inner {
@@ -22,6 +23,8 @@
   right: 0;
   bottom: 0;
   box-shadow: 4px 4px 6px 0px rgba(0, 0, 0, 0.3);
+  border-radius: 0;
+  border-radius: 4%;
 }
 
 .CardDisplayer-Playable:not(.CardDisplayer-HandHover),

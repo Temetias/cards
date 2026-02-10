@@ -15,7 +15,7 @@ export const butcher: CreatureCardDefintion = {
   cost: 5,
   name: "Butcher",
   description: [
-    "On play: place a 0 power",
+    "On play: Place a 0 power",
     "maggot on top of",
     "opponents deck.",
   ],

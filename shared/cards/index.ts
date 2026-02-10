@@ -48,6 +48,8 @@ import { ravenousbear } from "./ravenousbear.ts";
 import { maggot } from "./maggot.ts";
 import { necroticgrowth } from "./necroticgrowth.ts";
 import { maggotbomb } from "./maggotbomb.ts";
+import { photosynthesis } from "./photosynthesis.ts";
+import { sacrifice } from "./sacrifice.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -179,6 +181,8 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [maggot.definitionId]: maggot,
   [necroticgrowth.definitionId]: necroticgrowth,
   [maggotbomb.definitionId]: maggotbomb,
+  [photosynthesis.definitionId]: photosynthesis,
+  [sacrifice.definitionId]: sacrifice,
 } as const;
 
 export function getCardDefinition(

@@ -10,18 +10,24 @@ export const necroticgrowth: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_necroticgrowth"),
   name: "Necrotic Growth",
   description: [
-    "Draw all cards from your",
-    "resource into your hand.",
-    "They cost 0",
+    "Draw 3 cards from the bottom",
+    "of your resource into",
+    "your hand. They cost 0.",
   ],
-  cost: 7,
+  cost: 5,
   type: "SPELL",
   faction: FACTIONS.THORNBOUND,
   keywords: [],
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self, initiator }) => {
     const owner = getOwner(state, self as UUID, "necroticgrowth.onPlay");
-    const attemptedDrawn = owner.resource;
+    const [attemptedDrawn1, attemptedDrawn2, attemptedDrawn3, ...restResource] =
+      owner.resource;
+    const attemptedDrawn = [
+      attemptedDrawn1,
+      attemptedDrawn2,
+      attemptedDrawn3,
+    ].filter(Boolean);
     const nextHand = [...owner.hand, ...attemptedDrawn].slice(
       0,
       GAME_RULE.MAX_HAND_SIZE,
@@ -69,7 +75,7 @@ export const necroticgrowth: SpellCardDefintion = {
               .map(resourceCardToCard)
               .map((card) => ({ ...card, cost: 0 })),
           ],
-          resource: [],
+          resource: restResource,
           // Technically discarded cards should be converted in case but discarded cards are never seen again so it doesn't matter
           discard: [...owner.discard, ...discarded],
         },
