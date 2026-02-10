@@ -9,6 +9,9 @@ import {
 } from "react";
 import "./LineFromChild.css";
 
+let lastMouse = { x: 0, y: 0 };
+let lastMouseKnown = false;
+
 type OriginProps<T extends HTMLElement> = {
   children: React.ReactElement<
     React.HTMLAttributes<T> & { ref?: React.Ref<T> }
@@ -28,8 +31,23 @@ export function LineFromChild({
   show?: boolean;
 }) {
   const originRef = useRef<HTMLElement | null>(null);
+  const showRef = useRef(!!show);
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [hasMouse, setHasMouse] = useState(lastMouseKnown);
+  const [hasOrigin, setHasOrigin] = useState(false);
   const [origin, setOrigin] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    showRef.current = !!show;
+    if (!show) {
+      setHasOrigin(false);
+      return;
+    }
+    if (lastMouseKnown) {
+      setMouse(lastMouse);
+      setHasMouse(true);
+    }
+  }, [show]);
 
   useEffect(() => {
     if (!show) return;
@@ -40,18 +58,34 @@ export function LineFromChild({
         x: rect.left + rect.width / 2,
         y: rect.top + rect.height / 2,
       });
+      setHasOrigin(true);
     };
-    updateOrigin();
+    let rafId = 0;
+    const tick = () => {
+      updateOrigin();
+      rafId = requestAnimationFrame(tick);
+    };
+    tick();
     addEventListener("resize", updateOrigin);
-    return () => removeEventListener("resize", updateOrigin);
+    addEventListener("scroll", updateOrigin, true);
+    return () => {
+      cancelAnimationFrame(rafId);
+      removeEventListener("resize", updateOrigin);
+      removeEventListener("scroll", updateOrigin, true);
+    };
   }, [show]);
 
   useEffect(() => {
-    if (!show) return;
-    const onMove = (e: MouseEvent) => setMouse({ x: e.clientX, y: e.clientY });
+    const onMove = (e: MouseEvent) => {
+      lastMouse = { x: e.clientX, y: e.clientY };
+      lastMouseKnown = true;
+      if (!showRef.current) return;
+      setMouse(lastMouse);
+      setHasMouse(true);
+    };
     addEventListener("mousemove", onMove);
     return () => removeEventListener("mousemove", onMove);
-  }, [show]);
+  }, []);
 
   const { length, angle } = useMemo(() => {
     const dx = mouse.x - origin.x;
@@ -62,7 +96,7 @@ export function LineFromChild({
   return (
     <>
       <LineFromChildOrigin ref={originRef}>{children}</LineFromChildOrigin>
-      {(!mouse.x && !mouse.y) || !show ? null : (
+      {!show || !hasMouse || !hasOrigin ? null : (
         <div
           className="LineFromChild"
           style={{

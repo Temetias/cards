@@ -29,6 +29,7 @@ export const summoner: CreatureCardDefintion = {
   faction: FACTIONS.DOMINION,
   onResourcePlay: null,
   triggers: {
+    // TODO: bug - summons while dying
     CREATURE_DIED: buildCardTrigger((state, { initiator, self }) => {
       const owner = getOwner(state, self as UUID, "summoner.CREATURE_DIED");
       const deadCreatureOwner = getOwner(

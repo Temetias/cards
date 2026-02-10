@@ -15,6 +15,7 @@ import {
   getOpponent,
   getPlayer,
   getUserSelectionType,
+  hasCreatureWithTargetedOnPlaySelected,
   isMyTurn,
   isUserSelected,
 } from "../../utils/GameStateUtils.ts";
@@ -24,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 import { LineFromChild } from "../../components/LineFromChild/LineFromChild.tsx";
 import { Guide } from "../../components/Guide/Guide.tsx";
 import type { FieldCreatureCard } from "../../../shared/game.ts";
+import { GAME_RULE } from "../../../shared/constants.ts";
 
 function GameBoard({
   children,
@@ -182,6 +184,9 @@ export default function Game() {
     useState<Nullable<Card>>(null);
   const selectionType = getUserSelectionType(playerUserSelection);
 
+  const [targetedCreatureCard, setTargetedCreatureCard] =
+    useState<Nullable<Card>>(null);
+
   useEffect(() => {
     if (selectionType === "FIELD_CREATURES") {
       setHoverInspectedCard(null);
@@ -214,6 +219,16 @@ export default function Game() {
     }, 1000);
     return () => clearTimeout(timeout);
   }, [gameState, hoveredFieldCardId, selectionType]);
+
+  useEffect(() => {
+    if (
+      targetedCreatureCard &&
+      isUserSelected(playerUserSelection, targetedCreatureCard?.id)
+    ) {
+      return;
+    }
+    setTargetedCreatureCard(null);
+  }, [playerUserSelection]);
 
   // Listen escape key to unselect
   useEffect(() => {
@@ -273,7 +288,13 @@ export default function Game() {
           getOpponent(gameState, user.id).field.length === 0 &&
           getOpponent(gameState, user.id).protection.length === 0
         }
-        onFieldClick={() => sendMessage({ action: "PLAY_CARD" })}
+        onFieldClick={() => {
+          if (hasCreatureWithTargetedOnPlaySelected(playerUserSelection)) {
+            setTargetedCreatureCard(playerUserSelection);
+          } else {
+            sendMessage({ action: "PLAY_CARD" });
+          }
+        }}
         onResourceClick={() => sendMessage({ action: "PLAY_RESOURCE" })}
         onEndTurnClick={
           isMyTurn(gameState, user.id)
@@ -441,17 +462,22 @@ export default function Game() {
                         ? "OPPONENT"
                         : null
                     }
-                    onClick={() =>
-                      getUserSelectionType(playerUserSelection) === "HAND_CARD"
-                        ? sendMessage({
-                            action: "PLAY_CARD",
-                            targetId: card.id,
-                          })
-                        : sendMessage({
-                            action: "ATTACK_CREATURE",
-                            targetId: card.id,
-                          })
-                    }
+                    onClick={() => {
+                      if (
+                        getUserSelectionType(playerUserSelection) ===
+                        "HAND_CARD"
+                      ) {
+                        sendMessage({
+                          action: "PLAY_CARD",
+                          targetId: card.id,
+                        });
+                      } else {
+                        sendMessage({
+                          action: "ATTACK_CREATURE",
+                          targetId: card.id,
+                        });
+                      }
+                    }}
                     onMouseEnter={() => setHoveredFieldCardId(card.id)}
                     onMouseLeave={() => setHoveredFieldCardId(null)}
                   />
@@ -549,12 +575,19 @@ export default function Game() {
                   showLine={
                     !gameState.winner &&
                     isUserSelected(playerUserSelection, card.id) &&
-                    card.onPlay?.type === "TARGETED"
+                    card.onPlay?.type === "TARGETED" &&
+                    (card.type !== "CREATURE" ||
+                      targetedCreatureCard?.id === card.id)
                   }
-                  {...playerHandPosition({
-                    index: player.hand.findIndex((c) => c.id === card.id),
-                    total: player.hand.length,
-                  })}
+                  {...(targetedCreatureCard?.id === card.id
+                    ? playerFieldPosition({
+                        index: player.field.length,
+                        total: player.field.length + 1,
+                      })
+                    : playerHandPosition({
+                        index: player.hand.findIndex((c) => c.id === card.id),
+                        total: player.hand.length,
+                      }))}
                 >
                   <CardDisplayer
                     handHover
@@ -572,14 +605,14 @@ export default function Game() {
                         ? "PLAYER"
                         : null
                     }
-                    onClick={() =>
+                    onClick={() => {
                       sendMessage({
                         action: isUserSelected(playerUserSelection, card.id)
                           ? "USER_UNSELECT"
                           : "USER_SELECT",
                         targetId: card.id,
-                      })
-                    }
+                      });
+                    }}
                   />
                 </Positioner>
               );
@@ -610,7 +643,6 @@ export default function Game() {
   );
 }
 
-// TODO: line to cursor implementation
 const Positioner = forwardRef<
   HTMLElement,
   {
