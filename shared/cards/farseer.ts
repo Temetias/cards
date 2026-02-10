@@ -2,11 +2,7 @@ import { getOpponent } from "../../client/utils/GameStateUtils.ts";
 import { type GameState } from "../game.ts";
 import { type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
-import {
-  buildCardOnPlayNonTargeted,
-  drawWithEffects,
-  getOwner,
-} from "./helpers.ts";
+import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";
 import {
   cardDefinitionId,
   isCreature,
@@ -18,8 +14,8 @@ export const farseer: CreatureCardDefintion = {
   name: "Farseer",
   description: [
     "On play: The top card of your",
-    "deck gets +2, the top card of",
-    "your opponent's deck gets -2.",
+    "deck gets +1, the top card of",
+    "your opponent's deck gets -1.",
   ],
   cost: 5,
   type: "CREATURE",

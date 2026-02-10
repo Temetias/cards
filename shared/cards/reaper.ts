@@ -10,7 +10,7 @@ export const reaper: CreatureCardDefintion = {
   name: "Reaper",
   description: ["Gains 1 Power each time", "owner draws a card."],
   type: "CREATURE",
-  power: 0,
+  power: 1,
   keywords: [],
   onPlay: null,
   onResourcePlay: null,

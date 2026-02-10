@@ -3,11 +3,7 @@ import { GAME_RULE } from "../constants.ts";
 import { type GameState, getObservers, resourceCardToCard } from "../game.ts";
 import type { UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
-import {
-  buildCardOnPlayNonTargeted,
-  drawWithEffects,
-  getOwner,
-} from "./helpers.ts";
+import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
 
 export const necroticgrowth: SpellCardDefintion = {

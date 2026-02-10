@@ -7,7 +7,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const maggot: CreatureCardDefintion = {
   definitionId: cardDefinitionId("noncollectible_maggot"),
-  cost: 2,
+  cost: 1,
   name: "Maggot",
   description: ["On resource play: Discards", "the top card of resource."],
   type: "CREATURE",

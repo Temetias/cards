@@ -20,7 +20,7 @@ export const maggotghoul: CreatureCardDefintion = {
   name: "Maggot Ghoul",
   description: ["On play: Summon two 0 power", "maggots for your opponent."],
   type: "CREATURE",
-  power: 2,
+  power: 3,
   keywords: [],
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {

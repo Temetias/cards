@@ -11,7 +11,7 @@ export const bolster: SpellCardDefintion = {
     "your leftmost and rightmost",
     "creatures.",
   ],
-  cost: 2,
+  cost: 3,
   type: "SPELL",
   keywords: [],
   faction: FACTIONS.ASTRALS,

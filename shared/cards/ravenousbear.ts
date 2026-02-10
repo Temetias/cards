@@ -13,7 +13,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const ravenousbear: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_ravenousbear"),
-  cost: 4,
+  cost: 5,
   name: "Ravenous Bear",
   description: [
     "On play: Place a card from",
@@ -21,7 +21,7 @@ export const ravenousbear: CreatureCardDefintion = {
     "your resource.",
   ],
   type: "CREATURE",
-  power: 3,
+  power: 2,
   keywords: [],
   onResourcePlay: null,
   onPlay: buildCardOnPlayTargeted(

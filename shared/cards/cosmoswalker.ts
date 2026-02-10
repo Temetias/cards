@@ -12,7 +12,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 export const cosmosWalker: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_cosmoswalker"),
   name: "Cosmos Walker",
-  description: ["On play: Destroy a creature"],
+  description: ["On play: Destroy an", "enemy creature"],
   cost: 6,
   type: "CREATURE",
   power: 5,

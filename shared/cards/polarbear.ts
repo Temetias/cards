@@ -1,11 +1,7 @@
 import type { GameState } from "../game.ts";
 import type { UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
-import {
-  buildCardOnPlayNonTargeted,
-  buildCardTrigger,
-  getOwner,
-} from "./helpers.ts";
+import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const polarbear: CreatureCardDefintion = {
@@ -18,7 +14,7 @@ export const polarbear: CreatureCardDefintion = {
     "gain +1.",
   ],
   type: "CREATURE",
-  power: 2,
+  power: 3,
   keywords: [],
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
