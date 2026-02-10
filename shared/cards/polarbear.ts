@@ -19,7 +19,9 @@ export const polarbear: CreatureCardDefintion = {
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "polarbear.onPlay");
-    const boost = owner.field.filter((creature) => creature.power > 2).length;
+    const boost = owner.field
+      .filter((creature) => creature.id !== self)
+      .filter((creature) => creature.power > 2).length;
     if (boost === 0) return [state, []];
 
     const next: GameState = {

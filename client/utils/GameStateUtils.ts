@@ -28,7 +28,10 @@ export function hasCreatureWithTargetedOnPlaySelected(
 ): userSelection is CreatureCard {
   if (userSelection === null) return false;
   if (Array.isArray(userSelection)) return false;
-  return userSelection.onPlay?.type === "TARGETED";
+  return (
+    userSelection.onPlay?.type === "TARGETED" &&
+    userSelection.type === "CREATURE"
+  );
 }
 
 export function getPlayer(gs: AnimatedGameState, userId: UUID) {

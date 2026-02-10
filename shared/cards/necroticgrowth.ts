@@ -14,7 +14,7 @@ export const necroticgrowth: SpellCardDefintion = {
     "resource into your hand.",
     "They cost 0",
   ],
-  cost: 6,
+  cost: 7,
   type: "SPELL",
   faction: FACTIONS.THORNBOUND,
   keywords: [],

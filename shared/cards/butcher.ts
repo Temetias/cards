@@ -15,8 +15,8 @@ export const butcher: CreatureCardDefintion = {
   cost: 5,
   name: "Butcher",
   description: [
-    "On play: place two 0 power",
-    "maggots on top of",
+    "On play: place a 0 power",
+    "maggot on top of",
     "opponents deck.",
   ],
   type: "CREATURE",
@@ -28,23 +28,19 @@ export const butcher: CreatureCardDefintion = {
     const maggot = getCardDefinition(
       brand("noncollectible_maggot", "CARD_DEFINITION_ID"),
     ) as CreatureCardDefintion;
-    const maggotCard1: CreatureCard = {
-      ...maggot,
-      id: uuid(),
-    };
-    const maggotCard2: CreatureCard = {
+    const maggotCard: CreatureCard = {
       ...maggot,
       id: uuid(),
     };
     const opponent = getOpponent(state, owner.id);
     const next: GameState = {
       ...state,
-      cardPool: [...state.cardPool, maggotCard1, maggotCard2],
+      cardPool: [...state.cardPool, maggotCard],
       players: {
         ...state.players,
         [opponent.id]: {
           ...opponent,
-          deck: [maggotCard1, maggotCard2, ...opponent.deck],
+          deck: [maggotCard, ...opponent.deck],
         },
       },
     };
