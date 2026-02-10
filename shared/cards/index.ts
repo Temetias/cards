@@ -50,6 +50,9 @@ import { necroticgrowth } from "./necroticgrowth.ts";
 import { maggotbomb } from "./maggotbomb.ts";
 import { photosynthesis } from "./photosynthesis.ts";
 import { sacrifice } from "./sacrifice.ts";
+import { golem } from "./golem.ts";
+import { dwarvenengineer } from "./dwarvenengineer.ts";
+import { gryphon } from "./gryphon.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -183,6 +186,9 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [maggotbomb.definitionId]: maggotbomb,
   [photosynthesis.definitionId]: photosynthesis,
   [sacrifice.definitionId]: sacrifice,
+  [golem.definitionId]: golem,
+  [dwarvenengineer.definitionId]: dwarvenengineer,
+  [gryphon.definitionId]: gryphon,
 } as const;
 
 export function getCardDefinition(
