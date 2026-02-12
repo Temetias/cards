@@ -20,7 +20,8 @@ export function Guide({ onClose }: { onClose?: () => void }) {
             blow.
           </li>
           <li>You can only attack protection when opponents field is empty.</li>
-          <li>Card cost resource. You can play one resource per turn.</li>
+          <li>Destroyed protection cards go into the hand.</li>
+          <li>Card cost resource. You can add one resource per turn.</li>
           <li>
             Creatures can attack once per turn, and not on the turn they are
             summoned.
@@ -33,7 +34,17 @@ export function Guide({ onClose }: { onClose?: () => void }) {
             When creatures combat the higher power wins. If the power is equal
             both creatures die.
           </li>
+          <li>
+            Dead creatures go to the graveyard, and can be revived by certain
+            cards. Discarded cards are gone for forever.
+          </li>
           <li>Max hand size is 10, max field size if 5.</li>
+        </ul>
+      </div>
+      <div className="Guide-Content">
+        <h2>Tips</h2>
+        <ul>
+          <li>Clear your user selection with ESC</li>
         </ul>
       </div>
       <button type="button" onClick={onClose}>
