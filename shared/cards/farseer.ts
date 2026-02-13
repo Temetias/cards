@@ -30,12 +30,12 @@ export const farseer: CreatureCardDefintion = {
     const opponentTopCard = opponent.deck[0];
     const transformedOpponentCard =
       opponentTopCard && isCreature(opponentTopCard)
-        ? { ...opponentTopCard, power: Math.max(0, opponentTopCard.power - 2) }
+        ? { ...opponentTopCard, power: Math.max(0, opponentTopCard.power - 1) }
         : opponentTopCard;
     const playerTopCard = owner.deck[0];
     const transformedPlayerCard =
       playerTopCard && isCreature(playerTopCard)
-        ? { ...playerTopCard, power: playerTopCard.power + 2 }
+        ? { ...playerTopCard, power: playerTopCard.power + 1 }
         : playerTopCard;
     const next: GameState = {
       ...state,
