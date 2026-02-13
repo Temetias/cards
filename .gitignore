@@ -24,7 +24,7 @@
 *.db
 *.sqlite
 *.sqlite3
-/data
+**/data
 
 # Deno related files
 deno.lock
