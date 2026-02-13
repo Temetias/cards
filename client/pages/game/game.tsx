@@ -3,7 +3,6 @@ import {
   forwardRef,
   isValidElement,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { useUser } from "../../context/UserContext.tsx";
@@ -25,6 +24,8 @@ import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx"
 import { useNavigate } from "react-router-dom";
 import { LineFromChild } from "../../components/LineFromChild/LineFromChild.tsx";
 import { Guide } from "../../components/Guide/Guide.tsx";
+import type { FieldCreatureCard } from "../../../shared/game.ts";
+import { GAME_RULE } from "../../../shared/constants.ts";
 
 function GameBoard({
   children,
@@ -36,7 +37,6 @@ function GameBoard({
   onResourceClick,
   onEndTurnClick,
   onWinClick,
-  onGroundClick,
   inspectedCard,
   playerResource,
   opponentResource,
@@ -54,7 +54,6 @@ function GameBoard({
   onResourceClick: () => void;
   onWinClick: () => void;
   onEndTurnClick: (() => void) | null;
-  onGroundClick?: () => void;
   inspectedCard?: Nullable<Card>;
   playerResource: [available: number, total: number];
   opponentResource: [available: number, total: number];
@@ -80,38 +79,20 @@ function GameBoard({
   const navigate = useNavigate();
   return (
     <div className="GameBoard-Wrap">
-      <div className="GameBoard" onMouseUp={() => onGroundClick?.()}>
+      <div className="GameBoard">
         {showFieldHighlight && (
-          <div
-            className="GameBoard-Field"
-            onMouseUp={(e) => {
-              e.stopPropagation();
-              onFieldClick();
-            }}
-          >
+          <div className="GameBoard-Field" onClick={onFieldClick}>
             {/** TODO: this being on cards prevents onplays that target own field */}
             Play card
           </div>
         )}
         {showResourceHighlight && (
-          <div
-            className="GameBoard-Resource"
-            onMouseUp={(e) => {
-              e.stopPropagation();
-              onResourceClick();
-            }}
-          >
+          <div className="GameBoard-Resource" onClick={onResourceClick}>
             Add resource
           </div>
         )}
         {showWinHighlight && (
-          <div
-            className="GameBoard-Win"
-            onMouseUp={(e) => {
-              e.stopPropagation();
-              onWinClick();
-            }}
-          >
+          <div className="GameBoard-Win" onClick={onWinClick}>
             Finish it!
           </div>
         )}
@@ -143,10 +124,7 @@ function GameBoard({
           type="button"
           className="GameBoard-EndTurnButton"
           disabled={onEndTurnClick === null}
-          onClick={(e) => {
-            e.stopPropagation();
-            onEndTurnClick?.();
-          }}
+          onClick={onEndTurnClick ?? undefined}
         >
           End turn
         </button>
@@ -324,11 +302,6 @@ export default function Game() {
             : null
         }
         onWinClick={() => sendMessage({ action: "WIN" })}
-        onGroundClick={() =>
-          sendMessage({
-            action: "USER_CLEAR_SELECTION",
-          })
-        }
         inspectedCard={
           hoverInspectedCard ??
           getOpponent(gameState, user.id).hand.find(
@@ -413,7 +386,7 @@ export default function Game() {
                     card={card}
                     flipside
                     showShield
-                    onMouseUp={() =>
+                    onClick={() =>
                       sendMessage({
                         action: "ATTACK_PROTECTION",
                         targetId: card.id,
@@ -489,7 +462,7 @@ export default function Game() {
                         ? "OPPONENT"
                         : null
                     }
-                    onMouseUp={() => {
+                    onClick={() => {
                       if (
                         getUserSelectionType(playerUserSelection) ===
                         "HAND_CARD"
@@ -552,8 +525,7 @@ export default function Game() {
                         ? "PLAYER"
                         : null
                     }
-                    onMouseUp={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       if (
                         getUserSelectionType(playerUserSelection) ===
                         "HAND_CARD"
@@ -563,20 +535,13 @@ export default function Game() {
                           targetId: card.id,
                         });
                       } else {
-                        if (e.ctrlKey) return;
                         sendMessage({
-                          action: "USER_UNSELECT",
+                          action: isUserSelected(playerUserSelection, card.id)
+                            ? "USER_UNSELECT"
+                            : "USER_SELECT",
                           targetId: card.id,
                         });
                       }
-                    }}
-                    onMouseDown={(e) => {
-                      e.stopPropagation();
-                      if (isUserSelected(playerUserSelection, card.id)) return;
-                      sendMessage({
-                        action: "USER_SELECT",
-                        targetId: card.id,
-                      });
                     }}
                     onMouseEnter={() => setHoveredFieldCardId(card.id)}
                     onMouseLeave={() => setHoveredFieldCardId(null)}
@@ -606,13 +571,6 @@ export default function Game() {
             case !!player.hand.find((c) => c.id === card.id):
               return (
                 <Positioner
-                  draggable={
-                    !(card.onPlay?.type === "TARGETED" && card.type === "SPELL")
-                  }
-                  dragAbort={
-                    targetedCreatureCard?.id === card.id ||
-                    !isUserSelected(playerUserSelection, card.id)
-                  }
                   key={card.id}
                   showLine={
                     !gameState.winner &&
@@ -647,7 +605,7 @@ export default function Game() {
                         ? "PLAYER"
                         : null
                     }
-                    onMouseDown={() => {
+                    onClick={() => {
                       sendMessage({
                         action: isUserSelected(playerUserSelection, card.id)
                           ? "USER_UNSELECT"
@@ -699,113 +657,26 @@ const Positioner = forwardRef<
     showLine?: boolean;
     opacity?: number;
     pointerEvents?: React.CSSProperties["pointerEvents"];
-    draggable?: boolean;
-    dragAbort?: boolean;
   }
 >((props, ref) => {
   const { children, x, y, scale, rotate, zIndex } = props;
   if (!isValidElement(children)) {
     throw new Error("Positioner expects a single React element child");
   }
-  const [dragging, setDragging] = useState(false);
-  const [mouse, setMouse] = useState({ x, y });
-  const draggingRef = useRef(false);
-  const mouseRef = useRef({ x, y });
-  const rafRef = useRef<number | null>(null);
-  const grabOffsetRef = useRef({ x: 0, y: 0 });
-  const parentRectRef = useRef<DOMRect | null>(null);
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!draggingRef.current) return;
-      const parentRect = parentRectRef.current;
-      if (parentRect) {
-        mouseRef.current = {
-          x: e.clientX - parentRect.left,
-          y: e.clientY - parentRect.top,
-        };
-      } else {
-        mouseRef.current = { x: e.clientX, y: e.clientY };
-      }
-    };
-    addEventListener("mousemove", onMouseMove);
-    return () => {
-      removeEventListener("mousemove", onMouseMove);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (props.dragAbort) {
-      setDragging(false);
-    }
-  }, [props.dragAbort]);
-
-  useEffect(() => {
-    draggingRef.current = dragging;
-    if (!dragging) {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-      return;
-    }
-    const tick = () => {
-      setMouse(mouseRef.current);
-      rafRef.current = requestAnimationFrame(tick);
-    };
-    tick();
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
-    };
-  }, [dragging]);
-
   return (
     <LineFromChild show={props.showLine}>
       {cloneElement(children, {
         ref,
-        onMouseDown: (e) => {
-          children.props?.onMouseDown?.(e);
-          if (!props.draggable) return;
-          const elementRect = (
-            e.currentTarget as HTMLElement
-          ).getBoundingClientRect();
-          const parentRect = (
-            (e.currentTarget as HTMLElement).offsetParent as HTMLElement | null
-          )?.getBoundingClientRect();
-          parentRectRef.current = parentRect ?? null;
-          const parentLeft = parentRect?.left ?? 0;
-          const parentTop = parentRect?.top ?? 0;
-          const localMouse = {
-            x: e.clientX - parentLeft,
-            y: e.clientY - parentTop,
-          };
-          const elementCenter = {
-            x: elementRect.left - parentLeft + elementRect.width / 2,
-            y: elementRect.top - parentTop + elementRect.height / 2,
-          };
-          grabOffsetRef.current = {
-            x: localMouse.x - elementCenter.x,
-            y: localMouse.y - elementCenter.y,
-          };
-          mouseRef.current = localMouse;
-          setDragging(true);
-        },
         style: {
           position: "absolute",
-          top: `${dragging ? `${mouse.y - grabOffsetRef.current.y}px` : `${y}%`}`,
-          left: `${dragging ? `${mouse.x - grabOffsetRef.current.x}px` : `${x}%`}`,
+          top: `${y}%`,
+          left: `${x}%`,
           width: "7%",
           opacity: props.opacity ?? 1,
-          pointerEvents: dragging ? "none" : (props.pointerEvents ?? "auto"),
-          transition: dragging
-            ? "none"
-            : "top 0.5s ease, left 0.5s ease, transform 0.5s ease, opacity 2s ease",
-          transform: dragging
-            ? `translate(-50%, -50%)`
-            : `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
+          pointerEvents: props.pointerEvents ?? "auto",
+          transition:
+            "top 0.5s ease, left 0.5s ease , transform 0.5s ease, opacity 2s ease",
+          transform: `translate(-50%, -50%) scale(${scale}) rotate(${rotate}deg)`,
           zIndex: zIndex ?? children.props.style?.zIndex,
           ...children.props.style,
         },

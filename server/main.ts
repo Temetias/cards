@@ -12,6 +12,7 @@ const dataDirUrl = new URL("../data", import.meta.url);
 const dbUrl = new URL("../data/database.sqlite", import.meta.url);
 await Deno.mkdir(dataDirUrl, { recursive: true });
 const db = new DatabaseSync(dbUrl.pathname);
+db.exec("PRAGMA journal_mode = WAL");
 
 initUserTables(db);
 
