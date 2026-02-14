@@ -74,6 +74,15 @@ const ANIMATION_LENGTHS: Record<GameTrigger | GameAction, number> = {
   FORFEIT: 0,
 };
 
+const ANIMATION_SOUNDS: Partial<Record<GameTrigger | GameAction, string>> = {
+  CARD_DRAWN: "/card_draw.mp3",
+  CREATURE_ATTACKED: "/attacked.mp3",
+  CREATURE_GOT_ATTACKED: "/got_attacked.mp3",
+  CREATURE_DIED: "/died.mp3",
+  RESOURCE_GAINED: "/card_draw.mp3",
+  PROTECTION_DESTROYED: "/protection_destroy.mp3",
+};
+
 export type AnimatedGameState = Omit<GameState, "players"> & {
   players: Record<Player["id"], Omit<Player, "userSelection">>;
 };
@@ -134,6 +143,14 @@ export function useAnimationEngine(userId: UUID) {
 
     isProcessingRef.current = true;
     setCurrentLogItem(next);
+
+    // Play sound if one exists for this effect
+    const soundPath = ANIMATION_SOUNDS[next.effectName];
+    if (soundPath) {
+      const audio = new Audio(soundPath);
+      audio.play().catch((err) => console.error("Failed to play sound:", err));
+    }
+
     console.log("[animation] apply", {
       effectName: next.effectName,
       initiator: next.initiator,
@@ -147,10 +164,27 @@ export function useAnimationEngine(userId: UUID) {
     // This makes it so that instant animations won't apply state
     // before the next log item is processed
     const baseDelay = ANIMATION_LENGTHS[next.effectName] || 1;
-    const skipSelfPlayDelay =
-      (next.effectName === "CREATURE_PLAYED" ||
-        next.effectName === "SPELL_PLAYED") &&
-      isMyTurn(next.state, userId);
+    const cardPlayed =
+      next.effectName === "CREATURE_PLAYED" ||
+      next.effectName === "SPELL_PLAYED";
+
+    if (cardPlayed) {
+      console.log("[animation] card played, checking for sound effect");
+      const definitionId = providedGameState?.cardPool.find(
+        (c) => c.id === next.initiator,
+      )?.definitionId;
+      if (definitionId) {
+        console.log(
+          `[animation] found definitionId ${definitionId} for played card, checking for sound effect`,
+        );
+        const audio = new Audio(`/${definitionId}.mp3`);
+        audio
+          .play()
+          .catch((err) => console.error("Failed to play sound:", err));
+      }
+    }
+
+    const skipSelfPlayDelay = cardPlayed && isMyTurn(next.state, userId);
     const delay = skipSelfPlayDelay ? 1 : baseDelay;
     timeoutRef.current = setTimeout(() => {
       setCurrentLogItem(null);

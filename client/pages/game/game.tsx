@@ -316,38 +316,48 @@ export default function Game() {
           const opponent = getOpponent(gameState, user.id);
           const player = getPlayer(gameState, user.id);
           switch (true) {
-            case !!opponent.graveyard.find((c) => c.id === card.id):
+            case !!opponent.graveyard.find((c) => c.id === card.id): {
+              const graveyardCard = opponent.graveyard.find(
+                (c) => c.id === card.id,
+              )!;
               return (
                 <Positioner
-                  key={card.id}
+                  key={graveyardCard.id}
                   {...opponentGraveyardPosition({
                     index: opponent.graveyard.findIndex(
-                      (c) => c.id === card.id,
+                      (c) => c.id === graveyardCard.id,
                     ),
                     total: opponent.graveyard.length,
                   })}
                 >
                   <CardDisplayer
-                    card={card}
+                    card={graveyardCard}
                     fieldAnimations={{ death: true }}
                   />
                 </Positioner>
               );
-            case !!player.graveyard.find((c) => c.id === card.id):
+            }
+            case !!player.graveyard.find((c) => c.id === card.id): {
+              const graveyardCard = player.graveyard.find(
+                (c) => c.id === card.id,
+              )!;
               return (
                 <Positioner
-                  key={card.id}
+                  key={graveyardCard.id}
                   {...playerGraveyardPosition({
-                    index: player.graveyard.findIndex((c) => c.id === card.id),
+                    index: player.graveyard.findIndex(
+                      (c) => c.id === graveyardCard.id,
+                    ),
                     total: player.graveyard.length,
                   })}
                 >
                   <CardDisplayer
-                    card={card}
+                    card={graveyardCard}
                     fieldAnimations={{ death: true }}
                   />
                 </Positioner>
               );
+            }
             case !!opponent.deck.find((c) => c.id === card.id):
               return (
                 <Positioner
@@ -430,35 +440,38 @@ export default function Game() {
                   <CardDisplayer card={card} flipside />
                 </Positioner>
               );
-            case !!opponent.field.find((c) => c.id === card.id):
+            case !!opponent.field.find((c) => c.id === card.id): {
+              const fieldCard = opponent.field.find((c) => c.id === card.id)!;
               return (
                 <Positioner
-                  key={card.id}
+                  key={fieldCard.id}
                   {...opponentFieldPosition({
-                    index: opponent.field.findIndex((c) => c.id === card.id),
+                    index: opponent.field.findIndex(
+                      (c) => c.id === fieldCard.id,
+                    ),
                     total: opponent.field.length,
                   })}
                 >
                   <CardDisplayer
-                    card={opponent.field.find((c) => c.id === card.id)!}
+                    card={fieldCard}
                     showIcons
                     showPower
                     fieldAnimations={{
                       trigger:
-                        currentLogItem?.self === card.id &&
+                        currentLogItem?.self === fieldCard.id &&
                         currentLogItem?.initiator !== "GAME_PLAYER",
                       attack:
-                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.initiator === fieldCard.id &&
                         currentLogItem?.effectName === "CREATURE_ATTACKED",
                       defend:
-                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.initiator === fieldCard.id &&
                         currentLogItem?.effectName === "CREATURE_GOT_ATTACKED",
                       death:
-                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.initiator === fieldCard.id &&
                         currentLogItem?.effectName === "CREATURE_DIED",
                     }}
                     selection={
-                      isUserSelected(opponentUserSelection, card.id)
+                      isUserSelected(opponentUserSelection, fieldCard.id)
                         ? "OPPONENT"
                         : null
                     }
@@ -483,45 +496,47 @@ export default function Game() {
                   />
                 </Positioner>
               );
-            case !!player.field.find((c) => c.id === card.id):
+            }
+            case !!player.field.find((c) => c.id === card.id): {
+              const fieldCard = player.field.find((c) => c.id === card.id)!;
               return (
                 <Positioner
-                  key={card.id}
+                  key={fieldCard.id}
                   {...playerFieldPosition({
-                    index: player.field.findIndex((c) => c.id === card.id),
+                    index: player.field.findIndex((c) => c.id === fieldCard.id),
                     total: player.field.length,
                   })}
                   showLine={
                     !gameState.winner &&
-                    isUserSelected(playerUserSelection, card.id)
+                    isUserSelected(playerUserSelection, fieldCard.id)
                   }
                 >
                   <CardDisplayer
-                    card={player.field.find((c) => c.id === card.id)!}
+                    card={fieldCard}
                     playable={
                       isMyTurn(gameState, user.id) &&
                       !playerUserSelection &&
-                      !player.field.find((c) => c.id === card.id)?.attacked &&
-                      !!player.field.find((c) => c.id === card.id)?.power
+                      !fieldCard.attacked &&
+                      !!fieldCard.power
                     }
                     showPower
                     showIcons
                     fieldAnimations={{
                       trigger:
-                        currentLogItem?.self === card.id &&
+                        currentLogItem?.self === fieldCard.id &&
                         currentLogItem?.initiator !== "GAME_PLAYER",
                       attack:
-                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.initiator === fieldCard.id &&
                         currentLogItem?.effectName === "CREATURE_ATTACKED",
                       defend:
-                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.initiator === fieldCard.id &&
                         currentLogItem?.effectName === "CREATURE_GOT_ATTACKED",
                       death:
-                        currentLogItem?.initiator === card.id &&
+                        currentLogItem?.initiator === fieldCard.id &&
                         currentLogItem?.effectName === "CREATURE_DIED",
                     }}
                     selection={
-                      isUserSelected(playerUserSelection, card.id)
+                      isUserSelected(playerUserSelection, fieldCard.id)
                         ? "PLAYER"
                         : null
                     }
@@ -532,22 +547,26 @@ export default function Game() {
                       ) {
                         sendMessage({
                           action: "PLAY_CARD",
-                          targetId: card.id,
+                          targetId: fieldCard.id,
                         });
                       } else {
                         sendMessage({
-                          action: isUserSelected(playerUserSelection, card.id)
+                          action: isUserSelected(
+                            playerUserSelection,
+                            fieldCard.id,
+                          )
                             ? "USER_UNSELECT"
                             : "USER_SELECT",
-                          targetId: card.id,
+                          targetId: fieldCard.id,
                         });
                       }
                     }}
-                    onMouseEnter={() => setHoveredFieldCardId(card.id)}
+                    onMouseEnter={() => setHoveredFieldCardId(fieldCard.id)}
                     onMouseLeave={() => setHoveredFieldCardId(null)}
                   />
                 </Positioner>
               );
+            }
             case !!opponent.hand.find((c) => c.id === card.id):
               return (
                 <Positioner
@@ -568,24 +587,27 @@ export default function Game() {
                   />
                 </Positioner>
               );
-            case !!player.hand.find((c) => c.id === card.id):
+            case !!player.hand.find((c) => c.id === card.id): {
+              const handCard = player.hand.find((c) => c.id === card.id)!;
               return (
                 <Positioner
-                  key={card.id}
+                  key={handCard.id}
                   showLine={
                     !gameState.winner &&
-                    isUserSelected(playerUserSelection, card.id) &&
-                    card.onPlay?.type === "TARGETED" &&
-                    (card.type !== "CREATURE" ||
-                      targetedCreatureCard?.id === card.id)
+                    isUserSelected(playerUserSelection, handCard.id) &&
+                    handCard.onPlay?.type === "TARGETED" &&
+                    (handCard.type !== "CREATURE" ||
+                      targetedCreatureCard?.id === handCard.id)
                   }
-                  {...(targetedCreatureCard?.id === card.id
+                  {...(targetedCreatureCard?.id === handCard.id
                     ? playerFieldPosition({
                         index: player.field.length,
                         total: player.field.length + 1,
                       })
                     : playerHandPosition({
-                        index: player.hand.findIndex((c) => c.id === card.id),
+                        index: player.hand.findIndex(
+                          (c) => c.id === handCard.id,
+                        ),
                         total: player.hand.length,
                       }))}
                 >
@@ -594,28 +616,29 @@ export default function Game() {
                     showCost
                     showPower
                     showDetails
-                    card={player.hand.find((c) => c.id === card.id)!}
+                    card={handCard}
                     playable={
                       isMyTurn(gameState, user.id) &&
                       !playerUserSelection &&
-                      getAvailableResource(gameState, user.id) >= card.cost
+                      getAvailableResource(gameState, user.id) >= handCard.cost
                     }
                     selection={
-                      isUserSelected(playerUserSelection, card.id)
+                      isUserSelected(playerUserSelection, handCard.id)
                         ? "PLAYER"
                         : null
                     }
                     onClick={() => {
                       sendMessage({
-                        action: isUserSelected(playerUserSelection, card.id)
+                        action: isUserSelected(playerUserSelection, handCard.id)
                           ? "USER_UNSELECT"
                           : "USER_SELECT",
-                        targetId: card.id,
+                        targetId: handCard.id,
                       });
                     }}
                   />
                 </Positioner>
               );
+            }
             case !![...opponent.discard, ...player.discard].find(
               (c) => c.id === card.id,
             ):

@@ -24,7 +24,10 @@
 *.db
 *.sqlite
 *.sqlite3
-**/data
+*.sqlite-shm
+*.sqlite-wal
+data/*
+!data/README.md
 
 # Deno related files
 deno.lock
