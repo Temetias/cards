@@ -123,13 +123,12 @@ export function getObservers(
       return [state, [], args];
     };
   };
-  // This is a bit of a hack to make sure we always have at least one observer for logging purposes, even if no creatures are on the field. We can later expand this to include effects that trigger in hand or deck, and then we would want to make sure the logger is always last in the list so that it logs the final state after all other effects have been applied.
-  if (fieldCreaturesWithEffects.length === 0) {
-    return [{ getDispatch: loggerObserver, self: "logger" as any }];
-  }
   // If in future we have effects that trigger in hand or deck, we can add those here
   // TODO: fix self typing
-  return [...fieldCreaturesWithEffects];
+  return [
+    ...fieldCreaturesWithEffects,
+    { getDispatch: loggerObserver, self: "logger" as any },
+  ];
 }
 
 export type GameConditionAssert<P extends unknown[]> = (

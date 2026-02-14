@@ -170,9 +170,15 @@ export function useAnimationEngine(userId: UUID) {
 
     if (cardPlayed) {
       console.log("[animation] card played, checking for sound effect");
-      const definitionId = providedGameState?.cardPool.find(
+      console.log({
+        initiator: next.initiator,
+      });
+      const definitionId = next.state.cardPool.find(
         (c) => c.id === next.initiator,
       )?.definitionId;
+      console.log(
+        `[animation] found card with definitionId ${definitionId} for played card`,
+      );
       if (definitionId) {
         console.log(
           `[animation] found definitionId ${definitionId} for played card, checking for sound effect`,
