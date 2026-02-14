@@ -18,7 +18,7 @@ export const ancientprotection: SpellCardDefintion = {
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "ancientprotection.onPlay");
     if (
-      owner.resource.length >= GAME_RULE.PROTECTION_MAX_SIZE ||
+      owner.protection.length >= GAME_RULE.PROTECTION_MAX_SIZE ||
       owner.deck.length === 0
     ) {
       return [state, []];

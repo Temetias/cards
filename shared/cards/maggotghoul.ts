@@ -12,6 +12,7 @@ import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";
 import { brand, uuid, type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import { getOpponent } from "../../client/utils/GameStateUtils.ts";
+import { GAME_RULE } from "../constants.ts";
 import { GAME_TRIGGER } from "../communication.ts";
 
 export const maggotghoul: CreatureCardDefintion = {
@@ -42,9 +43,9 @@ export const maggotghoul: CreatureCardDefintion = {
     const opponent = getOpponent(state, owner.id);
     // Field max size check
     let summonedMaggots: FieldCreatureCard[] = [];
-    if (opponent.field.length <= 3) {
+    if (opponent.field.length <= GAME_RULE.MAX_FIELD_SIZE - 2) {
       summonedMaggots = [maggotCard, maggotCard2];
-    } else if (opponent.field.length === 4) {
+    } else if (opponent.field.length === GAME_RULE.MAX_FIELD_SIZE - 1) {
       summonedMaggots = [maggotCard];
     } else {
       summonedMaggots = [];
@@ -65,7 +66,7 @@ export const maggotghoul: CreatureCardDefintion = {
 
     const next: GameState = {
       ...state,
-      cardPool: [...state.cardPool, maggotCard, maggotCard2],
+      cardPool: [...state.cardPool, ...summonedMaggots],
       players: {
         ...state.players,
         [opponent.id]: {

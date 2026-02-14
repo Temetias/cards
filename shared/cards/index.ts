@@ -55,6 +55,11 @@ import { dwarvenengineer } from "./dwarvenengineer.ts";
 import { gryphon } from "./gryphon.ts";
 import { auroracrash } from "./auroracrash.ts";
 import { ancientprotection } from "./ancientprotection.ts";
+import { junglesnake } from "./junglesnake.ts";
+import { squirrel } from "./squirrel.ts";
+import { meteor } from "./meteor.ts";
+import { treant } from "./treant.ts";
+import { stonegargoyle } from "./stonegargoyle.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -193,6 +198,11 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [gryphon.definitionId]: gryphon,
   [auroracrash.definitionId]: auroracrash,
   [ancientprotection.definitionId]: ancientprotection,
+  [junglesnake.definitionId]: junglesnake,
+  [squirrel.definitionId]: squirrel,
+  [meteor.definitionId]: meteor,
+  [treant.definitionId]: treant,
+  [stonegargoyle.definitionId]: stonegargoyle,
 } as const;
 
 export function getCardDefinition(
