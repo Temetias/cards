@@ -2,23 +2,21 @@ import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
 import {
   fieldCreatureCardToCreatureCard,
   type GameState,
-  getInactivePlayer,
   getObservers,
 } from "../game.ts";
 import { brand, gameLogicErrorLog, type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
-import {
-  buildCardOnPlayNonTargeted,
-  buildCardOnPlayTargeted,
-  drawWithEffects,
-  getOwner,
-} from "./helpers.ts";
+import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
 
-export const firelash: SpellCardDefintion = {
-  definitionId: cardDefinitionId("collectible_firelash"),
-  name: "Fire Lash",
-  description: ["Destroy an enemy creature.", "Draw a card."],
+export const auroracrash: SpellCardDefintion = {
+  definitionId: cardDefinitionId("collectible_auroracrash"),
+  name: "Aurora Crash",
+  description: [
+    "Destroy an enemy creature.",
+    "Give your rightmost",
+    "creature +1.",
+  ],
   cost: 3,
   type: "SPELL",
   keywords: [],
@@ -28,7 +26,7 @@ export const firelash: SpellCardDefintion = {
     if (!target) {
       gameLogicErrorLog(
         GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
-        "firelash.onPlay",
+        "auroracrash.onPlay",
         initiator,
       );
       throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
@@ -44,16 +42,15 @@ export const firelash: SpellCardDefintion = {
     const targetOwner = getOwner(
       state,
       brand(target, "UUID"),
-      "firelash.onPlay",
+      "auroracrash.onPlay",
     );
-    const firelashOwner = getOwner(state, self as UUID, "firelash.onPlay");
-    const {
-      hand,
-      deck,
-      discard,
-      triggeredEffects: drawEffects,
-    } = drawWithEffects(firelashOwner.id, 1, state, self);
-
+    const auroraCrashOwner = getOwner(
+      state,
+      self as UUID,
+      "auroracrash.onPlay",
+    );
+    const creatureToBuff =
+      auroraCrashOwner.field[auroraCrashOwner.field.length - 1];
     const next: GameState = {
       ...state,
       players: {
@@ -68,14 +65,18 @@ export const firelash: SpellCardDefintion = {
             ),
           ],
         },
-        [firelashOwner.id]: {
-          ...firelashOwner,
-          hand,
-          deck,
-          discard,
+        [auroraCrashOwner.id]: {
+          ...auroraCrashOwner,
+          field: auroraCrashOwner.field.map((creature) => ({
+            ...creature,
+            power:
+              creature.id === creatureToBuff?.id
+                ? creature.power + 1
+                : creature.power,
+          })),
         },
       },
     };
-    return [next, [...deathEffects, ...drawEffects]];
+    return [next, deathEffects];
   }),
 };

@@ -382,7 +382,10 @@ export default function Game() {
                   <CardDisplayer card={card} flipside />
                 </Positioner>
               );
-            case !!opponent.protection.find((c) => c.id === card.id):
+            case !!opponent.protection.find((c) => c.id === card.id): {
+              const protectionCard = opponent.protection.find(
+                (c) => c.id === card.id,
+              )!;
               return (
                 <Positioner
                   key={card.id}
@@ -396,6 +399,11 @@ export default function Game() {
                     card={card}
                     flipside
                     showShield
+                    fieldAnimations={{
+                      break:
+                        currentLogItem?.initiator === protectionCard.id &&
+                        currentLogItem?.effectName === "PROTECTION_DESTROYED",
+                    }}
                     onClick={() =>
                       sendMessage({
                         action: "ATTACK_PROTECTION",
@@ -405,17 +413,33 @@ export default function Game() {
                   />
                 </Positioner>
               );
-            case !!player.protection.find((c) => c.id === card.id):
+            }
+            case !!player.protection.find((c) => c.id === card.id): {
+              const protectionCard = player.protection.find(
+                (c) => c.id === card.id,
+              )!;
               return (
                 <Positioner
                   key={card.id}
                   {...playerProtectionPosition({
-                    index: player.protection.findIndex((c) => c.id === card.id),
+                    index: player.protection.findIndex(
+                      (c) => c.id === protectionCard.id,
+                    ),
                   })}
                 >
-                  <CardDisplayer card={card} showShield flipside />
+                  <CardDisplayer
+                    card={protectionCard}
+                    showShield
+                    flipside
+                    fieldAnimations={{
+                      break:
+                        currentLogItem?.initiator === protectionCard.id &&
+                        currentLogItem?.effectName === "PROTECTION_DESTROYED",
+                    }}
+                  />
                 </Positioner>
               );
+            }
             case !!opponent.resource.find((c) => c.id === card.id):
               return (
                 <Positioner

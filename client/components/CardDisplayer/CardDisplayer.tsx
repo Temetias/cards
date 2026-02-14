@@ -8,6 +8,7 @@ import {
   GiBrokenShield,
   GiChewedSkull,
   GiHumanTarget,
+  GiSkullShield,
 } from "react-icons/gi";
 
 type CardDisplayerProps = {
@@ -26,6 +27,7 @@ type CardDisplayerProps = {
     defend?: boolean;
     trigger?: boolean;
     death?: boolean;
+    break?: boolean;
   };
 } & ComponentPropsWithRef<"div">;
 
@@ -185,6 +187,9 @@ export function CardDisplayer({
         <>
           <GiBrokenShield className="CardDisplayer-Power CardDisplayer-Shield-Decor" />
           <PowerSvg power={2} />
+          {fieldAnimations?.break && (
+            <GiSkullShield className="CardDisplayer-Overlay" />
+          )}
         </>
       )}
       {!flipside && (
