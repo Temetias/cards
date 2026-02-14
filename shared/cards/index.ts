@@ -54,6 +54,7 @@ import { golem } from "./golem.ts";
 import { dwarvenengineer } from "./dwarvenengineer.ts";
 import { gryphon } from "./gryphon.ts";
 import { auroracrash } from "./auroracrash.ts";
+import { ancientprotection } from "./ancientprotection.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -191,6 +192,7 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [dwarvenengineer.definitionId]: dwarvenengineer,
   [gryphon.definitionId]: gryphon,
   [auroracrash.definitionId]: auroracrash,
+  [ancientprotection.definitionId]: ancientprotection,
 } as const;
 
 export function getCardDefinition(

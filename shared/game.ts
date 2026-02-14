@@ -5,6 +5,8 @@ import {
   type CreatureCard,
   type GameEffectDispatch,
   type GameEffectDispatchGetter,
+  getCardDefinition,
+  type CreatureCardDefintion,
 } from "./cards/index.ts";
 import {
   GAME_CONDITION_FAILURE,
@@ -30,8 +32,14 @@ export function creatureCardToFieldCreatureCard(
 export function fieldCreatureCardToCreatureCard(
   fieldCreature: FieldCreatureCard,
 ): CreatureCard {
-  const { attacked: _, ...creatureCard } = fieldCreature;
-  return creatureCard;
+  // Reset any field only modifiers
+  const base = getCardDefinition(
+    fieldCreature.definitionId,
+  ) as CreatureCardDefintion;
+  return {
+    ...base,
+    id: fieldCreature.id,
+  };
 }
 
 export type ResourceCard = Card & {

@@ -1,3 +1,4 @@
+import { GAME_RULE } from "../../../shared/constants.ts";
 import "./Guide.css";
 
 export function Guide({ onClose }: { onClose?: () => void }) {
@@ -6,8 +7,8 @@ export function Guide({ onClose }: { onClose?: () => void }) {
       <div className="Guide-Content">
         <h2>Deck Rules</h2>
         <ul>
-          <li>Deck size is fixed at 50 cards.</li>
-          <li>Max 4 copies per card.</li>
+          <li>Deck size is fixed at {GAME_RULE.DECK_SIZE} cards.</li>
+          <li>Max {GAME_RULE.DECK_MAX_COPIES} copies per card.</li>
           <li>Set active deck from My Decks page.</li>
           <li>Active deck is used when a match starts.</li>
         </ul>
@@ -38,7 +39,11 @@ export function Guide({ onClose }: { onClose?: () => void }) {
             Dead creatures go to the graveyard, and can be revived by certain
             cards. Discarded cards are gone for forever.
           </li>
-          <li>Max hand size is 10, max field size if 5.</li>
+          <li>
+            Max hand size is {GAME_RULE.MAX_HAND_SIZE}, max field size if{" "}
+            {GAME_RULE.MAX_FIELD_SIZE}, max protection size is{" "}
+            {GAME_RULE.PROTECTION_MAX_SIZE}.
+          </li>
         </ul>
       </div>
       <div className="Guide-Content">
