@@ -3,13 +3,11 @@ import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
 import {
   fieldCreatureCardToCreatureCard,
   type GameState,
-  getInactivePlayer,
   getObservers,
 } from "../game.ts";
 import { brand, gameLogicErrorLog, type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import {
-  buildCardOnPlayNonTargeted,
   buildCardOnPlayTargeted,
   drawWithEffects,
   getOwner,

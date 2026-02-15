@@ -60,6 +60,10 @@ import { squirrel } from "./squirrel.ts";
 import { meteor } from "./meteor.ts";
 import { treant } from "./treant.ts";
 import { stonegargoyle } from "./stonegargoyle.ts";
+import { poweroffire } from "./poweroffire.ts";
+import { overgrowth } from "./overgrowth.ts";
+import { psalmofnecromancy } from "./psalmofnecromancy.ts";
+import { blessingofthequeen } from "./blessingofthequeen.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -207,6 +211,10 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [meteor.definitionId]: meteor,
   [treant.definitionId]: treant,
   [stonegargoyle.definitionId]: stonegargoyle,
+  [poweroffire.definitionId]: poweroffire,
+  [overgrowth.definitionId]: overgrowth,
+  [psalmofnecromancy.definitionId]: psalmofnecromancy,
+  [blessingofthequeen.definitionId]: blessingofthequeen,
 } as const;
 
 export function getCardDefinition(

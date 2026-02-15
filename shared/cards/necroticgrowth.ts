@@ -36,22 +36,23 @@ export const necroticgrowth: SpellCardDefintion = {
     );
 
     const triggeredDiscardEffects = discarded.flatMap((card) =>
-      getObservers(state, GAME_TRIGGER.DISCARD).map(({ getDispatch, self }) =>
-        getDispatch({
-          effectName: GAME_TRIGGER.DISCARD,
-          initiator,
-          self,
-          target: card.id,
-        }),
+      getObservers(state, GAME_TRIGGER.DISCARD).map(
+        ({ getDispatch, self: dispatchSelf }) =>
+          getDispatch({
+            effectName: GAME_TRIGGER.DISCARD,
+            initiator,
+            self: dispatchSelf,
+            target: card.id,
+          }),
       ),
     );
 
     const triggeredDrawEffects = actuallyDrawn.flatMap((card) =>
       getObservers(state, GAME_TRIGGER.CARD_DRAWN).map(
-        ({ getDispatch, self }) =>
+        ({ getDispatch, self: dispatchSelf }) =>
           getDispatch({
             initiator,
-            self,
+            self: dispatchSelf,
             effectName: GAME_TRIGGER.CARD_DRAWN,
             target: card.id,
           }),
