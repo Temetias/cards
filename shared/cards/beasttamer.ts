@@ -1,8 +1,9 @@
 import { getOpponent } from "../../client/utils/GameStateUtils.ts";
+import { GAME_LOGIC_ERROR } from "../communication.ts";
 import type { GameState } from "../game.ts";
-import type { UUID } from "../utils.ts";
+import { gameLogicErrorLog, type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
-import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";
+import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const beasttamer: CreatureCardDefintion = {
@@ -10,29 +11,50 @@ export const beasttamer: CreatureCardDefintion = {
   cost: 4,
   name: "Beast Tamer",
   description: [
-    "On play: Set the power of",
-    "enemy creatures equal to their",
-    "lowest power creature.",
+    "On play: Lower the power of",
+    "an enemy creature by an equal",
+    "amount as the power of your",
+    "strongest creature.",
   ],
   type: "CREATURE",
   power: 3,
   keywords: [],
   onResourcePlay: null,
-  onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
+  onPlayTargetingCondition: (state, self) => {
+    const owner = getOwner(
+      state,
+      self as UUID,
+      "beasttamer.onPlayTargetingCondition",
+    );
+    const opponent = getOpponent(state, owner.id);
+    return opponent.field.length > 0;
+  },
+  onPlay: buildCardOnPlayTargeted((state, { self, target }) => {
+    if (!target) {
+      gameLogicErrorLog(
+        GAME_LOGIC_ERROR.NO_TARGET_DEFINED,
+        "beasttamer.onPlay",
+        self,
+      );
+      throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
+    }
     const owner = getOwner(state, self as UUID, "beasttamer.onPlay");
     const opponent = getOpponent(state, owner.id);
     if (opponent.field.length === 0) return [state, []];
-    const lowestPower = Math.min(...opponent.field.map((c) => c.power));
+    const reduction = owner.field
+      .filter((c) => c.id !== self)
+      .reduce((max, creature) => Math.max(max, creature.power), 0);
     const next: GameState = {
       ...state,
       players: {
         ...state.players,
         [opponent.id]: {
           ...opponent,
-          field: opponent.field.map((creature) => ({
-            ...creature,
-            power: lowestPower,
-          })),
+          field: opponent.field.map((creature) =>
+            creature.id === target
+              ? { ...creature, power: Math.max(creature.power - reduction, 0) }
+              : creature,
+          ),
         },
       },
     };

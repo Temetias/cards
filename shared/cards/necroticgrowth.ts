@@ -10,7 +10,7 @@ export const necroticgrowth: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_necroticgrowth"),
   name: "Necrotic Growth",
   description: [
-    "Draw 3 cards from the bottom",
+    "Draw 2 cards from the bottom",
     "of your resource into",
     "your hand. They cost 0.",
   ],
@@ -21,13 +21,8 @@ export const necroticgrowth: SpellCardDefintion = {
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self, initiator }) => {
     const owner = getOwner(state, self as UUID, "necroticgrowth.onPlay");
-    const [attemptedDrawn1, attemptedDrawn2, attemptedDrawn3, ...restResource] =
-      owner.resource;
-    const attemptedDrawn = [
-      attemptedDrawn1,
-      attemptedDrawn2,
-      attemptedDrawn3,
-    ].filter(Boolean);
+    const [attemptedDrawn1, attemptedDrawn2, ...restResource] = owner.resource;
+    const attemptedDrawn = [attemptedDrawn1, attemptedDrawn2].filter(Boolean);
     const nextHand = [...owner.hand, ...attemptedDrawn].slice(
       0,
       GAME_RULE.MAX_HAND_SIZE,
