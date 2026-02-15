@@ -6,7 +6,7 @@ import {
   type GameTrigger,
 } from "../communication.ts";
 // circular dependency, dunno how to avoid it yet or if it's even a problem
-import type { GameState } from "../game.ts";
+import type { ClientHandCard, GameState } from "../game.ts";
 import {
   brand,
   type Brand,
@@ -128,6 +128,10 @@ type CardInfo = Identified &
     description: string[];
     cost: number;
     onPlay: Nullable<GameEffect>;
+    onPlayTargetingCondition?: (
+      state: GameState,
+      self: Card["id"] | typeof GAME_MECHANIC | typeof GAME_PLAYER,
+    ) => boolean;
     onResourcePlay: Nullable<GameEffectNonTargeted>;
     faction: Faction;
   };
@@ -151,7 +155,7 @@ export type SpellCardDefintion = Omit<SpellCard, "id">;
 type CardDefinition = CreatureCardDefintion | SpellCardDefintion;
 
 export type Card = CreatureCard | SpellCard;
-export function isCreature(card: Card): card is CreatureCard {
+export function isCreature(card: Card | ClientHandCard): card is CreatureCard {
   return card.type === "CREATURE";
 }
 export function isSpell(card: Card): card is SpellCard {

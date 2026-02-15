@@ -1,10 +1,11 @@
+import { getOpponent } from "../../client/utils/GameStateUtils.ts";
 import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
 import {
   fieldCreatureCardToCreatureCard,
   type GameState,
   getObservers,
 } from "../game.ts";
-import { brand, gameLogicErrorLog } from "../utils.ts";
+import { brand, gameLogicErrorLog, type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
@@ -20,6 +21,15 @@ export const cosmosWalker: CreatureCardDefintion = {
   triggers: {},
   faction: FACTIONS.ASTRALS,
   onResourcePlay: null,
+  onPlayTargetingCondition: (state, self) => {
+    const owner = getOwner(
+      state,
+      self as UUID,
+      "cosmosWalker.onPlayTargetingCondition",
+    );
+    const opponent = getOpponent(state, owner.id);
+    return opponent.field.length > 0;
+  },
   onPlay: buildCardOnPlayTargeted((state, { initiator, target }) => {
     if (!target) {
       gameLogicErrorLog(

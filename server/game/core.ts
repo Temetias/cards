@@ -1,10 +1,8 @@
 import {
   Card,
-  CreatureCard,
   CreatureCardDefintion,
   GameActionDispatch,
   GameEffectDispatch,
-  GameEffectDispatchGetter,
   getCardDefinition,
   isCreature,
   isNonTargeted,
@@ -15,7 +13,6 @@ import {
   ClientMessage,
   GAME_MECHANIC,
   GAME_PLAYER,
-  GameTrigger,
   isGameLogicError,
   sendMessage,
 } from "../../shared/communication.ts";
@@ -52,13 +49,13 @@ import {
   isFieldCreatureSelection,
   getInactivePlayer,
   getActivePlayer,
-  getFieldCreatures,
   getObservers,
   conditionOpponentHasNoProtection,
   conditionHasEnoughFieldSpace,
+  gameStateToClientGameState,
 } from "../../shared/game.ts";
 import { User } from "../../shared/user.ts";
-import { brand, gameLogicErrorLog, uuid, UUID } from "../../shared/utils.ts";
+import { gameLogicErrorLog, uuid, UUID } from "../../shared/utils.ts";
 import { draw, generateSeed, rng, shuffle } from "../../shared/rng.ts";
 import { pawn } from "../../shared/cards/pawn.ts";
 import { drawWithEffects } from "../../shared/cards/helpers.ts";
@@ -474,9 +471,13 @@ const actionAttackCreature = withConditions(
 
 function processOnPlayGameEffect(
   card: Card,
+  state: GameState,
   targetId?: Card["id"],
 ): GameEffectDispatch | null {
   if (isTargeted(card.onPlay)) {
+    if (!card.onPlayTargetingCondition?.(state, card.id)) {
+      return null;
+    }
     if (!targetId) {
       throw new Error(GAME_CONDITION_FAILURE.TARGET_NOT_FOUND);
     }
@@ -534,11 +535,12 @@ const actionPlayCard = withConditions(
   (state, targetId: Card["id"] | undefined) => {
     const player = getActivePlayer(state);
     const selectedCard = player.userSelection as Card; // Asserted by condition, sad TypeScript noises
+    const isCreatureCard = isCreature(selectedCard);
     const triggeredEffectFromOnPlay = processOnPlayGameEffect(
       selectedCard,
+      state,
       targetId,
     );
-    const isCreatureCard = isCreature(selectedCard);
     const next: GameState = {
       ...state,
       players: {
@@ -678,7 +680,7 @@ function processTriggeredEffects(
     return processTriggeredEffects(state, restDispatches, log);
   }
   const [nextState, nextDispatches, dispatchArgs] = dispatchResult;
-  log.push({ ...dispatchArgs, state: nextState });
+  log.push({ ...dispatchArgs, state: gameStateToClientGameState(nextState) });
   return processTriggeredEffects(
     nextState,
     [...restDispatches, ...nextDispatches],
@@ -851,7 +853,7 @@ function init(
       sendMessage(
         {
           message: "GAME_STATE_UPDATE",
-          state: gs,
+          state: gameStateToClientGameState(gs),
           ...(log ? { log } : {}),
         },
         user.socket,

@@ -24,8 +24,7 @@ import { CardDisplayer } from "../../components/CardDisplayer/CardDisplayer.tsx"
 import { useNavigate } from "react-router-dom";
 import { LineFromChild } from "../../components/LineFromChild/LineFromChild.tsx";
 import { Guide } from "../../components/Guide/Guide.tsx";
-import type { FieldCreatureCard } from "../../../shared/game.ts";
-import { GAME_RULE } from "../../../shared/constants.ts";
+import type { ClientHandCard } from "../../../shared/game.ts";
 
 function GameBoard({
   children,
@@ -54,7 +53,7 @@ function GameBoard({
   onResourceClick: () => void;
   onWinClick: () => void;
   onEndTurnClick: (() => void) | null;
-  inspectedCard?: Nullable<Card>;
+  inspectedCard?: Nullable<Card | ClientHandCard>;
   playerResource: [available: number, total: number];
   opponentResource: [available: number, total: number];
   gameMessage?: string;
@@ -185,7 +184,7 @@ export default function Game() {
   const selectionType = getUserSelectionType(playerUserSelection);
 
   const [targetedCreatureCard, setTargetedCreatureCard] =
-    useState<Nullable<Card>>(null);
+    useState<Nullable<ClientHandCard>>(null);
 
   useEffect(() => {
     if (selectionType === "FIELD_CREATURES") {
@@ -280,7 +279,7 @@ export default function Game() {
           getUserSelectionType(playerUserSelection) === "HAND_CARD" &&
           getPlayer(gameState, user.id).resource.filter(
             (res) => res.used === false,
-          ).length >= (playerUserSelection as Card).cost
+          ).length >= (playerUserSelection as ClientHandCard).cost
         }
         showWinHighlight={
           currentLogItem === null &&
@@ -289,7 +288,10 @@ export default function Game() {
           getOpponent(gameState, user.id).protection.length === 0
         }
         onFieldClick={() => {
-          if (hasCreatureWithTargetedOnPlaySelected(playerUserSelection)) {
+          if (
+            hasCreatureWithTargetedOnPlaySelected(playerUserSelection) &&
+            playerUserSelection.onPlayTargetingCondition
+          ) {
             setTargetedCreatureCard(playerUserSelection);
           } else {
             sendMessage({ action: "PLAY_CARD" });

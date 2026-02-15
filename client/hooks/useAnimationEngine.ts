@@ -7,7 +7,11 @@ import type {
   GameTrigger,
   ServerMessage,
 } from "../../shared/communication.ts";
-import type { GameLog, GameState, Player } from "../../shared/game.ts";
+import type {
+  GameLog,
+  ClientGameState,
+  ClientPlayer,
+} from "../../shared/game.ts";
 import type { Nullable, UUID } from "../../shared/utils.ts";
 import { isMyTurn } from "../utils/GameStateUtils.ts";
 import { IS_PROD } from "../utils/runtime.ts";
@@ -83,8 +87,8 @@ const ANIMATION_SOUNDS: Partial<Record<GameTrigger | GameAction, string>> = {
   PROTECTION_DESTROYED: "/protection_destroy.mp3",
 };
 
-export type AnimatedGameState = Omit<GameState, "players"> & {
-  players: Record<Player["id"], Omit<Player, "userSelection">>;
+export type AnimatedGameState = Omit<ClientGameState, "players"> & {
+  players: Record<ClientPlayer["id"], Omit<ClientPlayer, "userSelection">>;
 };
 
 export function useAnimationEngine(userId: UUID) {
@@ -96,14 +100,14 @@ export function useAnimationEngine(userId: UUID) {
     useState<Nullable<GameConditionFailure | GameLogicError>>(null);
 
   const [playerUserSelectionState, setPlayerUserSelectionState] =
-    useState<Player["userSelection"]>(null);
+    useState<ClientPlayer["userSelection"]>(null);
   const [opponentUserSelectionState, setOpponentUserSelectionState] =
-    useState<Player["userSelection"]>(null);
+    useState<ClientPlayer["userSelection"]>(null);
 
-  const latestAnimatedRef = useRef<Nullable<GameState>>(null);
+  const latestAnimatedRef = useRef<Nullable<ClientGameState>>(null);
   const queueRef = useRef<GameLog>([]);
   const pendingQueueRef = useRef<GameLog>([]);
-  const pendingStateRef = useRef<Nullable<GameState>>(null);
+  const pendingStateRef = useRef<Nullable<ClientGameState>>(null);
   const timeoutRef = useRef<number | null>(null);
   const isProcessingRef = useRef(false);
 

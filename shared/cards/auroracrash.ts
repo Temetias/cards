@@ -1,3 +1,4 @@
+import { getOpponent } from "../../client/utils/GameStateUtils.ts";
 import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
 import {
   fieldCreatureCardToCreatureCard,
@@ -22,6 +23,15 @@ export const auroracrash: SpellCardDefintion = {
   keywords: [],
   faction: FACTIONS.WORLDFORGED,
   onResourcePlay: null,
+  onPlayTargetingCondition: (state, self) => {
+    const owner = getOwner(
+      state,
+      self as UUID,
+      "auroracrash.onPlayTargetingCondition",
+    );
+    const opponent = getOpponent(state, owner.id);
+    return opponent.field.length > 0;
+  },
   onPlay: buildCardOnPlayTargeted((state, { initiator, target, self }) => {
     if (!target) {
       gameLogicErrorLog(

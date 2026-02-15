@@ -1,5 +1,5 @@
 import type { Card } from "./cards/index.ts";
-import type { GameLog, GameState } from "./game.ts";
+import type { ClientGameState, GameLog } from "./game.ts";
 
 export const GAME_MECHANIC = "GAME_MECHANIC" as const;
 export const GAME_PLAYER = "GAME_PLAYER" as const;
@@ -108,7 +108,7 @@ export function isGameLogicError(
 export type ServerMessage =
   | {
       message: "GAME_STATE_UPDATE";
-      state: GameState;
+      state: ClientGameState;
       log?: GameLog;
     }
   | {

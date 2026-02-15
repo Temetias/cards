@@ -89,7 +89,62 @@ export type GameState = {
   winner: Nullable<Player["id"]>;
 };
 
-export type GameLog = (GameEffectDispatchArguments & { state: GameState })[];
+export type ClientHandCard = Omit<Card, "onPlayTargetingCondition"> & {
+  onPlayTargetingCondition: boolean;
+};
+
+export type ClientPlayer = Omit<Player, "hand" | "userSelection"> & {
+  hand: ClientHandCard[];
+  userSelection: Nullable<ClientHandCard | FieldCreatureCard[]>;
+};
+
+export type ClientGameState = Omit<GameState, "players"> & {
+  players: Record<Player["id"], ClientPlayer>;
+};
+
+export function gameStateToClientGameState(
+  gameState: GameState,
+): ClientGameState {
+  const players: Record<Player["id"], ClientPlayer> = Object.fromEntries(
+    Object.entries(gameState.players).map(([id, player]) => {
+      const hand = player.hand.map((card) => {
+        return {
+          ...card,
+          onPlayTargetingCondition: !!card.onPlayTargetingCondition?.(
+            gameState,
+            card.id,
+          ),
+        };
+      });
+      return [
+        id,
+        {
+          ...player,
+          hand,
+          userSelection:
+            Array.isArray(player.userSelection) || player.userSelection === null
+              ? player.userSelection
+              : {
+                  ...player.userSelection,
+                  onPlayTargetingCondition:
+                    !!player.userSelection?.onPlayTargetingCondition?.(
+                      gameState,
+                      player.userSelection.id,
+                    ),
+                },
+        },
+      ];
+    }),
+  );
+  return {
+    ...gameState,
+    players,
+  };
+}
+
+export type GameLog = (GameEffectDispatchArguments & {
+  state: ClientGameState;
+})[];
 
 export function getActivePlayer(state: GameState): Player {
   const player = state.players[state.activePlayer];

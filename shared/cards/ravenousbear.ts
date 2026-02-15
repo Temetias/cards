@@ -24,6 +24,15 @@ export const ravenousbear: CreatureCardDefintion = {
   power: 2,
   keywords: [],
   onResourcePlay: null,
+  onPlayTargetingCondition: (state, self) => {
+    const owner = getOwner(
+      state,
+      self as UUID,
+      "ravenousbear.onPlayTargetingCondition",
+    );
+    const opponent = getOpponent(state, owner.id);
+    return opponent.field.length > 0;
+  },
   onPlay: buildCardOnPlayTargeted(
     (state, { initiator, self: ravenousbearSelf, target }) => {
       if (!target) {

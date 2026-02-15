@@ -1,7 +1,10 @@
 import { ComponentPropsWithRef } from "react";
 import { isCreature, type Card } from "../../../shared/cards/index.ts";
 import "./CardDisplayer.css";
-import type { FieldCreatureCard } from "../../../shared/game.ts";
+import type {
+  ClientHandCard,
+  FieldCreatureCard,
+} from "../../../shared/game.ts";
 import {
   GiAbstract047,
   GiBroadsword,
@@ -12,7 +15,7 @@ import {
 } from "react-icons/gi";
 
 type CardDisplayerProps = {
-  card: Card | FieldCreatureCard;
+  card: Card | FieldCreatureCard | ClientHandCard;
   selection?: "OPPONENT" | "PLAYER" | null;
   playable?: boolean;
   showCost?: true;
