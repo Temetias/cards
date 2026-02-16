@@ -1,5 +1,8 @@
 .Decks {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  align-content: flex-start;
   gap: 2%;
   width: 100vw;
   height: 100%;
