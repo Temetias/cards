@@ -173,17 +173,10 @@ export function useAnimationEngine(userId: UUID) {
       next.effectName === "SPELL_PLAYED";
 
     if (cardPlayed) {
-      console.log("[animation] card played, checking for sound effect");
       const definitionId = next.state.cardPool.find(
         (c) => c.id === next.initiator,
       )?.definitionId;
-      console.log(
-        `[animation] found card with definitionId ${definitionId} for played card`,
-      );
       if (definitionId) {
-        console.log(
-          `[animation] found definitionId ${definitionId} for played card, checking for sound effect`,
-        );
         const audio = new Audio(`/${definitionId}.mp3`);
         audio
           .play()

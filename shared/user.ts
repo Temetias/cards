@@ -29,6 +29,9 @@ export type UserData = Identified &
     credits: number;
     decks: Deck[];
     activeDeckId: Deck["id"];
+    wins: number;
+    losses: number;
+    forfeits: number;
   };
 
 export type User = UserData & {

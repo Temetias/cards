@@ -3,8 +3,14 @@ import { oakCors } from "@tajpouria/cors";
 import routeStaticFilesFrom from "./util/routeStaticFilesFrom.ts";
 import { matchMake } from "./matchmaking.ts";
 import { AppState } from "./config.ts";
-import { createUserMiddleware, initUserTables, userRoutes } from "./user.ts";
+import {
+  createUserMiddleware,
+  handleGameEnd,
+  initUserTables,
+  userRoutes,
+} from "./user.ts";
 import { DatabaseSync } from "node:sqlite";
+import { runMigrations } from "./migrations/index.ts";
 
 const app = new Application<AppState>();
 const router = new Router<AppState>();
@@ -15,6 +21,7 @@ const db = new DatabaseSync(dbUrl.pathname);
 db.exec("PRAGMA journal_mode = WAL");
 
 initUserTables(db);
+runMigrations(db);
 
 router.get("/api/game/matchmaking", (context) => {
   const user = context.state.user;
@@ -29,7 +36,7 @@ router.get("/api/game/matchmaking", (context) => {
     return;
   }
   const socket = context.upgrade();
-  matchMake({ ...user, socket });
+  matchMake({ ...user, socket }, (...params) => handleGameEnd(db, params));
 });
 
 userRoutes(router, db);

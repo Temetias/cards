@@ -1,10 +1,10 @@
 import { sendMessage } from "../shared/communication.ts";
 import { User } from "../shared/user.ts";
-import { startMatch } from "./game/core.ts";
+import { GameEndReportFunction, startMatch } from "./game/core.ts";
 
 let MATCHMAKING: User[] = [];
 
-export function matchMake(user: User) {
+export function matchMake(user: User, reportGameEnd: GameEndReportFunction) {
   user.socket.onopen = () => {
     if (!MATCHMAKING.length && !MATCHMAKING.find((u) => u.id === user.id)) {
       MATCHMAKING.push(user);
@@ -22,6 +22,6 @@ export function matchMake(user: User) {
     MATCHMAKING = MATCHMAKING.filter(
       (u) => u.id !== user.id && u.id !== opponent.id,
     );
-    startMatch(user, opponent);
+    startMatch(user, opponent, reportGameEnd);
   };
 }

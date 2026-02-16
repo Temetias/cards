@@ -12,6 +12,7 @@ import { DEFAULT_DECK } from "../shared/constants.ts";
 import { type Faction } from "../shared/cards/index.ts";
 import { FACTIONS } from "../shared/cards/factions.ts";
 import { DatabaseSync } from "node:sqlite";
+import { GameEndReportFunction } from "./game/core.ts";
 
 const LOCAL_PROVIDER = "local";
 const DISCORD_PROVIDER = "discord";
@@ -44,6 +45,9 @@ type UserRow = {
   credits: number;
   decks: string;
   active_deck: string;
+  wins: number;
+  losses: number;
+  forfeits: number;
 };
 
 type SessionRow = {
@@ -129,6 +133,9 @@ function createUserRow(name: string): UserData {
     credits: 100,
     decks: [defaultDeck],
     activeDeckId: defaultDeck.id,
+    wins: 0,
+    losses: 0,
+    forfeits: 0,
   };
 }
 
@@ -140,12 +147,15 @@ function mapUserRow(row: UserRow): UserData {
     credits: row.credits,
     decks: JSON.parse(row.decks),
     activeDeckId: brand(row.active_deck, "UUID"),
+    wins: row.wins,
+    losses: row.losses,
+    forfeits: row.forfeits,
   };
 }
 
 function getUserById(db: DatabaseSync, userId: string): UserData | null {
   const stmt = db.prepare(
-    "SELECT id, name, collection, credits, decks, active_deck FROM users WHERE id = ?",
+    "SELECT id, name, collection, credits, decks, active_deck, wins, losses, forfeits FROM users WHERE id = ?",
   );
   const row = stmt.get(userId) as UserRow | undefined;
   return row ? mapUserRow(row) : null;
@@ -176,7 +186,7 @@ function getIdentity(
 
 function insertUser(db: DatabaseSync, user: UserData) {
   const stmt = db.prepare(
-    "INSERT INTO users (id, name, collection, credits, decks, active_deck, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    "INSERT INTO users (id, name, collection, credits, decks, active_deck, wins, losses, forfeits, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
   );
   stmt.run(
     user.id,
@@ -185,6 +195,9 @@ function insertUser(db: DatabaseSync, user: UserData) {
     user.credits,
     JSON.stringify(user.decks),
     user.activeDeckId,
+    user.wins,
+    user.losses,
+    user.forfeits,
     Date.now(),
   );
 }
@@ -256,7 +269,7 @@ function deleteSession(db: DatabaseSync, sessionId: string) {
 
 function getUserBySession(db: DatabaseSync, sessionId: string) {
   const stmt = db.prepare(
-    "SELECT u.id, u.name, u.collection, u.credits, u.decks, u.active_deck, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?",
+    "SELECT u.id, u.name, u.collection, u.credits, u.decks, u.active_deck, u.wins, u.losses, u.forfeits, s.expires_at FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.id = ?",
   );
   const row = stmt.get(sessionId) as (UserRow & SessionRow) | undefined;
   if (!row) return null;
@@ -334,7 +347,7 @@ function discordLoginHtml(user: UserData) {
 
 export function initUserTables(db: DatabaseSync) {
   db.exec(
-    "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT NOT NULL, collection TEXT NOT NULL, credits INTEGER NOT NULL, decks TEXT NOT NULL, active_deck TEXT NOT NULL, created_at INTEGER NOT NULL)",
+    "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT NOT NULL, collection TEXT NOT NULL, credits INTEGER NOT NULL, decks TEXT NOT NULL, active_deck TEXT NOT NULL, wins INTEGER NOT NULL DEFAULT 0, losses INTEGER NOT NULL DEFAULT 0, forfeits INTEGER NOT NULL DEFAULT 0, created_at INTEGER NOT NULL)",
   );
   db.exec(
     "CREATE TABLE IF NOT EXISTS identities (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT NOT NULL, provider TEXT NOT NULL, provider_id TEXT NOT NULL, password_hash TEXT, password_salt TEXT, password_iterations INTEGER, created_at INTEGER NOT NULL, UNIQUE(provider, provider_id), FOREIGN KEY(user_id) REFERENCES users(id))",
@@ -715,4 +728,35 @@ export function userRoutes(router: Router<AppState>, db: DatabaseSync) {
     console.log("User logged in:", user.id);
     context.response.body = user;
   });
+}
+
+function incrementUserWins(db: DatabaseSync, userId: string) {
+  const stmt = db.prepare("UPDATE users SET wins = wins + 1 WHERE id = ?");
+  stmt.run(userId);
+}
+
+function incrementUserLosses(db: DatabaseSync, userId: string) {
+  const stmt = db.prepare("UPDATE users SET losses = losses + 1 WHERE id = ?");
+  stmt.run(userId);
+}
+
+function incrementUserForfeits(db: DatabaseSync, userId: string) {
+  const stmt = db.prepare(
+    "UPDATE users SET forfeits = forfeits + 1 WHERE id = ?",
+  );
+  stmt.run(userId);
+}
+
+export function handleGameEnd(
+  db: DatabaseSync,
+  report: Parameters<GameEndReportFunction>,
+) {
+  const [winnerId, loserId, forfeitedBy] = report;
+
+  incrementUserWins(db, winnerId);
+  incrementUserLosses(db, loserId);
+
+  if (forfeitedBy !== null) {
+    incrementUserForfeits(db, forfeitedBy);
+  }
 }
