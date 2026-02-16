@@ -67,6 +67,9 @@ export type Player = Identified &
     field: FieldCreatureCard[];
     userSelection: Nullable<Card | FieldCreatureCard[]>;
     hasPlayedResource: boolean;
+    wins: number;
+    losses: number;
+    forfeits: number;
   };
 
 export type Seed = Brand<number, "SEED">;

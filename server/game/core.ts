@@ -28,7 +28,6 @@ import { User } from "../../shared/user.ts";
 import { gameLogicErrorLog, uuid } from "../../shared/utils.ts";
 import { draw, generateSeed, rng, shuffle } from "../../shared/rng.ts";
 import { pawn } from "../../shared/cards/pawn.ts";
-import { DatabaseSync } from "node:sqlite";
 import {
   actionAttackCreature,
   actionAttackProtection,
@@ -147,7 +146,7 @@ function handlePlayerAction(
 }
 
 function initPlayer(
-  { activeDeckId, decks, id, name }: User,
+  { activeDeckId, decks, id, name, wins, losses, forfeits }: User,
   seed: Seed,
 ): [player: Player, seed: Seed] {
   const activeDeck = decks.find((deck) => deck.id === activeDeckId) ?? decks[0];
@@ -165,6 +164,9 @@ function initPlayer(
     {
       id,
       name,
+      wins,
+      losses,
+      forfeits,
       startingDeck,
       deck,
       hand,
