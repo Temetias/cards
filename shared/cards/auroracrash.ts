@@ -21,7 +21,7 @@ export const auroracrash: SpellCardDefintion = {
   cost: 3,
   type: "SPELL",
   keywords: [],
-  faction: FACTIONS.WORLDFORGED,
+  faction: FACTIONS.ASTRALS,
   onResourcePlay: null,
   onPlayTargetingCondition: (state, self) => {
     const owner = getOwner(
