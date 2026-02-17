@@ -10,18 +10,18 @@ export const polarbear: CreatureCardDefintion = {
   name: "Polar Bear",
   description: [
     "On play: For every friendly",
-    "creature with 3 or more power,",
+    "creature with 4 or more power,",
     "gain +1.",
   ],
   type: "CREATURE",
   power: 3,
-  keywords: [],
+  keywords: ["#blocker"],
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "polarbear.onPlay");
     const boost = owner.field
       .filter((creature) => creature.id !== self)
-      .filter((creature) => creature.power > 2).length;
+      .filter((creature) => creature.power >= 4).length;
     if (boost === 0) return [state, []];
 
     const next: GameState = {

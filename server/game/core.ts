@@ -40,7 +40,6 @@ import {
   actionUserUnselect,
   actionWin,
 } from "./actions.ts";
-import { use } from "react";
 
 type UpdateSender = (gs: GameState, log?: GameLog) => void;
 
@@ -130,7 +129,7 @@ function handlePlayerAction(
           );
           throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
         }
-        return actionAttackCreature([playerId], [targetId]);
+        return actionAttackCreature([playerId, targetId], [targetId]);
 
       case GAME_ACTION.WIN:
         return actionWin([playerId], [playerId]);

@@ -10,6 +10,7 @@ import {
   GiBroadsword,
   GiBrokenShield,
   GiChewedSkull,
+  GiEdgedShield,
   GiHumanTarget,
   GiSkullShield,
 } from "react-icons/gi";
@@ -94,29 +95,109 @@ function PowerSvg({ power }: { power: number }) {
   );
 }
 
+// Component to render a keyword
+function Keyword({ keyword }: { keyword: `#${string}` }) {
+  const [, c, ...apitalize] = keyword;
+  return (
+    <tspan fontWeight="bold">
+      {c.toUpperCase()}
+      {apitalize.join("")}
+    </tspan>
+  );
+}
+
+type TextSegment =
+  | {
+      text: string;
+      isKeyword: false;
+    }
+  | {
+      text: `#${string}`;
+      isKeyword: true;
+    };
+
+// Parse a line to extract keywords (words starting with #)
+function parseLineForKeywords(line: string): TextSegment[] {
+  const segments: TextSegment[] = [];
+  const regex = /#\w+/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(line)) !== null) {
+    // Add text before the keyword
+    if (match.index > lastIndex) {
+      segments.push({
+        text: line.substring(lastIndex, match.index),
+        isKeyword: false,
+      });
+    }
+    // Add the keyword
+    segments.push({
+      text: match[0] as `#${string}`,
+      isKeyword: true,
+    });
+    lastIndex = regex.lastIndex;
+  }
+
+  // Add remaining text
+  if (lastIndex < line.length) {
+    segments.push({
+      text: line.substring(lastIndex),
+      isKeyword: false,
+    });
+  }
+
+  return segments.length > 0 ? segments : [{ text: line, isKeyword: false }];
+}
+
+// Component to render text with keywords bolded
+function TextWithKeywords({ text }: { text: string }) {
+  const segments = parseLineForKeywords(text);
+
+  return (
+    <>
+      {segments.map((segment, segIndex) =>
+        segment.isKeyword ? (
+          <Keyword key={segIndex} keyword={segment.text} />
+        ) : (
+          <tspan key={segIndex}>{segment.text}</tspan>
+        ),
+      )}
+    </>
+  );
+}
+
 // Description is split into multiple lines already in the backend definition
-function DescriptionSvg({ description }: { description: string[] }) {
-  const height = description.length * 14;
+function DescriptionSvg({
+  description,
+  keywords,
+}: {
+  description: string[];
+  keywords: string[];
+}) {
+  const computedDescription = [...keywords, ...description];
+  const height = computedDescription.length * 14;
   const MARGIN = 10;
   const FONT_SIZE = 14;
+
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox={`0 0 200 ${height + MARGIN}`}
       className="CardDisplayer-Description"
     >
-      {description.map((line, index) => (
+      {computedDescription.map((line, index) => (
         <text
           key={index}
           x="50%"
-          y={`${(height / description.length) * (index + 1) - FONT_SIZE / 2 + MARGIN / 2}`}
+          y={`${(height / computedDescription.length) * (index + 1) - FONT_SIZE / 2 + MARGIN / 2}`}
           dominantBaseline="middle"
           textAnchor="middle"
           fontSize={FONT_SIZE}
           fill="black"
           fontFamily="Arial, sans-serif"
         >
-          {line}
+          <TextWithKeywords text={line} />
         </text>
       ))}
     </svg>
@@ -214,10 +295,17 @@ export function CardDisplayer({
             !!Object.keys(card.triggers).length && (
               <GiAbstract047
                 className={[
-                  "CardDisplayer-Icon",
-                  fieldAnimations?.trigger ? " CardDisplayer-Icon-Active" : "",
+                  "CardDisplayer-Effect-Icon",
+                  fieldAnimations?.trigger
+                    ? " CardDisplayer-Effect-Icon-Active"
+                    : "",
                 ].join(" ")}
               />
+            )}
+          {showIcons &&
+            isCreature(card) &&
+            card.keywords.includes("#blocker") && (
+              <GiEdgedShield className="CardDisplayer-Blocker-Icon" />
             )}
           {fieldAnimations?.defend && (
             <GiHumanTarget className="CardDisplayer-Overlay" />
@@ -232,7 +320,10 @@ export function CardDisplayer({
             <>
               <NameSvg name={card.name} />
               {card.description.length > 0 && (
-                <DescriptionSvg description={card.description} />
+                <DescriptionSvg
+                  description={card.description}
+                  keywords={card.keywords}
+                />
               )}
             </>
           )}

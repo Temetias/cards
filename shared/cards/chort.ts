@@ -4,10 +4,6 @@ import { buildCardTrigger, getOwner } from "./helpers.ts";
 import { type UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 
-// TODO
-// Currently this basically has super windfury.
-// Essentially this mechanic is only possible after we have implemented
-// "card memory"
 export const chort: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_chort"),
   cost: 6,

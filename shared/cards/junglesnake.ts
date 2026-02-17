@@ -18,7 +18,7 @@ export const junglesnake: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_junglesnake"),
   cost: 1,
   name: "Jungle Snake",
-  description: ["On play: Summon a", "1 power jungle snake."],
+  description: ["On play: Summon another", "Jungle Snake."],
   type: "CREATURE",
   power: 1,
   keywords: [],

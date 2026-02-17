@@ -18,7 +18,7 @@ export const firelash: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_firelash"),
   name: "Fire Lash",
   description: ["Destroy an enemy creature.", "Draw a card."],
-  cost: 3,
+  cost: 4,
   type: "SPELL",
   keywords: [],
   faction: FACTIONS.WORLDFORGED,

@@ -9,7 +9,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 export const tundracat: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_tundracat"),
   name: "Tundra Cat",
-  description: ["On play: Reduce the power of", "an enemy creature by 1."],
+  description: ["On play: Give an enemy", "creature -1."],
   cost: 1,
   type: "CREATURE",
   power: 1,

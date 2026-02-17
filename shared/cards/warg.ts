@@ -9,7 +9,7 @@ export const warg: CreatureCardDefintion = {
   description: [],
   type: "CREATURE",
   power: 5,
-  keywords: [],
+  keywords: ["#blocker"],
   onPlay: null,
   onResourcePlay: null,
   triggers: {},

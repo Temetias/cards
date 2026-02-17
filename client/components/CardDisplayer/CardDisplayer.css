@@ -78,7 +78,8 @@
 
 .CardDisplayer-Cost,
 .CardDisplayer-Power,
-.CardDisplayer-Icon {
+.CardDisplayer-Effect-Icon,
+.CardDisplayer-Blocker-Icon {
   position: absolute;
   width: 30%;
   z-index: 10;
@@ -91,7 +92,8 @@
 }
 
 .CardDisplayer-Power-Decor,
-.CardDisplayer-Shield-Decor {
+.CardDisplayer-Shield-Decor,
+.CardDisplayer-Blocker-Icon {
   stroke: black;
   stroke-width: 15;
 }
@@ -113,7 +115,7 @@
   transform: translate(-50%, 50%);
 }
 
-.CardDisplayer-Icon {
+.CardDisplayer-Effect-Icon {
   top: 95%;
   height: auto;
   left: 42%;
@@ -126,8 +128,16 @@
   transition: color 0.3s ease-in-out;
 }
 
-.CardDisplayer-Icon-Active {
+.CardDisplayer-Effect-Icon-Active {
   color: orangered;
+}
+
+.CardDisplayer-Blocker-Icon {
+  top: 90%;
+  height: auto;
+  left: 90%;
+  width: 38%;
+  transform: translate(-50%, -50%);
 }
 
 .GameBoard-Status-Minor,

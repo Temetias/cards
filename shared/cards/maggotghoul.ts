@@ -22,7 +22,7 @@ export const maggotghoul: CreatureCardDefintion = {
   description: ["On play: Summon two 0 power", "maggots for your opponent."],
   type: "CREATURE",
   power: 3,
-  keywords: [],
+  keywords: ["#blocker"],
   onResourcePlay: null,
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
     const owner = getOwner(state, self as UUID, "maggotghoul.onPlay");

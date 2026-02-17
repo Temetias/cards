@@ -312,6 +312,26 @@ export const conditionIsUserSelectableTarget: GameConditionAssert<
   }
 };
 
+export const conditionNotBlockedOrTargetIsBlocker: GameConditionAssert<
+  [playerId: Player["id"], targetId: Card["id"]]
+> = (state, playerId, targetId) => {
+  const player = state.players[playerId];
+  if (!player) {
+    throw new Error(GAME_LOGIC_ERROR.PLAYER_NOT_FOUND);
+  }
+  const opponent = getInactivePlayer(state);
+  const target = opponent.field.find((c) => c.id === targetId);
+  if (!target) {
+    throw new Error(GAME_LOGIC_ERROR.CARD_NOT_FOUND);
+  }
+  if (target.keywords.includes("#blocker")) {
+    return;
+  }
+  if (opponent.field.some((c) => c.keywords.includes("#blocker"))) {
+    throw new Error(GAME_CONDITION_FAILURE.OPPONENT_HAS_A_BLOCKER);
+  }
+};
+
 export const conditionTargetIsInUserSelection: GameConditionAssert<
   [playerId: Player["id"], targetId: Card["id"]]
 > = (state, playerId, targetId) => {

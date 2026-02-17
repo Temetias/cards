@@ -1,4 +1,4 @@
-import { GAME_LOGIC_ERROR, GAME_TRIGGER } from "../communication.ts";
+import { GAME_TRIGGER } from "../communication.ts";
 import { GAME_RULE } from "../constants.ts";
 import {
   type FieldCreatureCard,

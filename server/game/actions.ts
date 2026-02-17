@@ -53,6 +53,7 @@ import {
   conditionOpponentHasNoProtection,
   conditionHasEnoughFieldSpace,
   gameStateToClientGameState,
+  conditionNotBlockedOrTargetIsBlocker,
 } from "../../shared/game.ts";
 import { User } from "../../shared/user.ts";
 import { gameLogicErrorLog, uuid, UUID } from "../../shared/utils.ts";
@@ -377,7 +378,11 @@ export const actionAttackProtection = withConditions(
 );
 
 export const actionAttackCreature = withConditions(
-  [conditionIsPlayerTurn, conditionHasFieldCreaturesSelected],
+  [
+    conditionIsPlayerTurn,
+    conditionHasFieldCreaturesSelected,
+    conditionNotBlockedOrTargetIsBlocker,
+  ],
   (state, targetId: Card["id"]) => {
     const opponent = getInactivePlayer(state);
     const player = getActivePlayer(state);

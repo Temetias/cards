@@ -7,10 +7,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 export const spiritbunny: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_spiritbunny"),
   name: "Spirit Bunny",
-  description: [
-    "On play: Increase the power of",
-    "your rightmost creature by 1.",
-  ],
+  description: ["On play: Give your rightmost", "creature by +1."],
   cost: 2,
   type: "CREATURE",
   power: 2,

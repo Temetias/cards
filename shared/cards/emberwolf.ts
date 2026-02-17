@@ -9,7 +9,7 @@ export const emberwolf: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_emberwolf"),
   cost: 2,
   name: "Emberwolf",
-  description: ["On start of turn,", "draw an additional card."],
+  description: ["On start of turn: Draw a card."],
   type: "CREATURE",
   power: 2,
   keywords: [],

@@ -15,56 +15,52 @@ export const stonegargoyle: CreatureCardDefintion = {
   onPlay: null,
   onResourcePlay: null,
   triggers: {
-    CREATURE_ATTACKED: buildCardTrigger(
-      (state, { initiator, self, target }) => {
-        if (initiator !== self) return null;
-        const owner = getOwner(
-          state,
-          self as UUID,
-          "stonegargoyle.CREATURE_ATTACKED",
-        );
-        const next: GameState = {
-          ...state,
-          players: {
-            ...state.players,
-            [owner.id]: {
-              ...owner,
-              field: owner.field.map((creature) =>
-                creature.id === self
-                  ? { ...creature, power: creature.power - 1 }
-                  : creature,
-              ),
-            },
+    CREATURE_ATTACKED: buildCardTrigger((state, { initiator, self }) => {
+      if (initiator !== self) return null;
+      const owner = getOwner(
+        state,
+        self as UUID,
+        "stonegargoyle.CREATURE_ATTACKED",
+      );
+      const next: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [owner.id]: {
+            ...owner,
+            field: owner.field.map((creature) =>
+              creature.id === self
+                ? { ...creature, power: creature.power - 1 }
+                : creature,
+            ),
           },
-        };
-        return [next, []];
-      },
-    ),
-    CREATURE_GOT_ATTACKED: buildCardTrigger(
-      (state, { initiator, self, target }) => {
-        if (initiator !== self) return null;
-        const owner = getOwner(
-          state,
-          self as UUID,
-          "stonegargoyle.CREATURE_GOT_ATTACKED",
-        );
-        const next: GameState = {
-          ...state,
-          players: {
-            ...state.players,
-            [owner.id]: {
-              ...owner,
-              field: owner.field.map((creature) =>
-                creature.id === self
-                  ? { ...creature, power: creature.power - 1 }
-                  : creature,
-              ),
-            },
+        },
+      };
+      return [next, []];
+    }),
+    CREATURE_GOT_ATTACKED: buildCardTrigger((state, { initiator, self }) => {
+      if (initiator !== self) return null;
+      const owner = getOwner(
+        state,
+        self as UUID,
+        "stonegargoyle.CREATURE_GOT_ATTACKED",
+      );
+      const next: GameState = {
+        ...state,
+        players: {
+          ...state.players,
+          [owner.id]: {
+            ...owner,
+            field: owner.field.map((creature) =>
+              creature.id === self
+                ? { ...creature, power: creature.power - 1 }
+                : creature,
+            ),
           },
-        };
-        return [next, []];
-      },
-    ),
+        },
+      };
+      return [next, []];
+    }),
   },
   faction: FACTIONS.NEUTRAL,
 };

@@ -1,6 +1,5 @@
-import { GAME_TRIGGER } from "../communication.ts";
 import { GAME_RULE } from "../constants.ts";
-import { type GameState, getObservers } from "../game.ts";
+import { type GameState } from "../game.ts";
 import type { UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";

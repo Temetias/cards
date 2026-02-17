@@ -7,7 +7,7 @@ export const bolster: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_bolster"),
   name: "Bolster",
   description: [
-    "Give +2 power to",
+    "Give +2 and #blocker to",
     "your leftmost and rightmost",
     "creatures.",
   ],
@@ -30,6 +30,7 @@ export const bolster: SpellCardDefintion = {
               return {
                 ...creature,
                 power: creature.power + 2,
+                keywords: [...creature.keywords, "#blocker"],
               };
             }
             return creature;
