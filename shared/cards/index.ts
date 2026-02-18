@@ -121,7 +121,7 @@ export function cardDefinitionId(id: string): CardDefinitionId {
 }
 
 type CommonKeyword = "";
-type CreatureKeyword = CommonKeyword | "#blocker";
+type CreatureKeyword = CommonKeyword | "#blocker" | "#charger";
 type SpellKeyword = CommonKeyword | "";
 
 export type Faction = (typeof FACTIONS)[keyof typeof FACTIONS];

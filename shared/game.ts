@@ -23,10 +23,10 @@ export type FieldCreatureCard = CreatureCard & {
 export function creatureCardToFieldCreatureCard(
   creatureCard: CreatureCard,
 ): FieldCreatureCard {
-  // Newly played creatures have not attacked yet
-  // In future we might have "charge" keyword that allows attacking immediately
-  // and that would be handled here
-  return { ...creatureCard, attacked: true };
+  return {
+    ...creatureCard,
+    attacked: !creatureCard.keywords.includes("#charger"),
+  };
 }
 
 export function fieldCreatureCardToCreatureCard(
