@@ -18,7 +18,7 @@ export const auroracrash: SpellCardDefintion = {
     "Give your rightmost",
     "creature +1.",
   ],
-  cost: 3,
+  cost: 4,
   type: "SPELL",
   keywords: [],
   faction: FACTIONS.ASTRALS,

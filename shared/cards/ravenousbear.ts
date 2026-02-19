@@ -13,7 +13,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const ravenousbear: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_ravenousbear"),
-  cost: 5,
+  cost: 6,
   name: "Ravenous Bear",
   description: [
     "On play: Place a card from",

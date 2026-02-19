@@ -14,7 +14,7 @@ export const cosmosWalker: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_cosmoswalker"),
   name: "Cosmos Walker",
   description: ["On play: Destroy an", "enemy creature"],
-  cost: 6,
+  cost: 7,
   type: "CREATURE",
   power: 5,
   keywords: [],

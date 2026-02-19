@@ -8,7 +8,7 @@ import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
 export const beasttamer: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_beasttamer"),
-  cost: 4,
+  cost: 5,
   name: "Beast Tamer",
   description: [
     "On play: Lower the power of",

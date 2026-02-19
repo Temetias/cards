@@ -14,7 +14,7 @@ export const doom: SpellCardDefintion = {
   definitionId: cardDefinitionId("collectible_doom"),
   name: "Doom",
   description: ["Destroy all creatures"],
-  cost: 5,
+  cost: 6,
   type: "SPELL",
   faction: FACTIONS.WORLDFORGED,
   keywords: [],

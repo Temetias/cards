@@ -26,7 +26,7 @@ export const maggotbomb: SpellCardDefintion = {
     "discard adjacent cards",
     "in hand.",
   ],
-  cost: 5,
+  cost: 4,
   type: "SPELL",
   faction: FACTIONS.DOMINION,
   keywords: [],
