@@ -29,6 +29,10 @@ export const GAME_TRIGGER = {
    * Initiator: Creature that died
    */
   CREATURE_DIED: "CREATURE_DIED",
+  /**
+   * Initiator: Card that caused the revive
+   * Target: Creature that got revived
+   */
   CREATURE_REVIVED: "CREATURE_REVIVED",
   /**
    * Initiator: Card that was played

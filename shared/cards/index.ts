@@ -64,6 +64,8 @@ import { poweroffire } from "./poweroffire.ts";
 import { overgrowth } from "./overgrowth.ts";
 import { psalmofnecromancy } from "./psalmofnecromancy.ts";
 import { blessingofthequeen } from "./blessingofthequeen.ts";
+import { pawnmaker } from "./pawnmaker.ts";
+import { graverobber } from "./graverobber.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -215,6 +217,8 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [overgrowth.definitionId]: overgrowth,
   [psalmofnecromancy.definitionId]: psalmofnecromancy,
   [blessingofthequeen.definitionId]: blessingofthequeen,
+  [pawnmaker.definitionId]: pawnmaker,
+  [graverobber.definitionId]: graverobber,
 } as const;
 
 export function getCardDefinition(
