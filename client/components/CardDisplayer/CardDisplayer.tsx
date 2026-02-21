@@ -319,7 +319,7 @@ export function CardDisplayer({
           {showDetails && (
             <>
               <NameSvg name={card.name} />
-              {card.description.length > 0 && (
+              {(card.description.length || card.keywords.length) && (
                 <DescriptionSvg
                   description={card.description}
                   keywords={card.keywords}

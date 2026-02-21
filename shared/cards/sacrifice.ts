@@ -44,8 +44,8 @@ export const sacrifice: SpellCardDefintion = {
     } = drawWithEffects(owner.id, 1, state, initiator);
 
     const nextHand = [
-      ...(protectionToDraw ? [protectionToDraw] : []),
       ...hand,
+      ...(protectionToDraw ? [protectionToDraw] : []),
     ].slice(0, GAME_RULE.MAX_HAND_SIZE);
 
     const discarded = [

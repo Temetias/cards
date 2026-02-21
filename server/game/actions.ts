@@ -296,11 +296,26 @@ export const actionAttackProtection = withConditions(
       );
       throw new Error(GAME_LOGIC_ERROR.CARD_NOT_FOUND);
     }
+    const targetProtectionIndex = opponent.protection.findIndex(
+      (c) => c.id === targetId,
+    );
     const attackingCreatures = player.userSelection as FieldCreatureCard[]; // Asserted by condition, sad TypeScript noises
     const attackingCreaturesPower = attackingCreatures.reduce(
       (sum, c) => sum + c.power,
       0,
     );
+    const targetProtections = [
+      // Normal
+      targetProtection,
+      // Doublebreaker
+      attackingCreatures.find((ac) => ac.keywords.includes("#doublebreaker")) &&
+        (opponent.protection[targetProtectionIndex + 1] ||
+          opponent.protection[targetProtectionIndex - 1]),
+      // Triplebreaker
+      attackingCreatures.find((ac) => ac.keywords.includes("#triplebreaker")) &&
+        (opponent.protection[targetProtectionIndex + 2] ||
+          opponent.protection[targetProtectionIndex - 2]),
+    ].filter((x) => !!x);
     if (attackingCreaturesPower < GAME_RULE.PROTECTION_POWER) {
       throw new Error(GAME_CONDITION_FAILURE.NOT_ENOUGH_POWER);
     }
@@ -319,8 +334,10 @@ export const actionAttackProtection = withConditions(
         },
         [opponent.id]: {
           ...opponent,
-          protection: opponent.protection.filter((c) => c.id !== targetId),
-          hand: [...opponent.hand, targetProtection],
+          protection: opponent.protection.filter(
+            (c) => !targetProtections.find((tp) => tp.id === c.id),
+          ),
+          hand: [...opponent.hand, ...targetProtections],
         },
       },
     };
@@ -336,15 +353,16 @@ export const actionAttackProtection = withConditions(
       ),
     );
 
-    const triggeredEffectsForProtectionDestroy = getObservers(
-      state,
-      GAME_TRIGGER.PROTECTION_DESTROYED,
-    ).map(({ getDispatch, self }) =>
-      getDispatch({
-        initiator: targetProtection.id,
-        self,
-        effectName: GAME_TRIGGER.PROTECTION_DESTROYED,
-      }),
+    const triggeredEffectsForProtectionDestroy = targetProtections.flatMap(
+      (tp) =>
+        getObservers(state, GAME_TRIGGER.PROTECTION_DESTROYED).map(
+          ({ getDispatch, self }) =>
+            getDispatch({
+              initiator: tp.id,
+              self,
+              effectName: GAME_TRIGGER.PROTECTION_DESTROYED,
+            }),
+        ),
     );
 
     return [

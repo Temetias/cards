@@ -40,11 +40,11 @@ export const cosmosWalker: CreatureCardDefintion = {
       throw new Error(GAME_LOGIC_ERROR.NO_TARGET_DEFINED);
     }
     const deathEffects = getObservers(state, GAME_TRIGGER.CREATURE_DIED).map(
-      ({ getDispatch, self }) =>
+      ({ getDispatch, self: dispatchSelf }) =>
         getDispatch({
           effectName: GAME_TRIGGER.CREATURE_DIED,
-          initiator: self,
-          self,
+          initiator: dispatchSelf,
+          self: dispatchSelf,
         }),
     );
     const owner = getOwner(state, brand(target, "UUID"), "cosmosWalker.onPlay");

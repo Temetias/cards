@@ -2,23 +2,23 @@ import { type GameState } from "../game.ts";
 import type { UUID } from "../utils.ts";
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayNonTargeted, getOwner } from "./helpers.ts";
-import { cardDefinitionId, type SpellCardDefintion } from "./index.ts";
+import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
 
-export const bolster: SpellCardDefintion = {
-  definitionId: cardDefinitionId("collectible_bolster"),
-  name: "Bolster",
+export const shieldsmith: CreatureCardDefintion = {
+  definitionId: cardDefinitionId("collectible_shieldsmith"),
+  cost: 3,
+  name: "Shieldsmith",
   description: [
-    "Give +2 and #blocker to",
-    "your leftmost and rightmost",
+    "Give #blocker to your",
+    "leftmost and rightmost",
     "creatures.",
   ],
-  cost: 3,
-  type: "SPELL",
-  keywords: [],
-  faction: FACTIONS.ASTRALS,
+  type: "CREATURE",
+  power: 2,
   onResourcePlay: null,
+  keywords: [],
   onPlay: buildCardOnPlayNonTargeted((state, { self }) => {
-    const owner = getOwner(state, self as UUID, "bolster.onPlay");
+    const owner = getOwner(state, self as UUID, "shieldsmith.onPlay");
 
     const next: GameState = {
       ...state,
@@ -30,7 +30,6 @@ export const bolster: SpellCardDefintion = {
             if (index === 0 || index === array.length - 1) {
               return {
                 ...creature,
-                power: creature.power + 2,
                 keywords: [...creature.keywords, "#blocker"],
               };
             }
@@ -41,4 +40,6 @@ export const bolster: SpellCardDefintion = {
     };
     return [next, []];
   }),
+  triggers: {},
+  faction: FACTIONS.NEUTRAL,
 };

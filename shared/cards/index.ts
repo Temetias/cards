@@ -66,6 +66,12 @@ import { psalmofnecromancy } from "./psalmofnecromancy.ts";
 import { blessingofthequeen } from "./blessingofthequeen.ts";
 import { pawnmaker } from "./pawnmaker.ts";
 import { graverobber } from "./graverobber.ts";
+import { armoredgoblin } from "./armoredgoblin.ts";
+import { heftytoad } from "./heftytoad.ts";
+import { bombgoblin } from "./bombgoblin.ts";
+import { artillery } from "./artillery.ts";
+import { shieldsmith } from "./shieldsmith.ts";
+import { masterfulsculptor } from "./masterfulsculptor.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -123,7 +129,12 @@ export function cardDefinitionId(id: string): CardDefinitionId {
 }
 
 type CommonKeyword = "";
-type CreatureKeyword = CommonKeyword | "#blocker" | "#charger";
+type CreatureKeyword =
+  | CommonKeyword
+  | "#blocker"
+  | "#charger"
+  | "#doublebreaker"
+  | "#triplebreaker";
 type SpellKeyword = CommonKeyword | "";
 
 export type Faction = (typeof FACTIONS)[keyof typeof FACTIONS];
@@ -219,6 +230,12 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [blessingofthequeen.definitionId]: blessingofthequeen,
   [pawnmaker.definitionId]: pawnmaker,
   [graverobber.definitionId]: graverobber,
+  [armoredgoblin.definitionId]: armoredgoblin,
+  [heftytoad.definitionId]: heftytoad,
+  [bombgoblin.definitionId]: bombgoblin,
+  [artillery.definitionId]: artillery,
+  [shieldsmith.definitionId]: shieldsmith,
+  [masterfulsculptor.definitionId]: masterfulsculptor,
 } as const;
 
 export function getCardDefinition(
