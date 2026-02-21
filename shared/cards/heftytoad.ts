@@ -9,7 +9,11 @@ import {
 import { FACTIONS } from "./factions.ts";
 import { buildCardOnPlayTargeted, getOwner } from "./helpers.ts";
 import { cardDefinitionId, type CreatureCardDefintion } from "./index.ts";
-import { type GameState, getObservers } from "../game.ts";
+import {
+  fieldCreatureCardToCreatureCard,
+  type GameState,
+  getObservers,
+} from "../game.ts";
 
 export const heftytoad: CreatureCardDefintion = {
   definitionId: cardDefinitionId("collectible_heftytoad"),
@@ -58,7 +62,10 @@ export const heftytoad: CreatureCardDefintion = {
         [opponent.id]: {
           ...opponent,
           field: opponent.field.filter((c) => c.id !== target),
-          graveyard: [...opponent.graveyard, targetCreature],
+          graveyard: [
+            ...opponent.graveyard,
+            fieldCreatureCardToCreatureCard(targetCreature),
+          ],
         },
       },
     };

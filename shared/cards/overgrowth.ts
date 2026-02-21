@@ -17,7 +17,7 @@ export const overgrowth: SpellCardDefintion = {
     "resource advantage over",
     "your opponent.",
   ],
-  cost: 3,
+  cost: 2,
   type: "SPELL",
   faction: FACTIONS.THORNBOUND,
   keywords: [],

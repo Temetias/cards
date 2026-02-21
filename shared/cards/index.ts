@@ -72,6 +72,7 @@ import { bombgoblin } from "./bombgoblin.ts";
 import { artillery } from "./artillery.ts";
 import { shieldsmith } from "./shieldsmith.ts";
 import { masterfulsculptor } from "./masterfulsculptor.ts";
+import { nightblade } from "./nightblade.ts";
 
 export type GameEffectDispatchArguments = {
   effectName: GameTrigger | GameAction;
@@ -236,6 +237,7 @@ export const CARD_DEFINITIONS: Record<CardDefinitionId, CardDefinition> = {
   [artillery.definitionId]: artillery,
   [shieldsmith.definitionId]: shieldsmith,
   [masterfulsculptor.definitionId]: masterfulsculptor,
+  [nightblade.definitionId]: nightblade,
 } as const;
 
 export function getCardDefinition(

@@ -29,6 +29,7 @@ export const pawnmaker: CreatureCardDefintion = {
     const drawn = owner.hand.length < GAME_RULE.MAX_HAND_SIZE ? [pawnCard] : [];
     const next: GameState = {
       ...state,
+      cardPool: [...state.cardPool, pawnCard],
       players: {
         ...state.players,
         [owner.id]: {
